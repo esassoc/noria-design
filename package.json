@@ -9,6 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "astro build && gh-pages -d dist --dotfiles",
+    "handoff": "node scripts/gen-handoff.mjs",
     "doctor": "node ../ecology/scripts/doctor.mjs"
   },
   "dependencies": {
