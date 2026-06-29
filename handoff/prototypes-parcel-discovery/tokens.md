@@ -1,4 +1,4 @@
-# Token contract — parcel-discovery
+# Token contract — prototypes-parcel-discovery
 
 The 56 design tokens this page actually uses, resolved to their final values for the `noria` theme. Component CSS still references them by name (`var(--color-primary)`), so the names carry the intent; the values below are what they currently resolve to.
 
