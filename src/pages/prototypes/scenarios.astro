@@ -1,0 +1,36 @@
+---
+// Scenarios — a placeholder destination so the sidenav's second item is a real,
+// navigable route (not a dead link). The screen itself is intentionally just an
+// empty state until the Scenarios prototype is built.
+import AppShell from '../../layouts/AppShell.astro';
+import EsaEmptyState from '@esa/ecology/esa-empty-state.astro';
+---
+
+<!-- manifest:
+  layout: AppShell
+  sections:
+    - placeholder -> esa-empty-state
+-->
+
+<!-- bcn-lego-checked: the only page CSS centers the esa-empty-state lego in the
+     shell's content area (a full-height grid place-items:center) — layout spine,
+     not a reinvented primitive. The single section is the esa-empty-state lego. -->
+
+<AppShell title="Deschutes Water Bank" activeNavId="scenarios">
+  <div class="scenarios-stub">
+    <EsaEmptyState
+      title="Scenarios"
+      description="Model and compare water-banking scenarios. This tool isn't built yet — it lives here in the shell so the navigation is complete."
+    />
+  </div>
+</AppShell>
+
+<style>
+  .scenarios-stub {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    min-height: 0;
+    padding: var(--spacing-500, 20px);
+  }
+</style>

@@ -1,0 +1,105 @@
+---
+// noria-parcel-map — the interactive map in the Parcel Discovery Tool's Hybrid
+// view. A topographic basemap over the Crook County / Ochoco area of the
+// Deschutes basin, with every parcel plotted as a Noria-blue circle marker —
+// matching the live app's terrain map full of blue parcels.
+//
+// Self-contained: it imports Leaflet's CSS/JS in its own client <script> and
+// bridges the server-side `parcels` prop to that script through a JSON data
+// island (the client script can't read Astro.props directly). The host page
+// only has to drop this into a sized container — no extra map setup.
+//
+// bcn-lego-checked: no functional esa-map lego (the kit ships only a non-functional reference); Leaflet is the production engine, already installed; pattern ported from biochar-design's suitability-tool map. noria-parcel-map is the reusable home for spoke maps.
+import { parcels as allParcels, type Parcel } from '../../data/parcels';
+import '../../styles/noria-map.css'; // Leaflet-injected chrome restyled to Noria tokens
+
+interface Props {
+  /** Parcels to plot. Defaults to the full registry; pass a filtered subset. */
+  parcels?: Parcel[];
+  /** Height of the map box (any CSS length). Defaults to filling its parent. */
+  height?: string;
+}
+
+const { parcels = allParcels, height = '100%' } = Astro.props;
+---
+
+<div class="noria-parcel-map" style={`height: ${height};`}>
+  <div id="noria-parcel-map-mount"></div>
+  <!-- Server → client bridge: the parcels prop, serialized for the Leaflet
+       script below (is:inline keeps Astro from trying to bundle JSON as JS). -->
+  <script
+    id="noria-parcel-map-data"
+    type="application/json"
+    is:inline
+    set:html={JSON.stringify(parcels)}
+  ></script>
+</div>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+  import type { Parcel } from '../../data/parcels';
+
+  const mount = document.getElementById('noria-parcel-map-mount');
+  const dataEl = document.getElementById('noria-parcel-map-data');
+
+  if (mount && dataEl) {
+    const parcels: Parcel[] = JSON.parse(dataEl.textContent || '[]');
+
+    // Center on the Crook County / Ochoco cluster; fitBounds below tightens to
+    // whatever parcels were actually passed (the full belt, or a filtered set).
+    const map = L.map(mount, { scrollWheelZoom: true }).setView([44.32, -120.85], 10);
+
+    // Esri World Topographic basemap — the light green/white terrain look the
+    // production tool ships (not the orange OpenTopoMap variant). Esri tiles use
+    // {z}/{y}/{x} order. Zoom control + attribution stay on.
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles © Esri', maxZoom: 19 },
+    ).addTo(map);
+
+    // One blue circle marker per parcel (Noria blue: --noria-blue-800 stroke,
+    // --noria-blue-500 fill). Leaflet's canvas paint takes literals, not vars.
+    const bounds = L.latLngBounds([]);
+    for (const p of parcels) {
+      L.circleMarker([p.lat, p.lng], {
+        radius: 5,
+        color: '#235069',
+        weight: 1,
+        fillColor: '#3e92b9',
+        fillOpacity: 0.7,
+      })
+        .bindTooltip(`APN ${p.apn} · ${p.irrigationDistrict}`)
+        .addTo(map);
+      bounds.extend([p.lat, p.lng]);
+    }
+
+    // Keep the cluster comfortably in view (maxZoom caps over-zoom on a tightly
+    // filtered subset, e.g. a single district).
+    if (bounds.isValid()) {
+      map.fitBounds(bounds.pad(0.08), { maxZoom: 12 });
+    }
+
+    // Keep Leaflet sized to its box — the host may flex this pane (sidebar
+    // collapse, split-view resize) after the map first paints.
+    new ResizeObserver(() => map.invalidateSize()).observe(mount);
+  }
+</script>
+
+<style>
+  /* The component root fills its parent (height comes from the `height` prop;
+     default 100%), with a sensible floor so it's never a sliver. The mount fills
+     the root absolutely, so Leaflet always gets a real pixel box to paint into. */
+  .noria-parcel-map {
+    position: relative;
+    /* Confine Leaflet's pane/control z-indexes (up to ~1000) to the map box so
+       they can't paint over the page's dropdown panels. */
+    isolation: isolate;
+    width: 100%;
+    min-height: 480px;
+  }
+  #noria-parcel-map-mount {
+    position: absolute;
+    inset: 0;
+  }
+</style>

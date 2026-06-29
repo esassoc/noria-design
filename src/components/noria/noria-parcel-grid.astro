@@ -1,0 +1,136 @@
+---
+// noria-parcel-grid — the Parcel Discovery data grid, powered by AG Grid.
+//
+// Replaces the bespoke noria-parcel-table: three identity columns (APN /
+// Irrigation District / County) rendered as underlined links, deep brand-blue
+// header, with rendering, sorting, column filters, and resizing all AG Grid's
+// instead of hand-rolled. The host explorer drives search/clear through the grid
+// api this component hands back (see the wiring contract at the foot of the file).
+//
+// Self-contained, like noria-parcel-map: it bridges the server-side `parcels`
+// prop to its bundled client <script> through a JSON data island (the client
+// script can't read Astro.props directly), registers AG Grid's modules, and
+// themes the grid to Noria tokens via the v36 Theming API — so NO AG Grid CSS is
+// imported anywhere. The host page only drops this into a sized box.
+//
+// bcn-lego-checked: no esa- data-grid lego exists; AG Grid Community is the user-chosen grid engine for tabular parcel data. noria-parcel-grid is the reusable home; it wraps AG Grid and themes it to Noria tokens.
+import { parcels as defaultParcels, type Parcel } from '../../data/parcels';
+
+interface Props {
+  /** Rows to render; defaults to the full shared registry. */
+  parcels?: Parcel[];
+}
+
+const { parcels = defaultParcels } = Astro.props;
+---
+
+<div class="noria-parcel-grid">
+  <div id="noria-parcel-grid-mount"></div>
+  <!-- Server → client bridge: the parcels prop, serialized for the AG Grid
+       script below (is:inline keeps Astro from bundling the JSON as JS). -->
+  <script
+    id="noria-parcel-grid-data"
+    type="application/json"
+    is:inline
+    set:html={JSON.stringify(parcels)}
+  ></script>
+</div>
+
+<script>
+  import {
+    createGrid,
+    ModuleRegistry,
+    AllCommunityModule,
+    themeQuartz,
+    type GridApi,
+    type GridOptions,
+  } from 'ag-grid-community';
+  import type { Parcel } from '../../data/parcels';
+
+  // Register the Community feature set once. With the Theming API there is no CSS
+  // to import — the theme below carries every visual token.
+  ModuleRegistry.registerModules([AllCommunityModule]);
+
+  const root = document.querySelector<HTMLElement>('.noria-parcel-grid');
+  const mountEl = document.getElementById('noria-parcel-grid-mount');
+  const dataEl = document.getElementById('noria-parcel-grid-data');
+
+  if (root && mountEl && dataEl) {
+    const rowData: Parcel[] = JSON.parse(dataEl.textContent || '[]');
+
+    // Noria-themed Quartz: deep brand-blue header with white labels, DM Sans
+    // type, 4px corners — matching the table it replaces and the house style.
+    const noriaTheme = themeQuartz.withParams({
+      accentColor: '#235069',
+      headerBackgroundColor: '#235069',
+      headerTextColor: '#ffffff',
+      headerFontWeight: 600,
+      fontFamily: 'DM Sans, system-ui, sans-serif',
+      fontSize: 14,
+      headerFontSize: 14,
+      borderRadius: 4,
+      wrapperBorderRadius: 4,
+      // Subtle row striping on the otherwise-white grid.
+      oddRowBackgroundColor: '#f5f8fb',
+    });
+
+    // The identity columns render as quiet underlined links (placeholder hrefs —
+    // a real app would deep-link to each parcel's record).
+    const linkRenderer = (p: { value: unknown }): HTMLAnchorElement => {
+      const a = document.createElement('a');
+      a.href = '#';
+      a.className = 'noria-grid-link';
+      a.textContent = p.value == null ? '' : String(p.value);
+      return a;
+    };
+
+    const gridOptions: GridOptions<Parcel> = {
+      theme: noriaTheme,
+      rowData,
+      columnDefs: [
+        { field: 'apn', headerName: 'APN', minWidth: 150, flex: 1, cellRenderer: linkRenderer },
+        { field: 'irrigationDistrict', headerName: 'Irrigation District', flex: 1, cellRenderer: linkRenderer },
+        { field: 'county', headerName: 'County', flex: 1, cellRenderer: linkRenderer },
+      ],
+      defaultColDef: { sortable: true, filter: true, resizable: true },
+    };
+
+    const api: GridApi<Parcel> = createGrid(mountEl, gridOptions);
+
+    // Hand the grid api back to whoever hosts this component: a direct handle on
+    // the mount (fallback) and a bubbling event off the root (the explorer's
+    // preferred hook). The explorer listens for `noria-grid-ready`, then drives
+    // api.setGridOption('quickFilterText', …) on search and '' on clear.
+    (mountEl as HTMLElement & { __agApi?: GridApi<Parcel> }).__agApi = api;
+    root.dispatchEvent(
+      new CustomEvent('noria-grid-ready', { detail: { api }, bubbles: true }),
+    );
+  }
+</script>
+
+<style>
+  /* Root fills its parent; AG Grid needs an explicitly-sized box, so the mount
+     fills the root in turn. The host page drops this into a sized pane. */
+  .noria-parcel-grid {
+    height: 100%;
+    width: 100%;
+  }
+
+  #noria-parcel-grid-mount {
+    height: 100%;
+    width: 100%;
+  }
+
+  /* The identity columns render as quiet underlined links. AG Grid injects the
+     anchors into light DOM under the scoped root, so reach them via a
+     descendant :global(). */
+  .noria-parcel-grid :global(.noria-grid-link) {
+    color: var(--color-text-link, var(--color-primary, #235069));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .noria-parcel-grid :global(.noria-grid-link:hover) {
+    color: var(--color-primary-hover, #214459);
+  }
+</style>

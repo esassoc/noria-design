@@ -1,0 +1,32 @@
+---
+// AppPage — the reusable full-height content frame for prototype screens inside
+// AppShell. It pins natural-height sections (a page title, a filter card) at the
+// top and lets the LAST child (a workspace / grid / map) fill the shell's scroll
+// area with its own internal scroll. Any prototype composes:
+//   <AppShell><AppPage> …sections… </AppPage></AppShell>
+// so the page itself carries ZERO layout CSS.
+//
+// bcn-lego-checked: the full-height app-frame spine (flex column, spacing-600
+// gutter, last-child fills) — no stack/grid layout primitive expresses
+// fill-height-with-a-growing-last-child. A reusable layout, not a reinvented UI
+// primitive.
+---
+
+<div class="app-page"><slot /></div>
+
+<style>
+  .app-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-400, 16px);
+    height: 100%;
+    min-height: 0;
+    padding: var(--spacing-600, 32px);
+  }
+  /* The last section (a workspace/explorer) claims the remaining height and runs
+     its own internal scroll; earlier sections keep their natural height. */
+  .app-page > :global(:last-child) {
+    flex: 1;
+    min-height: 0;
+  }
+</style>

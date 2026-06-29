@@ -1,0 +1,95 @@
+---
+import ComponentDoc from '../../../layouts/ComponentDoc.astro';
+import Section from '@esa/docs/Section.astro';
+import Preview from '@esa/docs/Preview.astro';
+import Api from '@esa/docs/Api.astro';
+import PropsTable from '@esa/docs/PropsTable.astro';
+import Pill from '@esa/ecology/esa-pill.astro';
+
+const props = [
+  { name: 'label', type: 'string', description: 'Required. Text shown inside the pill.' },
+  { name: 'variant', type: "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'", default: "'default'", description: 'Color intent — drives background, text, and border.' },
+  { name: 'size', type: "'xs' | 'sm' | 'md' | 'lg'", default: "'md'", description: 'Pill height and text size.' },
+  { name: 'removable', type: 'boolean', default: 'true', description: 'Shows a remove (×) button.' },
+];
+
+const slots = [
+  { name: 'icon', type: 'slot', description: 'Leading inline SVG, rendered left of the label.' },
+];
+
+const events = [
+  { name: 'removed', type: 'CustomEvent', description: 'Bubbles when the remove button is clicked; the pill then removes itself from the DOM.' },
+];
+---
+<ComponentDoc name="Pill" category="Data Display" slug="esa-pill" type=".astro"
+  summary="Compact, rounded tag with color variants, sizes, an optional leading icon, and an optional remove control.">
+
+  <Section id="preview" title="Preview">
+    <Preview code={`<Pill label="Wetlands" variant="success" removable={false} />`}>
+      <Pill label="Wetlands" variant="success" removable={false} />
+    </Preview>
+  </Section>
+
+  <Section id="variants" title="Variants">
+    <Preview code={`<Pill label="Default" variant="default" removable={false} />
+<Pill label="Primary" variant="primary" removable={false} />
+<Pill label="Success" variant="success" removable={false} />
+<Pill label="Warning" variant="warning" removable={false} />
+<Pill label="Danger" variant="danger" removable={false} />
+<Pill label="Info" variant="info" removable={false} />`}>
+      <Pill label="Default" variant="default" removable={false} />
+      <Pill label="Primary" variant="primary" removable={false} />
+      <Pill label="Success" variant="success" removable={false} />
+      <Pill label="Warning" variant="warning" removable={false} />
+      <Pill label="Danger" variant="danger" removable={false} />
+      <Pill label="Info" variant="info" removable={false} />
+    </Preview>
+  </Section>
+
+  <Section id="sizes" title="Sizes">
+    <Preview code={`<Pill label="Extra small" size="xs" removable={false} />
+<Pill label="Small" size="sm" removable={false} />
+<Pill label="Medium" size="md" removable={false} />
+<Pill label="Large" size="lg" removable={false} />`}>
+      <Pill label="Extra small" size="xs" removable={false} />
+      <Pill label="Small" size="sm" removable={false} />
+      <Pill label="Medium" size="md" removable={false} />
+      <Pill label="Large" size="lg" removable={false} />
+    </Preview>
+  </Section>
+
+  <Section id="states" title="Icon & removable">
+    <p>Pass a leading icon via the <code>icon</code> slot. With <code>removable</code> (the default), a × button emits a <code>removed</code> event and removes the pill from the DOM.</p>
+    <Preview code={`<Pill label="Tagged" variant="primary" removable={false}>
+  <svg slot="icon">…</svg>
+</Pill>
+<Pill label="Wetlands" variant="success" />
+<Pill label="Overdue" variant="danger" />`}>
+      <Pill label="Tagged" variant="primary" removable={false}>
+        <svg slot="icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path>
+          <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle>
+        </svg>
+      </Pill>
+      <Pill label="Wetlands" variant="success" />
+      <Pill label="Overdue" variant="danger" />
+    </Preview>
+  </Section>
+
+  <Section id="api" title="API">
+    <Api props={props} />
+    <h3 style="margin-top: 1.5rem;">Slots</h3>
+    <PropsTable rows={slots} />
+    <h3 style="margin-top: 1.5rem;">Events</h3>
+    <PropsTable rows={events} />
+  </Section>
+
+  <Section id="accessibility" title="Accessibility">
+    <ul class="a11y">
+      <li>The remove button has <code>aria-label="Remove"</code>; the leading icon is <code>aria-hidden</code>.</li>
+      <li>Remove click <code>stopPropagation()</code>s so it won't trigger a click on a surrounding interactive container.</li>
+      <li>Color intent is reinforced by the label text — color is never the only signal.</li>
+    </ul>
+  </Section>
+
+</ComponentDoc>

@@ -1,0 +1,91 @@
+/*
+ * Noria theme — a spoke of the Ecology hub (../ecology).
+ *
+ * Noria is a water-banking platform for the Deschutes basin; this spoke wears
+ * its Deschutes Water Bank brand (deep blue waters + an olive-green band, after
+ * the logo mark) on top of the standard Ecology component kit.
+ *
+ * THE CONTRACT: a [data-theme] block overrides the SEMANTIC layer ONLY.
+ * @esa/tokens defines the primitives + default semantics on :root; this file
+ * re-skins to Noria WITHOUT touching primitives. Every esa-* component reads
+ * only the semantic layer, so re-pointing it re-skins the whole kit with no forks.
+ *
+ * SCOPE OF THIS SPOKE: Noria diverges from the hub on exactly two things —
+ * BRAND COLOR (blue primary/secondary + a green accent) and TYPE (DM Sans /
+ * Besley / JetBrains Mono). Everything else — the neutral ramp, form sizing,
+ * control radius, and feedback/AI colors — INHERITS the hub standard on purpose.
+ * The live Noria app ships its own grays, 48px control heights, and 6px radii;
+ * those are treated as slightly sub-standard and are NOT ported. The hub is the
+ * standard; the spoke contributes identity, not entropy.
+ *
+ * LOAD ORDER matters: tokens.css (:root) and a [data-theme] block have equal
+ * specificity, so source order decides. DocsLayout/BaseLayout import this file
+ * AFTER @esa/tokens so it wins.
+ */
+
+[data-theme="noria"] {
+  /* ===== (1) BRAND — re-point primary + secondary onto Noria's blue =====
+     Noria's signature is the deep blue of the logo's water (--primary in-app is
+     blue-800; --secondary is blue-500). The raw ramp lives in section (3). */
+  --color-primary:         var(--noria-blue-800);  /* #235069 — white-on passes AA */
+  --color-primary-hover:   var(--noria-blue-900);  /* #214459 */
+  --color-primary-active:  var(--noria-blue-950);  /* #162c3b */
+  --color-primary-subtle:  var(--noria-blue-50);   /* #f3f8fc — wash behind selected/hover */
+  --color-primary-border:  var(--noria-blue-200);  /* #c9e1ee — hairline on brand surfaces */
+  /* Noria's in-app secondary is blue-500 (#3e92b9), but white text on it fails
+     AA (~3.3:1). Bumped one step to blue-600 (~4.7:1) — a "bring to standard"
+     correction, not a brand change. */
+  --color-secondary:       var(--noria-blue-600);  /* #2d759c */
+  --color-secondary-hover: var(--noria-blue-700);  /* #265e7e */
+
+  /* ===== (2) FONTS — point the type tokens at the faces loaded in the layouts =====
+     ESA's standard pairing (chosen for the spoke), not the live app's Inter:
+     DM Sans for UI, Besley as the decorative serif, JetBrains Mono for code. */
+  --font-sans:       'DM Sans', system-ui, sans-serif;
+  --font-mono:       'JetBrains Mono', ui-monospace, monospace;
+  --font-display:    var(--font-sans);
+  --font-decorative: 'Besley', serif;
+
+  /* ===== (3) RAW PRIMITIVE RAMPS — the spoke tier (--noria-*) =====
+     Raw brand material only; hub components never read these directly. Sourced
+     verbatim from Noria.Web/src/scss/base/_theme.scss. The NEUTRAL ramp is NOT
+     defined here — the spoke inherits the hub's standard neutrals. */
+
+  /* Blue — Noria's signature (feeds --color-primary* / --color-secondary*). */
+  --noria-blue-50:  #f3f8fc;
+  --noria-blue-100: #e7f1f7;
+  --noria-blue-200: #c9e1ee;
+  --noria-blue-300: #99c8e0;
+  --noria-blue-400: #75b6d4;
+  --noria-blue-500: #3e92b9;
+  --noria-blue-600: #2d759c;
+  --noria-blue-700: #265e7e;
+  --noria-blue-800: #235069;
+  --noria-blue-900: #214459;
+  --noria-blue-950: #162c3b;
+
+  /* Green — the logo's olive band; a brand accent for prototypes to reach for
+     directly (--noria-green-*). Not wired to a semantic role: success/warning/
+     info/ai inherit the hub's AA-tested status palette. */
+  --noria-green-50:  #f7f8ed;
+  --noria-green-100: #ebefd8;
+  --noria-green-200: #d8e1b5;
+  --noria-green-300: #becd89;
+  --noria-green-400: #a4b863;
+  --noria-green-500: #859b44;
+  --noria-green-600: #687c34;
+  --noria-green-700: #51602b;
+  --noria-green-800: #414d27;
+  --noria-green-900: #394324;
+  --noria-green-950: #1d2310;
+
+  /* ===== (4) RADIUS — cap rounded-RECTANGLE corners at 4px =====
+     Noria's chrome reads crisp, not pill-soft. Re-point the mid/large radius
+     steps down to --radius-100 (4px); the 2px micro-step and --radius-full
+     (avatars, pills, status dots) are left intact. esa-* and noria-* components
+     both read these semantic steps, so this re-skins corners kit-wide, no forks. */
+  --radius-200: var(--radius-100); /* 8px  → 4px */
+  --radius-300: var(--radius-100); /* 8px  → 4px */
+  --radius-400: var(--radius-100); /* 12px → 4px */
+  --radius-500: var(--radius-100); /* 16px → 4px */
+}

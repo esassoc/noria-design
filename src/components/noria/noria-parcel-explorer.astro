@@ -1,0 +1,165 @@
+---
+// noria-parcel-explorer — the Parcel Discovery workspace: the merged filter card
+// over a full-height, 50/50 grid | map split. It composes three section
+// components (noria-parcel-controls, noria-parcel-grid, noria-parcel-map) and
+// owns the two things that span them: the Grid | Hybrid | Map view switch and
+// the grid search (driven into AG Grid's quick filter). Keeping that wiring here
+// is what lets the Parcel Discovery page stay a clean manifest.
+//
+// bcn-lego-checked: composes noria- section components into the parcel workspace.
+// The bespoke CSS is layout-only — a height-filling 50/50 split with view-state
+// classes. No esa- lego models a grid|map workspace; this is its reusable home.
+import NoriaParcelControls from './noria-parcel-controls.astro';
+import NoriaParcelGrid from './noria-parcel-grid.astro';
+import NoriaParcelMap from './noria-parcel-map.astro';
+import { parcels as allParcels, type Parcel } from '../../data/parcels';
+
+interface Props {
+  /** Parcels to show in both panes. Defaults to the full registry. */
+  parcels?: Parcel[];
+}
+const { parcels = allParcels } = Astro.props;
+---
+
+<section class="noria-parcel-explorer">
+  <NoriaParcelControls />
+
+  <div class="noria-parcel-explorer__split is-hybrid" data-view="hybrid">
+    <div class="noria-parcel-explorer__pane noria-parcel-explorer__pane--grid">
+      <NoriaParcelGrid parcels={parcels} />
+    </div>
+    <div class="noria-parcel-explorer__pane noria-parcel-explorer__pane--map">
+      <NoriaParcelMap parcels={parcels} />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Full-height workspace: the controls card pins to the top, the split fills the
+     rest. min-height:0 on the flex children lets the grid and map own their box. */
+  .noria-parcel-explorer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-300, 12px);
+    height: 100%;
+    min-height: 0;
+  }
+
+  /* The filter card (and its open dropdown panels, which overflow downward) must
+     stack above the split — Leaflet sets high z-indexes on its panes/controls
+     that would otherwise paint over the dropdowns. */
+  .noria-parcel-explorer > :global(.noria-parcel-controls) {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Hybrid = an even 50/50 split (grid | map). */
+  .noria-parcel-explorer__split {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    gap: var(--spacing-400, 16px);
+    grid-template-columns: 1fr 1fr;
+    /* Below the filter card so the map can't paint over open dropdown panels. */
+    position: relative;
+    z-index: 1;
+  }
+  /* Single-pane views collapse to one column; the other pane is hidden. */
+  .noria-parcel-explorer__split.is-grid,
+  .noria-parcel-explorer__split.is-map {
+    grid-template-columns: 1fr;
+  }
+  .noria-parcel-explorer__split.is-grid .noria-parcel-explorer__pane--map,
+  .noria-parcel-explorer__split.is-map .noria-parcel-explorer__pane--grid {
+    display: none;
+  }
+
+  /* Each pane is a bounded, rounded (4px) card; its single child fills it.
+     overflow clip keeps the AG Grid frame and the map tiles inside the radius. */
+  .noria-parcel-explorer__pane {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: var(--radius-100, 4px);
+    background: var(--color-surface, #fff);
+  }
+  .noria-parcel-explorer__pane > :global(*) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Narrow screens: stack the two panes, each a comfortable fixed band. */
+  @media (max-width: 900px) {
+    .noria-parcel-explorer__split,
+    .noria-parcel-explorer__split.is-grid,
+    .noria-parcel-explorer__split.is-map {
+      grid-template-columns: 1fr;
+      grid-auto-rows: minmax(360px, 1fr);
+    }
+  }
+</style>
+
+<script>
+  // Cross-component wiring the page would otherwise own: the controls card exposes
+  // #parcel-view-toggle / #parcel-search / #parcel-clear; the AG Grid announces its
+  // api via a bubbling `noria-grid-ready` event (with a __agApi fallback handle).
+  type DetailEvent = CustomEvent<{ value?: string }>;
+  type GridApi = { setGridOption: (key: string, value: unknown) => void };
+
+  let gridApi: GridApi | null = null;
+  // Capture the api when the grid announces itself…
+  document.addEventListener('noria-grid-ready', (event) => {
+    gridApi = (event as CustomEvent<{ api: GridApi }>).detail?.api ?? null;
+  });
+  // …with a fallback for the race where the grid initialized before this listener.
+  function api(): GridApi | null {
+    if (gridApi) return gridApi;
+    const mount = document.getElementById('noria-parcel-grid-mount') as
+      | (HTMLElement & { __agApi?: GridApi })
+      | null;
+    return (gridApi = mount?.__agApi ?? null);
+  }
+
+  const split = document.querySelector<HTMLElement>('.noria-parcel-explorer__split');
+  const toggle = document.getElementById('parcel-view-toggle');
+  const searchField = document.getElementById('parcel-search') as
+    | (HTMLElement & { value?: string })
+    | null;
+  const clear = document.getElementById('parcel-clear');
+
+  function setView(view: string): void {
+    if (!split) return;
+    split.classList.remove('is-grid', 'is-hybrid', 'is-map');
+    split.classList.add(`is-${view}`);
+    split.dataset.view = view;
+  }
+
+  // Search drives AG Grid's built-in quick filter (not DOM row hiding).
+  function applySearch(query: string): void {
+    api()?.setGridOption('quickFilterText', query ?? '');
+  }
+
+  toggle?.addEventListener('change', (event) => {
+    const value = (event as DetailEvent).detail?.value;
+    if (value) setView(value);
+  });
+
+  searchField?.addEventListener('change', (event) =>
+    applySearch((event as DetailEvent).detail?.value ?? ''),
+  );
+  searchField?.addEventListener('input', (event) => {
+    const value = (event.target as HTMLInputElement | null)?.value;
+    if (typeof value === 'string') applySearch(value);
+  });
+
+  // Clear Filters: reset the search, the grid filter, and the view to Hybrid.
+  clear?.addEventListener('esa-filter-clear', () => {
+    applySearch('');
+    if (searchField) searchField.value = '';
+    setView('hybrid');
+    const tog = toggle as (HTMLElement & { value?: string }) | null;
+    if (tog) tog.value = 'hybrid';
+  });
+</script>

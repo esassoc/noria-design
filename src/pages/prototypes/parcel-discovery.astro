@@ -1,0 +1,30 @@
+---
+// Parcel Discovery Tool — the first Noria prototype, inside the Deschutes Water
+// Bank app shell. A list of every parcel that could participate in the water
+// bank, explorable as a grid, a map, or both (the Hybrid default).
+//
+// A MANIFEST: the shell + the reusable AppPage frame are the spine, and each
+// section resolves to a component — the header to noria-page-title, the table|map
+// workspace to noria-parcel-explorer. Zero page CSS.
+import AppShell from '../../layouts/AppShell.astro';
+import AppPage from '../../layouts/AppPage.astro';
+import NoriaPageTitle from '../../components/noria/noria-page-title.astro';
+import NoriaParcelExplorer from '../../components/noria/noria-parcel-explorer.astro';
+---
+
+<!-- manifest:
+  layout: AppShell > AppPage                                # shell (topbar + sidenav) + reusable full-height frame
+  sections:
+    - page header     -> noria-page-title                   # blue compass + Besley h1 + lede
+    - workspace       -> noria-parcel-explorer              # filter card + grid | map split + view/search wiring
+-->
+
+<AppShell title="Deschutes Water Bank" activeNavId="parcel-discovery">
+  <AppPage>
+    <NoriaPageTitle
+      title="Parcel Discovery Tool"
+      lede="A list of all parcels that could potentially participate in the Deschutes River Water Bank."
+    />
+    <NoriaParcelExplorer />
+  </AppPage>
+</AppShell>

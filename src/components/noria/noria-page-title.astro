@@ -1,0 +1,65 @@
+---
+// noria-page-title — the page header for prototype screens: a blue glyph beside
+// a decorative-serif (Besley) h1, with an optional lede beneath. The Beacon
+// PageLayout title idiom, as a small spoke component.
+//
+// bcn-lego-checked: esa-page-header places its only icon on the EYEBROW (above
+// the title), not inline-left of the title, and doesn't render the title as a
+// decorative-serif-with-icon lockup. This needs the icon adjacent to a Besley
+// h1 (the Beacon PageLayout idiom); it composes the esa-icon lego + the Besley
+// type role. noria-page-title is the reusable home for spoke page headers.
+import EsaIcon from '@esa/ecology/esa-icon.astro';
+
+interface Props {
+  title: string;
+  lede?: string;
+  /** esa-icon registry name; defaults to compass (paths supplied below). */
+  icon?: string;
+}
+const { title, lede, icon = 'compass' } = Astro.props;
+
+// Compass inner SVG — not in esa-icon's built-in registry, so pass it explicitly.
+const COMPASS =
+  '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>';
+---
+
+<header class="noria-page-title">
+  <div class="noria-page-title__bar">
+    <span class="noria-page-title__icon"><EsaIcon name={icon} paths={COMPASS} /></span>
+    <h1 class="noria-page-title__h1">{title}</h1>
+  </div>
+  {lede && <p class="noria-page-title__lede">{lede}</p>}
+</header>
+
+<style>
+  .noria-page-title__bar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-300, 12px);
+  }
+  /* Blue compass, sized to sit beside the h1. */
+  .noria-page-title__icon {
+    display: inline-flex;
+    color: var(--color-primary, #235069);
+  }
+  .noria-page-title__icon :global(svg) {
+    width: 28px;
+    height: 28px;
+  }
+  /* Google Sans Flex (500) for the page h1. */
+  .noria-page-title__h1 {
+    margin: 0;
+    font-family: 'Google Sans Flex', sans-serif;
+    font-size: var(--type-size-600, 1.875rem);
+    font-weight: 500;
+    line-height: 1.1;
+    /* Same primary blue as the compass icon. */
+    color: var(--color-primary, #235069);
+  }
+  .noria-page-title__lede {
+    margin: var(--spacing-200, 8px) 0 0;
+    font-size: var(--type-size-300, 1.125rem);
+    line-height: 1.4;
+    color: var(--color-text-secondary, #525252);
+  }
+</style>

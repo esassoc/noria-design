@@ -1,0 +1,107 @@
+---
+import ComponentDoc from '../../../layouts/ComponentDoc.astro';
+import Section from '@esa/docs/Section.astro';
+import Preview from '@esa/docs/Preview.astro';
+import Api from '@esa/docs/Api.astro';
+import EsaButton from '@esa/ecology/esa-button.astro';
+
+const props = [
+  { name: 'selection-mode', type: "'none' | 'single'", default: "'none'", description: "'none' is visual grouping only; 'single' acts as a radio-like segmented control with one active child." },
+  { name: 'size', type: "'xs' | 'sm' | 'md' | 'lg'", default: "'md'", description: 'Reflected sizing hint for the group.' },
+  { name: 'value', type: 'string', default: "''", description: "In 'single' mode, the data-value of the currently selected child." },
+];
+
+const events = [
+  { name: 'change', type: "CustomEvent<{ value: string }>", description: "Fired in 'single' mode when the active child changes. Composed and bubbling; detail.value is the selected child's data-value (falling back to its text content)." },
+];
+---
+<ComponentDoc name="Button Group" category="Actions" slug="esa-button-group" type="wc"
+  summary="Groups buttons with connected borders. Use it purely for visual grouping, or as a radio-like segmented control that emits a composed <code>change</code> event.">
+
+  <Section id="preview" title="Preview">
+    <Preview code={`<esa-button-group>
+  <EsaButton color="secondary">Day</EsaButton>
+  <EsaButton color="secondary">Week</EsaButton>
+  <EsaButton color="secondary">Month</EsaButton>
+</esa-button-group>`}>
+      <esa-button-group>
+        <EsaButton color="secondary">Day</EsaButton>
+        <EsaButton color="secondary">Week</EsaButton>
+        <EsaButton color="secondary">Month</EsaButton>
+      </esa-button-group>
+    </Preview>
+  </Section>
+
+  <Section id="modes" title="Modes">
+    <p><code>selection-mode="none"</code> is the default — buttons are visually connected but each acts independently.</p>
+    <Preview code={`<esa-button-group selection-mode="none">
+  <EsaButton color="secondary">Day</EsaButton>
+  <EsaButton color="secondary">Week</EsaButton>
+  <EsaButton color="secondary">Month</EsaButton>
+</esa-button-group>`}>
+      <esa-button-group selection-mode="none">
+        <EsaButton color="secondary">Day</EsaButton>
+        <EsaButton color="secondary">Week</EsaButton>
+        <EsaButton color="secondary">Month</EsaButton>
+      </esa-button-group>
+    </Preview>
+
+    <p><code>selection-mode="single"</code> turns the group into a segmented control. One child stays active; give each child a <code>data-value</code> and listen for the <code>change</code> event.</p>
+    <Preview code={`<esa-button-group selection-mode="single" value="week">
+  <button class="seg-btn" data-value="day">Day</button>
+  <button class="seg-btn" data-value="week">Week</button>
+  <button class="seg-btn" data-value="month">Month</button>
+</esa-button-group>`}>
+      <div class="seg-demo">
+        <esa-button-group selection-mode="single" value="week" id="seg">
+          <button class="seg-btn" data-value="day">Day</button>
+          <button class="seg-btn" data-value="week">Week</button>
+          <button class="seg-btn" data-value="month">Month</button>
+        </esa-button-group>
+        <p class="seg-status">Selected: <code id="seg-out">week</code></p>
+      </div>
+    </Preview>
+  </Section>
+
+  <Section id="api" title="API">
+    <Api props={props} events={events} />
+  </Section>
+
+  <Section id="accessibility" title="Accessibility">
+    <ul class="a11y">
+      <li>The host sets <code>role="group"</code> automatically on connect.</li>
+      <li>In <code>single</code> mode the active child receives <code>aria-pressed="true"</code> and a <code>data-selected</code> attribute for styling; the rest get <code>aria-pressed="false"</code>.</li>
+      <li>The <code>change</code> event is <code>composed</code> and <code>bubbles</code>, so it crosses shadow boundaries and can be caught on the host or an ancestor.</li>
+      <li>Slotted children remain real <code>&lt;button&gt;</code> elements — keyboard focus and activation come for free.</li>
+    </ul>
+  </Section>
+
+</ComponentDoc>
+
+<style>
+  .seg-demo { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-300, 0.75rem); }
+  .seg-status { font-size: 14px; color: var(--color-text-secondary, #525252); }
+  .seg-btn {
+    font: inherit;
+    font-size: var(--type-size-200, 1rem);
+    padding: var(--spacing-300, 0.75rem) var(--spacing-400, 1rem);
+    border: 1px solid var(--color-border, #e5e5e5);
+    background: var(--color-surface, #fff);
+    color: var(--color-text-primary, #171717);
+    cursor: pointer;
+  }
+  .seg-btn[data-selected] {
+    background: var(--color-primary, #43608a);
+    color: var(--color-text-inverse, #fff);
+    border-color: var(--color-primary, #43608a);
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-button-group';
+  const seg = document.getElementById('seg');
+  const out = document.getElementById('seg-out');
+  seg?.addEventListener('change', (e) => {
+    if (out) out.textContent = (e as CustomEvent).detail.value;
+  });
+</script>

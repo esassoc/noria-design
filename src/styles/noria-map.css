@@ -1,0 +1,74 @@
+/* bcn-lego-checked: Leaflet-injected DOM chrome (.leaflet-tooltip, .leaflet-control) lives outside any Astro/component scope; no esa- lego models it; ported from biochar-design/src/styles/biochar-map.css; reads semantic --color-* tokens only. */
+
+/* Leaflet's default tooltip is too small and too light. Lift it to the page's
+   control language: 15px / semibold, semantic surface + text colors, 4px
+   radius, and a soft shadow. Scoped under .leaflet-container so this wins the
+   equal-specificity fight with leaflet.css regardless of bundle order. */
+.leaflet-container .leaflet-tooltip {
+  padding: 7px 12px;
+  font-family: var(--font-sans, inherit);
+  font-size: 0.9375rem;
+  font-weight: var(--font-weight-semibold, 600);
+  line-height: 1.4;
+  color: var(--color-text-primary, #33312a);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #ddd9d0);
+  border-radius: var(--radius-100, 4px);
+  box-shadow: 0 6px 24px -6px rgba(22, 44, 59, 0.18);
+}
+
+/* Directional arrows follow the overridden surface color. */
+.leaflet-container .leaflet-tooltip-top::before {
+  border-top-color: var(--color-surface, #ffffff);
+}
+.leaflet-container .leaflet-tooltip-bottom::before {
+  border-bottom-color: var(--color-surface, #ffffff);
+}
+.leaflet-container .leaflet-tooltip-left::before {
+  border-left-color: var(--color-surface, #ffffff);
+}
+.leaflet-container .leaflet-tooltip-right::before {
+  border-right-color: var(--color-surface, #ffffff);
+}
+
+/* Leaflet's controls (zoom buttons, attribution) ship a generic gray chrome.
+   Re-skin them to the same control language: semantic surface + hairline
+   border, 4px radius, soft shadow. */
+.leaflet-container .leaflet-bar {
+  border: 1px solid var(--color-border, #ddd9d0);
+  border-radius: var(--radius-100, 4px);
+  box-shadow: 0 6px 24px -6px rgba(22, 44, 59, 0.18);
+  overflow: hidden;
+}
+.leaflet-container .leaflet-bar a {
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text-primary, #33312a);
+  border-bottom-color: var(--color-border, #ddd9d0);
+}
+.leaflet-container .leaflet-bar a:hover {
+  background: var(--color-primary-subtle, #f3f8fc);
+  color: var(--color-primary, #235069);
+}
+.leaflet-container .leaflet-control-attribution {
+  padding: 2px 8px;
+  font-family: var(--font-sans, inherit);
+  color: var(--color-text-muted, #807c73);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #ddd9d0);
+  border-radius: var(--radius-100, 4px);
+}
+.leaflet-container .leaflet-control-attribution a {
+  color: var(--color-secondary, #2d759c);
+}
+
+/* Leaflet makes interactive paths (the circle markers) focusable, and the UA
+   default is a blue focus rectangle around the path's bounding box. Suppress
+   the mouse-click artifact but keep keyboard focus visible — in the brand
+   blue, not UA blue. */
+.leaflet-container path.leaflet-interactive:focus {
+  outline: none;
+}
+.leaflet-container path.leaflet-interactive:focus-visible {
+  outline: 2px solid var(--color-primary, #235069);
+  outline-offset: 2px;
+}

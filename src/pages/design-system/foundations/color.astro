@@ -1,0 +1,43 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import ColorFoundation from '@esa/docs/ColorFoundation.astro';
+
+// The semantic roles + their live values come from @esa/docs and read from the
+// active theme at runtime. The only spoke-specific part is Noria's own brand
+// ramps — the neutral ramp is the hub standard, so it's not repeated here.
+const blue = [
+  { step: '50', token: 'noria-blue-50' },
+  { step: '100', token: 'noria-blue-100' },
+  { step: '200', token: 'noria-blue-200' },
+  { step: '300', token: 'noria-blue-300' },
+  { step: '400', token: 'noria-blue-400' },
+  { step: '500', token: 'noria-blue-500' },
+  { step: '600', token: 'noria-blue-600' },
+  { step: '700', token: 'noria-blue-700' },
+  { step: '800', token: 'noria-blue-800' },
+  { step: '900', token: 'noria-blue-900' },
+  { step: '950', token: 'noria-blue-950' },
+];
+const green = [
+  { step: '50', token: 'noria-green-50' },
+  { step: '100', token: 'noria-green-100' },
+  { step: '200', token: 'noria-green-200' },
+  { step: '300', token: 'noria-green-300' },
+  { step: '400', token: 'noria-green-400' },
+  { step: '500', token: 'noria-green-500' },
+  { step: '600', token: 'noria-green-600' },
+  { step: '700', token: 'noria-green-700' },
+  { step: '800', token: 'noria-green-800' },
+  { step: '900', token: 'noria-green-900' },
+  { step: '950', token: 'noria-green-950' },
+];
+---
+<DocsLayout title="Color — Noria" activeHref="/design-system/foundations/color">
+  <ColorFoundation
+    brand="Noria"
+    ramps={[
+      { name: 'Blue — Noria brand', steps: blue },
+      { name: 'Green — Noria accent', steps: green },
+    ]}
+  />
+</DocsLayout>

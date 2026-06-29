@@ -1,0 +1,95 @@
+---
+import ComponentDoc from '../../../layouts/ComponentDoc.astro';
+import Section from '@esa/docs/Section.astro';
+import Preview from '@esa/docs/Preview.astro';
+import Api from '@esa/docs/Api.astro';
+import PropsTable from '@esa/docs/PropsTable.astro';
+import { withBase } from '@esa/docs/base';
+
+const methods = [
+  { name: 'show(config)', type: 'method', description: 'Shows a toast. config: { message, variant?, duration?, action?, dismissable?, uniqueKey? }. Returns its id.' },
+  { name: 'success / info / warning / danger(msg, config?)', type: 'method', description: 'Shorthands for show() with that variant.' },
+  { name: 'dismiss(id)', type: 'method', description: 'Removes the toast with that id.' },
+  { name: 'clearAll()', type: 'method', description: 'Removes every active toast.' },
+];
+
+const config = [
+  { name: 'message', type: 'string', description: 'Toast body text.' },
+  { name: 'variant', type: "'info' | 'success' | 'warning' | 'danger'", default: "'info'", description: 'Color and leading icon.' },
+  { name: 'duration', type: 'number', default: '5000', description: 'Auto-dismiss delay in ms; 0 keeps it until dismissed.' },
+  { name: 'action', type: 'string', description: 'Optional action button label.' },
+  { name: 'dismissable', type: 'boolean', default: 'true', description: 'Renders the close button.' },
+  { name: 'uniqueKey', type: 'string', description: 'Dedupe key — a second show() with the same key is ignored.' },
+];
+
+const events = [
+  { name: 'snackbar-action', type: 'CustomEvent<{ id: string }>', description: "Fired when a toast's action button is pressed." },
+];
+---
+<ComponentDoc name="Snackbar Container" category="Feedback" slug="esa-snackbar-container" type="wc"
+  summary="Bottom-right toast stack with auto-dismiss. Drive it imperatively — <code>show(config)</code>, the variant shorthands, <code>dismiss(id)</code>, and <code>clearAll()</code>. Defaults to info / 5000ms / dismissable, with <code>uniqueKey</code> dedupe.">
+
+  <Section id="preview" title="Preview">
+    <p>Place one container on the page, then call its methods: <code>el.success('Saved.')</code>.</p>
+    <Preview code={`<button data-kind="success">Success</button>
+
+<esa-snackbar-container id="toasts"></esa-snackbar-container>`}>
+      <button class="trigger" data-kind="info">Info</button>
+      <button class="trigger" data-kind="success">Success</button>
+      <button class="trigger" data-kind="warning">Warning</button>
+      <button class="trigger" data-kind="danger">Danger</button>
+      <button class="trigger" data-kind="action">With action</button>
+      <button class="trigger" data-kind="clear">Clear all</button>
+      <esa-snackbar-container id="toasts"></esa-snackbar-container>
+    </Preview>
+  </Section>
+
+  <Section id="api" title="API">
+    <h3>Methods</h3>
+    <PropsTable rows={methods} />
+    <h3>Config object (show)</h3>
+    <PropsTable rows={config} />
+    <Api events={events} />
+  </Section>
+
+  <Section id="accessibility" title="Accessibility">
+    <ul class="a11y">
+      <li>Toasts auto-dismiss after <code>duration</code>; provide enough time to read, or set <code>duration: 0</code> for important messages.</li>
+      <li>Each toast renders an <a href={withBase('/components/esa-snackbar-item')}>esa-snackbar-item</a> with a labelled dismiss button.</li>
+      <li>The newest toast appears at the bottom of the stack (column-reverse), nearest the user's attention.</li>
+    </ul>
+  </Section>
+
+</ComponentDoc>
+
+<script>
+  import '@esa/ecology/esa-snackbar-container';
+
+  const toasts = document.getElementById('toasts') as any;
+  document.querySelectorAll('.trigger').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      const kind = (btn as HTMLElement).dataset.kind;
+      switch (kind) {
+        case 'info': toasts.info('A neutral notification.'); break;
+        case 'success': toasts.success('Changes saved.'); break;
+        case 'warning': toasts.warning('Low disk space.'); break;
+        case 'danger': toasts.danger('Upload failed.'); break;
+        case 'action': toasts.show({ message: 'Item archived.', variant: 'success', action: 'Undo' }); break;
+        case 'clear': toasts.clearAll(); break;
+      }
+    }),
+  );
+</script>
+
+<style>
+  .trigger {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-200, 0.5rem);
+    border: 1px solid var(--color-border-strong, #d4d4d4);
+    background: var(--color-surface, #fff);
+    color: var(--color-text-primary, #171717);
+    font-family: inherit;
+    font-size: var(--type-size-200, 0.9375rem);
+    cursor: pointer;
+  }
+</style>

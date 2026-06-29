@@ -1,0 +1,56 @@
+---
+import ComponentDoc from '../../../layouts/ComponentDoc.astro';
+import Section from '@esa/docs/Section.astro';
+import Preview from '@esa/docs/Preview.astro';
+import Api from '@esa/docs/Api.astro';
+import LoadingSpinner from '@esa/ecology/esa-loading-spinner.astro';
+
+const props = [
+  { name: 'size', type: "'xs' | 'sm' | 'md' | 'lg'", default: "'md'", description: 'Ring diameter (14 / 20 / 32 / 48px).' },
+  { name: 'color', type: 'string', description: 'Any CSS color value for the rotating arc. Defaults to --color-primary.' },
+];
+---
+<ComponentDoc name="Loading Spinner" category="Feedback" slug="esa-loading-spinner" type=".astro"
+  summary="Rotating ring indicator. Three sizes plus an optional custom color.">
+
+  <Section id="preview" title="Preview">
+    <Preview code={`<LoadingSpinner />`}>
+      <LoadingSpinner />
+    </Preview>
+  </Section>
+
+  <Section id="sizes" title="Sizes">
+    <Preview code={`<LoadingSpinner size="xs" />
+<LoadingSpinner size="sm" />
+<LoadingSpinner size="md" />
+<LoadingSpinner size="lg" />`}>
+      <LoadingSpinner size="xs" />
+      <LoadingSpinner size="sm" />
+      <LoadingSpinner size="md" />
+      <LoadingSpinner size="lg" />
+    </Preview>
+  </Section>
+
+  <Section id="states" title="Custom color">
+    <p>Pass any CSS color (including a token reference) to recolor the rotating arc.</p>
+    <Preview code={`<LoadingSpinner color="var(--color-success, #22c55e)" />
+<LoadingSpinner color="var(--color-warning, #f59e0b)" />
+<LoadingSpinner color="var(--color-danger, #ef4444)" />`}>
+      <LoadingSpinner color="var(--color-success, #22c55e)" />
+      <LoadingSpinner color="var(--color-warning, #f59e0b)" />
+      <LoadingSpinner color="var(--color-danger, #ef4444)" />
+    </Preview>
+  </Section>
+
+  <Section id="api" title="API">
+    <Api props={props} />
+  </Section>
+
+  <Section id="accessibility" title="Accessibility">
+    <ul class="a11y">
+      <li>The ring carries <code>role="status"</code> and <code>aria-label="Loading"</code>.</li>
+      <li>Decorative-only when paired with adjacent loading text — keep one accessible name, not two.</li>
+    </ul>
+  </Section>
+
+</ComponentDoc>
