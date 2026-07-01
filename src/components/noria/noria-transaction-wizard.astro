@@ -58,11 +58,11 @@ const sellingOfferOptions = offerOptions('Sell');
 ---
 
 <div id="noria-tx-wizard" class="noria-transaction-wizard">
-  <esa-dialog size="fullscreen" heading="Create Transaction">
+  <esa-dialog heading="Create Transaction" style="--dialog-width: min(1600px, 92vw);">
     <div class="wiz sidebar" data-gap="lg" style="--sidebar-width: 15rem;">
       <!-- LEFT: workflow rail -->
       <nav class="wiz__rail" aria-label="Transaction workflow">
-        <p class="type-overline wiz__rail-title">Transaction Workflow</p>
+        <p class="type-body wiz__rail-title">Transaction Workflow</p>
         <ol class="wiz__steps">
           <li>
             <button type="button" class="wiz__step" data-goto="1" aria-current="step">
@@ -93,7 +93,7 @@ const sellingOfferOptions = offerOptions('Sell');
         <section class="wiz__panel" data-step="1">
           <div class="stack" data-gap="lg">
             <div class="stack" data-gap="sm">
-              <p class="type-label wiz__group">Linked Offers</p>
+              <p class="type-body-large wiz__group">Linked Offers</p>
               <p class="type-caption wiz__group-hint">Optionally link the open offers this transaction settles.</p>
               <div class="grid" style="--grid-min: 16rem;">
                 <esa-select id="wiz-buying-offer" label="Buying Offer" options={JSON.stringify(buyingOfferOptions)}></esa-select>
@@ -102,7 +102,7 @@ const sellingOfferOptions = offerOptions('Sell');
             </div>
 
             <div class="stack" data-gap="sm">
-              <p class="type-label wiz__group">Parties</p>
+              <p class="type-body-large wiz__group">Parties</p>
               <div class="grid" style="--grid-min: 16rem;">
                 <esa-select id="wiz-buyer" label="Buyer" required options={JSON.stringify(buyerOptions)}></esa-select>
                 <esa-select id="wiz-seller" label="Seller" required options={JSON.stringify(sellerOptions)}></esa-select>
@@ -110,7 +110,7 @@ const sellingOfferOptions = offerOptions('Sell');
             </div>
 
             <div class="stack" data-gap="sm">
-              <p class="type-label wiz__group">Terms</p>
+              <p class="type-body-large wiz__group">Terms</p>
               <div class="grid" style="--grid-min: 14rem;">
                 <esa-select id="wiz-water-type" label="Water Type" options={JSON.stringify(waterTypeOptions)}></esa-select>
                 <esa-text-field id="wiz-price" label="Confirmed Price ($)" type="number" help-text="per ac-ft" placeholder="0"></esa-text-field>
@@ -133,20 +133,20 @@ const sellingOfferOptions = offerOptions('Sell');
 
         <!-- STEP 2 — Sending Info -->
         <section class="wiz__panel" data-step="2" hidden>
-          <div class="sidebar" data-side="end" data-gap="lg" style="--sidebar-width: 22rem;">
+          <div class="sidebar" data-gap="lg" style="--sidebar-width: 22rem; --sidebar-content-min: 20rem;">
             <div class="wiz__parcel-panel stack" data-gap="md">
               <esa-button-toggle id="wiz-send-mode" size="sm"></esa-button-toggle>
               <esa-text-field id="wiz-send-search" placeholder="Search by APN…" size="sm"></esa-text-field>
               <div class="stack" data-gap="sm">
                 <div class="cluster" data-gap="xs">
-                  <span class="type-label">Selected Parcels</span>
+                  <span class="type-body wiz__sublabel">Selected Parcels</span>
                   <span class="wiz__count" id="wiz-send-count">0</span>
                 </div>
                 <ul class="wiz__parcel-list" id="wiz-send-list"></ul>
                 <p class="type-caption wiz__empty" id="wiz-send-empty">No parcels selected. Click a parcel on the map to add it.</p>
               </div>
               <div class="stack" data-gap="sm">
-                <span class="type-label">Selling Point of Diversion</span>
+                <span class="type-body wiz__sublabel">Selling Point of Diversion</span>
                 <p class="type-caption" id="wiz-send-pod-hint">Switch to “Place Point of Diversion” and click the map to set a location.</p>
                 <esa-text-field id="wiz-send-pod-label" label="Label (optional)" size="sm" placeholder="e.g. Lateral 14 headgate"></esa-text-field>
               </div>
@@ -159,20 +159,20 @@ const sellingOfferOptions = offerOptions('Sell');
 
         <!-- STEP 3 — Receiving Info -->
         <section class="wiz__panel" data-step="3" hidden>
-          <div class="sidebar" data-side="end" data-gap="lg" style="--sidebar-width: 22rem;">
+          <div class="sidebar" data-gap="lg" style="--sidebar-width: 22rem; --sidebar-content-min: 20rem;">
             <div class="wiz__parcel-panel stack" data-gap="md">
               <esa-button-toggle id="wiz-recv-mode" size="sm"></esa-button-toggle>
               <esa-text-field id="wiz-recv-search" placeholder="Search by APN…" size="sm"></esa-text-field>
               <div class="stack" data-gap="sm">
                 <div class="cluster" data-gap="xs">
-                  <span class="type-label">Selected Parcels</span>
+                  <span class="type-body wiz__sublabel">Selected Parcels</span>
                   <span class="wiz__count" id="wiz-recv-count">0</span>
                 </div>
                 <ul class="wiz__parcel-list" id="wiz-recv-list"></ul>
                 <p class="type-caption wiz__empty" id="wiz-recv-empty">No parcels selected. Click a parcel on the map to add it.</p>
               </div>
               <div class="stack" data-gap="sm">
-                <span class="type-label">Buying Point of Diversion</span>
+                <span class="type-body wiz__sublabel">Buying Point of Diversion</span>
                 <p class="type-caption" id="wiz-recv-pod-hint">Switch to “Place Point of Diversion” and click the map to set a location.</p>
                 <esa-text-field id="wiz-recv-pod-label" label="Label (optional)" size="sm" placeholder="e.g. North canal turnout"></esa-text-field>
               </div>
@@ -185,22 +185,22 @@ const sellingOfferOptions = offerOptions('Sell');
 
         <!-- STEP 4 — Summary -->
         <section class="wiz__panel" data-step="4" hidden>
-          <div class="sidebar" data-gap="lg" style="--sidebar-width: 26rem;">
+          <div class="sidebar" data-gap="lg" style="--sidebar-width: 26rem; --sidebar-content-min: 20rem;">
             <div class="wiz__recap stack" data-gap="lg">
               <div class="stack" data-gap="sm">
-                <p class="type-label wiz__group">Parties &amp; Terms</p>
+                <p class="type-body-large wiz__group">Parties &amp; Terms</p>
                 <dl class="wiz__dl" id="wiz-recap-terms"></dl>
               </div>
               <div class="stack" data-gap="sm" id="wiz-recap-offers-wrap" hidden>
-                <p class="type-label wiz__group">Linked Offers</p>
+                <p class="type-body-large wiz__group">Linked Offers</p>
                 <dl class="wiz__dl" id="wiz-recap-offers"></dl>
               </div>
               <div class="stack" data-gap="sm">
-                <p class="type-label wiz__group">Sending Parcels</p>
+                <p class="type-body-large wiz__group">Sending Parcels</p>
                 <ul class="wiz__parcel-list" id="wiz-recap-send"></ul>
               </div>
               <div class="stack" data-gap="sm">
-                <p class="type-label wiz__group">Receiving Parcels</p>
+                <p class="type-body-large wiz__group">Receiving Parcels</p>
                 <ul class="wiz__parcel-list" id="wiz-recap-recv"></ul>
               </div>
             </div>
@@ -235,13 +235,30 @@ const sellingOfferOptions = offerOptions('Sell');
     display: contents;
   }
 
-  /* Body sidebar fills the tall work surface; the rail is a fixed column, the
-     step content flexes. min-height:0 lets inner maps own their box. */
+  /* Body sidebar fills the work surface; the rail is a fixed column, the step
+     content flexes. A FIXED block-size makes the dialog the same height on every
+     step (a stable work surface, per design principles) — short steps leave
+     space below, map steps fill it, nothing resizes on navigation. */
   .wiz {
     min-height: 0;
+    block-size: 62vh;
   }
   .wiz__main {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  /* The one visible panel fills the main column; its inner sidebar fills too, so
+     the maps stretch to the frame instead of dictating its height. */
+  .wiz__panel:not([hidden]) {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .wiz__panel:not([hidden]) > .sidebar {
+    flex: 1 1 auto;
+    min-block-size: 0;
   }
 
   /* ---- Workflow rail ---- */
@@ -252,6 +269,7 @@ const sellingOfferOptions = offerOptions('Sell');
   .wiz__rail-title {
     margin: 0 0 var(--spacing-300, 12px);
     color: var(--color-text-secondary, #525252);
+    font-weight: var(--font-weight-semibold, 600);
   }
   .wiz__steps {
     list-style: none;
@@ -298,24 +316,31 @@ const sellingOfferOptions = offerOptions('Sell');
     font-weight: var(--font-weight-semibold, 600);
     color: var(--color-text-secondary, #525252);
   }
+  /* Tabs, not a progress stepper: exactly one step (the active one) is
+     emphasized — filled chip + tinted row — every other step stays neutral.
+     Clicking a step moves that single selected state, the way tabs read. */
   .wiz__step[aria-current='step'] {
     background: var(--color-primary-subtle, #f3f8fc);
     color: var(--color-primary, #235069);
     font-weight: var(--font-weight-semibold, 600);
   }
-  .wiz__step[aria-current='step'] .wiz__chip,
-  .wiz__step[data-complete] .wiz__chip {
+  .wiz__step[aria-current='step'] .wiz__chip {
     background: var(--color-primary, #235069);
     border-color: var(--color-primary, #235069);
     color: #fff;
   }
-  .wiz__step[data-complete] {
-    color: var(--color-text-primary, #171717);
-  }
 
-  /* ---- Group labels ---- */
+  /* ---- Group + sub-labels ---- */
+  /* Section headers read as content: type-body-large role, semibold, primary. */
   .wiz__group {
     color: var(--color-text-primary, #171717);
+    font-weight: var(--font-weight-semibold, 600);
+  }
+  /* Field-group labels (Selected Parcels, Point of Diversion): type-body role,
+     medium weight — a readable step down from the section headers. */
+  .wiz__sublabel {
+    color: var(--color-text-primary, #171717);
+    font-weight: var(--font-weight-medium, 500);
   }
   .wiz__group-hint {
     margin: 0;
@@ -337,12 +362,13 @@ const sellingOfferOptions = offerOptions('Sell');
   }
 
   /* ---- Parcel-selection maps ---- */
+  /* No fixed height: the map stretches to fill the fixed-height panel (the
+     .sidebar line stretches its children), with a floor for the wrapped layout. */
   .wiz__map {
     position: relative;
     isolation: isolate;
     inline-size: 100%;
-    min-block-size: 440px;
-    block-size: 60vh;
+    min-block-size: 18rem;
     border: 1px solid var(--color-border, #e5e5e5);
     border-radius: var(--radius-100, 4px);
     overflow: hidden;
@@ -351,8 +377,12 @@ const sellingOfferOptions = offerOptions('Sell');
     position: absolute;
     inset: 0;
   }
+  /* Selected list / recap can grow — let them scroll inside the stable frame
+     rather than push the work surface taller. */
   .wiz__parcel-panel {
     min-width: 0;
+    min-block-size: 0;
+    overflow-y: auto;
   }
 
   /* ---- Selected-parcel list ---- */
@@ -448,6 +478,8 @@ const sellingOfferOptions = offerOptions('Sell');
   /* ---- Summary recap ---- */
   .wiz__recap {
     min-width: 0;
+    min-block-size: 0;
+    overflow-y: auto;
   }
   .wiz__dl {
     margin: 0;
@@ -960,10 +992,10 @@ const sellingOfferOptions = offerOptions('Sell');
       });
       stepButtons.forEach((btn) => {
         const s = Number(btn.dataset.goto);
-        btn.removeAttribute('aria-current');
-        btn.removeAttribute('data-complete');
+        // Tab selection: exactly the active step carries aria-current, the rest
+        // are neutral — no cumulative "completed" state.
         if (s === n) btn.setAttribute('aria-current', 'step');
-        else if (s < n) btn.setAttribute('data-complete', '');
+        else btn.removeAttribute('aria-current');
       });
       updateFooter();
       // Defer map construction one frame so the dialog's slot has projected and the
