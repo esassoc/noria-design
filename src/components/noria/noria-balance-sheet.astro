@@ -7,11 +7,13 @@
 // (length → area → arc) so the section reads as one instrument, not repeated tiles.
 //
 // bcn-lego-checked: no esa- lego models a multi-band metric flow — esa-stat is a
-// single value, esa-progress-bar is one bar, and none compose bars + a value block
-// + a donut. Checked Beacon (no balance-sheet viz equivalent). Composes the esa-card
-// lego as the frame; the bars, value block, and donut are genuine bespoke viz whose
-// reusable, documented home is this component.
+// single value, and none compose bars + a value block + a donut. Checked Beacon (no
+// balance-sheet viz equivalent). Composes esa-card (the frame) and esa-progress-bar
+// (the two Offers tracks); only the Transactions value block and the Allocation donut
+// are bespoke marks — the hub has no data-viz lego for them (esa-donut filed via
+// /request-lego). This component is their reusable, documented home.
 import EsaCard from '@esa/ecology/esa-card.astro';
+import EsaProgressBar from '@esa/ecology/esa-progress-bar.astro';
 import { usd, num, type BalanceSheet } from '../../data/scenario';
 
 interface Props {
@@ -52,19 +54,19 @@ const instreamStr = num(bs.instreamBenefit, 0);
     <div class="noria-balance__band">
       <p class="noria-balance__cap">Offers</p>
       <div class="noria-balance__bars">
-        <div>
+        <div class="noria-balance__track noria-balance__track--sell">
           <div class="noria-balance__barhead">
             <span class="noria-balance__barlbl">Offers to Sell</span>
             <span class="noria-balance__barval">{sellStr}<span class="noria-balance__u">ac-ft</span></span>
           </div>
-          <div class="noria-balance__bar noria-balance__bar--sell"><span style={`width:${sellPct}%`}></span></div>
+          <EsaProgressBar value={sellPct} size="sm" showValue={false} />
         </div>
-        <div>
+        <div class="noria-balance__track noria-balance__track--buy">
           <div class="noria-balance__barhead">
             <span class="noria-balance__barlbl">Offers to Buy</span>
             <span class="noria-balance__barval">{buyStr}<span class="noria-balance__u">ac-ft</span></span>
           </div>
-          <div class="noria-balance__bar noria-balance__bar--buy"><span style={`width:${buyPct}%`}></span></div>
+          <EsaProgressBar value={buyPct} size="sm" showValue={false} />
         </div>
       </div>
     </div>
@@ -140,8 +142,8 @@ const instreamStr = num(bs.instreamBenefit, 0);
 </EsaCard>
 
 <style>
-  /* bcn-lego-checked: three-band balance-sheet viz; the esa-card frame is the lego,
-     these bars / value block / donut are the bespoke marks this component owns. */
+  /* bcn-lego-checked: esa-card (frame) + esa-progress-bar (Offers tracks) are legos;
+     only the value block and donut below are bespoke marks this component owns. */
 
   /* Three bands, top-aligned (stretched columns → content flows from a common top
      line), separated by full-height hairlines with wide gaps. No connectors. */
@@ -184,12 +186,17 @@ const instreamStr = num(bs.instreamBenefit, 0);
     margin-left: 0.2em;
   }
 
-  /* Offers — opposing bars */
+  /* Offers — two esa-progress-bar tracks on a shared scale. size="sm" nudged to a
+     6px track; each track sets its own fill via the lego's public --progress-bar-*
+     hook. The displayed number stays raw ac-ft (barval), decoupled from the fill %. */
   .noria-balance__bars {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-400);
+    --progress-bar-height-sm: 6px;
   }
+  .noria-balance__track--sell { --progress-bar-fill-bg: var(--noria-blue-400); }
+  .noria-balance__track--buy { --progress-bar-fill-bg: var(--noria-blue-600); }
   .noria-balance__barhead {
     display: flex;
     justify-content: space-between;
@@ -207,19 +214,6 @@ const instreamStr = num(bs.instreamBenefit, 0);
     letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
   }
-  .noria-balance__bar {
-    height: 6px;
-    border-radius: var(--radius-full);
-    background: var(--color-surface-sunken);
-    overflow: hidden;
-  }
-  .noria-balance__bar > span {
-    display: block;
-    height: 100%;
-    border-radius: var(--radius-full);
-  }
-  .noria-balance__bar--sell > span { background: var(--noria-blue-400); }
-  .noria-balance__bar--buy > span { background: var(--noria-blue-600); }
 
   /* Transactions — measured value block */
   .noria-balance__measured {
