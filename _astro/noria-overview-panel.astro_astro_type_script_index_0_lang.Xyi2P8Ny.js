@@ -1,0 +1,1 @@
+import"./esa-dialog.CEMq6xr-.js";import"./lit-element.C8p3bJxG.js";const i=(d,r)=>{const e=document.getElementById(d),t=document.getElementById(r);!e||!t||e.addEventListener("click",()=>t.show())};i("edit-details-trigger","edit-details-dialog");i("edit-configure-trigger","edit-configure-dialog");

@@ -1,0 +1,1 @@
+import"./esa-combobox.ReicmBvK.js";import"./lit-element.C8p3bJxG.js";const o=document.querySelector("[data-scenario-switcher-items]"),e=document.querySelector("esa-combobox[data-scenario-switcher]");o&&e&&(e.options=JSON.parse(o.textContent||"[]"),e.addEventListener("change",t=>{console.log("[noria] switch scenario →",t.detail?.value),queueMicrotask(()=>{e.value=null})}));

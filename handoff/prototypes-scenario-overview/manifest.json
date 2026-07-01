@@ -1,0 +1,825 @@
+{
+  "name": "prototypes-scenario-overview",
+  "url": "http://localhost:4321/noria-design/prototypes/scenario/overview/",
+  "theme": "noria",
+  "generatedFrom": "spec",
+  "sections": [
+    {
+      "label": "Scenario header",
+      "tag": "header",
+      "selector": ".scenario-header",
+      "html": "<header class=\"scenario-header stack\" data-gap=\"2xl\">\n  <nav class=\"esa-breadcrumbs esa-breadcrumbs--sm\" aria-label=\"Breadcrumb\">\n    <ol class=\"esa-breadcrumbs__list\">\n      <li class=\"esa-breadcrumbs__item\">\n        <a href=\"/noria-design/\" class=\"esa-breadcrumbs__link\">\n          <span class=\"esa-breadcrumbs__icon\"\n            ><svg\n              width=\"14\"\n              height=\"14\"\n              viewBox=\"0 0 24 24\"\n              fill=\"none\"\n              stroke=\"currentColor\"\n              stroke-width=\"2\"\n              stroke-linecap=\"round\"\n              stroke-linejoin=\"round\"\n              aria-hidden=\"true\"\n            >\n              <path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"></path>\n              <path\n                d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"\n              ></path></svg\n          ></span>\n          Home\n        </a>\n        <svg\n          class=\"esa-breadcrumbs__separator\"\n          width=\"16\"\n          height=\"16\"\n          viewBox=\"0 0 24 24\"\n          fill=\"none\"\n          stroke=\"currentColor\"\n          stroke-width=\"2\"\n          stroke-linecap=\"round\"\n          stroke-linejoin=\"round\"\n          aria-hidden=\"true\"\n        >\n          <path d=\"m9 18 6-6-6-6\"></path>\n        </svg>\n      </li>\n      <li class=\"esa-breadcrumbs__item\">\n        <a href=\"/noria-design/prototypes/scenarios\" class=\"esa-breadcrumbs__link\">\n          Scenarios\n        </a>\n        <svg\n          class=\"esa-breadcrumbs__separator\"\n          width=\"16\"\n          height=\"16\"\n          viewBox=\"0 0 24 24\"\n          fill=\"none\"\n          stroke=\"currentColor\"\n          stroke-width=\"2\"\n          stroke-linecap=\"round\"\n          stroke-linejoin=\"round\"\n          aria-hidden=\"true\"\n        >\n          <path d=\"m9 18 6-6-6-6\"></path>\n        </svg>\n      </li>\n      <li class=\"esa-breadcrumbs__item\" aria-current=\"page\">\n        <span class=\"esa-breadcrumbs__current\"> Deschutes 2026 Wholesale Exchange </span>\n      </li>\n    </ol>\n  </nav>\n  <!-- Identity + meta read as ONE unit (tight inner gap). -->\n  <div class=\"scenario-header__lede stack\" data-gap=\"sm\">\n    <div class=\"cluster scenario-header__identity\" data-gap=\"md\" data-align=\"center\">\n      <div class=\"cluster\" data-gap=\"sm\" data-align=\"center\">\n        <span class=\"scenario-header__glyph\"\n          ><span class=\"esa-icon esa-icon--md\" aria-hidden=\"true\">\n            <svg\n              width=\"20\"\n              height=\"20\"\n              viewBox=\"0 0 24 24\"\n              fill=\"none\"\n              stroke=\"currentColor\"\n              stroke-width=\"2\"\n              stroke-linecap=\"round\"\n              stroke-linejoin=\"round\"\n              focusable=\"false\"\n            >\n              <path d=\"M12 16v5\"></path>\n              <path d=\"M16 14.639V21\"></path>\n              <path d=\"M20 10.656V21\"></path>\n              <path\n                d=\"m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15\"\n              ></path>\n              <path d=\"M4 18.463V21\"></path>\n              <path d=\"M8 14.656V21\"></path>\n            </svg>\n          </span>\n        </span>\n        <h1 class=\"scenario-header__h1\">Deschutes 2026 Wholesale Exchange</h1>\n      </div>\n      <esa-combobox\n        class=\"scenario-header__switcher\"\n        data-scenario-switcher=\"true\"\n        mode=\"select\"\n        trigger-style=\"text\"\n        size=\"sm\"\n        placeholder=\"Switch scenario\"\n        results-count=\"3\"\n      ></esa-combobox>\n    </div>\n    <div class=\"scenario-header__meta\">\n      <!-- Type — a transfer: A → B -->\n      <div class=\"scenario-header__facet sh-flow\">\n        <span class=\"sh-facet-icon\"\n          ><svg\n            class=\"sh-ico\"\n            viewBox=\"0 0 24 24\"\n            fill=\"none\"\n            stroke=\"currentColor\"\n            stroke-width=\"2\"\n            stroke-linecap=\"round\"\n            stroke-linejoin=\"round\"\n            aria-hidden=\"true\"\n          >\n            <path d=\"M8 3 4 7l4 4\"></path>\n            <path d=\"M4 7h16\"></path>\n            <path d=\"m16 21 4-4-4-4\"></path>\n            <path d=\"M20 17H4\"></path></svg\n        ></span>\n        <span class=\"sh-facet-txt\">Wholesale</span>\n        <span class=\"sh-facet-icon\"\n          ><svg\n            class=\"sh-ico\"\n            viewBox=\"0 0 24 24\"\n            fill=\"none\"\n            stroke=\"currentColor\"\n            stroke-width=\"2\"\n            stroke-linecap=\"round\"\n            stroke-linejoin=\"round\"\n            aria-hidden=\"true\"\n          >\n            <path d=\"M5 12h14\"></path>\n            <path d=\"m12 5 7 7-7 7\"></path></svg></span\n        ><span class=\"sh-facet-txt\">Wholesale</span>\n      </div>\n      <span class=\"sh-divider\" aria-hidden=\"true\"></span>\n      <!-- Reporting Period — calendar glyph + text -->\n      <div class=\"scenario-header__facet sh-caldate\">\n        <span class=\"sh-facet-icon\"\n          ><svg\n            class=\"sh-ico\"\n            viewBox=\"0 0 24 24\"\n            fill=\"none\"\n            stroke=\"currentColor\"\n            stroke-width=\"2\"\n            stroke-linecap=\"round\"\n            stroke-linejoin=\"round\"\n            aria-hidden=\"true\"\n          >\n            <path d=\"M8 2v4\"></path>\n            <path d=\"M16 2v4\"></path>\n            <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"></rect>\n            <path d=\"M3 10h18\"></path></svg\n        ></span>\n        <span class=\"sh-facet-txt\">2026 Water Year</span>\n      </div>\n      <span class=\"sh-divider\" aria-hidden=\"true\"></span>\n      <!-- Participants — overlapping party-color facepile + count -->\n      <div class=\"scenario-header__facet sh-facepile\">\n        <span class=\"sh-facepile__dots\">\n          <span\n            class=\"sh-facepile__dot\"\n            style=\"background: #7d4fa3\"\n            title=\"North Unit\"\n          ></span\n          ><span\n            class=\"sh-facepile__dot\"\n            style=\"background: #2e3a66\"\n            title=\"Central Oregon\"\n          ></span\n          ><span\n            class=\"sh-facepile__dot\"\n            style=\"background: #e07e2f\"\n            title=\"Three Sisters\"\n          ></span>\n        </span>\n        <span class=\"sh-facet-txt\">3 participants</span>\n      </div>\n      <span class=\"sh-divider\" aria-hidden=\"true\"></span>\n      <!-- Price Band — label + floor–track–ceiling -->\n      <div class=\"scenario-header__facet sh-priceband\">\n        <span class=\"sh-priceband__label\">Price Band</span>\n        <span class=\"sh-priceband__track\">\n          <span class=\"sh-pb-val\">$50</span> <span class=\"sh-pb-bar\"></span>\n          <span class=\"sh-pb-val\">$200</span>\n        </span>\n      </div>\n    </div>\n  </div>\n  <nav class=\"scenario-header__tabs\" aria-label=\"Scenario sections\">\n    <a\n      href=\"/noria-design/prototypes/scenario/overview\"\n      class=\"scenario-header__tab is-active\"\n      aria-current=\"page\"\n    >\n      <span class=\"esa-icon esa-icon--sm\" aria-hidden=\"true\">\n        <svg\n          width=\"16\"\n          height=\"16\"\n          viewBox=\"0 0 24 24\"\n          fill=\"none\"\n          stroke=\"currentColor\"\n          stroke-width=\"2\"\n          stroke-linecap=\"round\"\n          stroke-linejoin=\"round\"\n          focusable=\"false\"\n        >\n          <rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\"></rect>\n          <rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\"></rect>\n          <rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\"></rect>\n          <rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"></rect>\n        </svg>\n      </span>\n      Overview </a\n    ><a href=\"/noria-design/prototypes/scenario/offers\" class=\"scenario-header__tab\">\n      <span class=\"esa-icon esa-icon--sm\" aria-hidden=\"true\">\n        <svg\n          width=\"16\"\n          height=\"16\"\n          viewBox=\"0 0 24 24\"\n          fill=\"none\"\n          stroke=\"currentColor\"\n          stroke-width=\"2\"\n          stroke-linecap=\"round\"\n          stroke-linejoin=\"round\"\n          focusable=\"false\"\n        >\n          <path\n            d=\"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z\"\n          ></path>\n          <path\n            d=\"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12\"\n          ></path>\n          <path\n            d=\"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17\"\n          ></path>\n        </svg>\n      </span>\n      Offers </a\n    ><a\n      href=\"/noria-design/prototypes/scenario/transactions\"\n      class=\"scenario-header__tab\"\n    >\n      <span class=\"esa-icon esa-icon--sm\" aria-hidden=\"true\">\n        <svg\n          width=\"16\"\n          height=\"16\"\n          viewBox=\"0 0 24 24\"\n          fill=\"none\"\n          stroke=\"currentColor\"\n          stroke-width=\"2\"\n          stroke-linecap=\"round\"\n          stroke-linejoin=\"round\"\n          focusable=\"false\"\n        >\n          <path\n            d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\"\n          ></path>\n          <path d=\"M14 8H8\"></path>\n          <path d=\"M16 12H8\"></path>\n          <path d=\"M13 16H8\"></path>\n        </svg>\n      </span>\n      Transactions </a\n    ><a href=\"/noria-design/prototypes/scenario/report\" class=\"scenario-header__tab\">\n      <span class=\"esa-icon esa-icon--sm\" aria-hidden=\"true\">\n        <svg\n          width=\"16\"\n          height=\"16\"\n          viewBox=\"0 0 24 24\"\n          fill=\"none\"\n          stroke=\"currentColor\"\n          stroke-width=\"2\"\n          stroke-linecap=\"round\"\n          stroke-linejoin=\"round\"\n          focusable=\"false\"\n        >\n          <path\n            d=\"M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z\"\n          ></path>\n          <path d=\"M21.21 15.89A10 10 0 1 1 8 2.83\"></path>\n        </svg>\n      </span>\n      Report </a\n    ><a href=\"/noria-design/prototypes/scenario/users\" class=\"scenario-header__tab\">\n      <span class=\"esa-icon esa-icon--sm\" aria-hidden=\"true\">\n        <svg\n          width=\"16\"\n          height=\"16\"\n          viewBox=\"0 0 24 24\"\n          fill=\"none\"\n          stroke=\"currentColor\"\n          stroke-width=\"2\"\n          stroke-linecap=\"round\"\n          stroke-linejoin=\"round\"\n          focusable=\"false\"\n        >\n          <path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path>\n          <circle cx=\"9\" cy=\"7\" r=\"4\"></circle>\n          <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path>\n          <path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path>\n        </svg>\n      </span>\n      User Management\n    </a>\n  </nav>\n  <script type=\"application/json\" data-scenario-switcher-items=\"\">\n    [\n      { \"value\": \"37\", \"label\": \"North Unit Drought Contingency\" },\n      { \"value\": \"31\", \"label\": \"Central Oregon Patron Pilot\" },\n      { \"value\": \"24\", \"label\": \"2025 Water Year — Final\" }\n    ]\n  </script>\n</header>",
+      "css": ".esa-breadcrumbs {\n  --_crumb-font-size: var(--type-size-200, 0.875rem);\n  --_crumb-link-color: var(--breadcrumbs-link-color, #43608a);\n  --_crumb-link-hover: var(--breadcrumbs-link-hover, #39506f);\n  --_crumb-current-color: var(--color-text-primary, #171717);\n  --_crumb-separator-color: var(--breadcrumbs-separator-color, #737373);\n  --_crumb-gap: var(--spacing-200, 8px);\n  display: block;\n}\n.esa-breadcrumbs--sm {\n  --_crumb-font-size: var(--type-size-150, 0.75rem);\n}\n.esa-breadcrumbs__list {\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: var(--_crumb-gap);\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  font-size: var(--_crumb-font-size);\n}\n.esa-breadcrumbs__item {\n  display: flex;\n  align-items: center;\n  gap: var(--_crumb-gap);\n}\n.esa-breadcrumbs__link {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--spacing-100, 4px);\n  color: var(--_crumb-link-color);\n  text-decoration: none;\n}\n.esa-breadcrumbs__icon {\n  display: inline-flex;\n  align-items: center;\n}\n.esa-breadcrumbs__separator {\n  flex-shrink: 0;\n  color: var(--_crumb-separator-color);\n}\n.esa-breadcrumbs__current {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--spacing-100, 4px);\n  color: var(--_crumb-current-color);\n  font-weight: var(--font-weight-medium, 500);\n}\n.scenario-header__glyph {\n  display: inline-flex;\n  color: var(--color-primary, #235069);\n}\n.scenario-header__glyph svg {\n  width: 26px;\n  height: 26px;\n}\n.scenario-header__h1 {\n  margin: 0;\n  font-family:\n    Google Sans Flex,\n    sans-serif;\n  font-size: var(--type-size-600, 1.875rem);\n  font-weight: 500;\n  line-height: 1.1;\n  color: var(--color-primary, #235069);\n}\n.scenario-header__switcher {\n  min-width: 20rem;\n}\n.scenario-header__meta {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: var(--spacing-200, 8px) var(--spacing-400, 16px);\n}\n.scenario-header__facet {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--spacing-200, 8px);\n}\n.sh-facet-icon {\n  display: inline-flex;\n  color: var(--color-text-muted, #737373);\n}\n.sh-facet-icon .sh-ico {\n  width: 16px;\n  height: 16px;\n}\n.sh-facet-txt {\n  font-size: 0.875rem;\n  font-weight: var(--font-weight-medium, 500);\n  color: var(--color-text-primary, #171717);\n}\n.sh-divider {\n  width: 1px;\n  align-self: stretch;\n  min-height: 20px;\n  background: var(--color-border, #e5e5e5);\n  flex: none;\n}\n.sh-facepile {\n  gap: var(--spacing-300, 10px);\n}\n.sh-facepile__dots {\n  display: inline-flex;\n}\n.sh-facepile__dot {\n  width: 16px;\n  height: 16px;\n  border-radius: var(--radius-full, 999px);\n  border: 2px solid var(--color-surface, #fff);\n}\n.sh-facepile__dot + .sh-facepile__dot {\n  margin-left: -6px;\n}\n.sh-priceband {\n  gap: var(--spacing-300, 10px);\n}\n.sh-priceband__label {\n  font-size: 0.875rem;\n  font-weight: var(--font-weight-medium, 500);\n  color: var(--color-text-secondary, #525252);\n}\n.sh-priceband__track {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--spacing-200, 8px);\n}\n.sh-pb-val {\n  font-size: 0.875rem;\n  font-weight: var(--font-weight-medium, 500);\n  color: var(--color-text-primary, #171717);\n  font-variant-numeric: tabular-nums;\n}\n.sh-pb-bar {\n  position: relative;\n  width: 84px;\n  height: 5px;\n  border-radius: 999px;\n  background: linear-gradient(\n    90deg,\n    var(--noria-blue-300, #99c8e0),\n    var(--color-primary, #235069)\n  );\n}\n.sh-pb-bar:before,\n.sh-pb-bar:after {\n  content: \"\";\n  position: absolute;\n  top: 50%;\n  width: 8px;\n  height: 8px;\n  border-radius: 50%;\n  background: #fff;\n  border: 2px solid var(--color-primary, #235069);\n  transform: translateY(-50%);\n}\n.sh-pb-bar:before {\n  left: -1px;\n}\n.sh-pb-bar:after {\n  right: -1px;\n}\n.scenario-header__tabs {\n  display: flex;\n  gap: var(--spacing-100, 4px);\n  border-bottom: 1px solid var(--color-border, #e5e5e5);\n  overflow-x: auto;\n}\n.scenario-header__tab {\n  position: relative;\n  display: inline-flex;\n  align-items: center;\n  gap: var(--spacing-200, 8px);\n  height: 44px;\n  padding-inline: var(--spacing-400, 16px);\n  font-size: var(--type-size-200, 1rem);\n  color: var(--color-text-secondary, #525252);\n  text-decoration: none;\n  white-space: nowrap;\n  transition: color 0.15s ease;\n}\n.scenario-header__tab.is-active {\n  color: var(--color-primary, #235069);\n  font-weight: var(--font-weight-medium, 500);\n}\n.scenario-header__tab.is-active:after {\n  content: \"\";\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 2px;\n  background: var(--color-primary, #235069);\n  border-radius: 2px;\n}\n.stack {\n  --gap: var(--spacing-400, 1rem);\n  display: flex;\n  flex-direction: column;\n  gap: var(--gap);\n}\n.cluster {\n  --gap: var(--spacing-300, 0.75rem);\n  --align: center;\n  --justify: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n  gap: var(--gap);\n  align-items: var(--align);\n  justify-content: var(--justify);\n}\n.user-trigger > .esa-icon:last-child {\n  flex-shrink: 0;\n  color: var(--color-text-muted, #737373);\n}\n.nav-sublink .esa-icon {\n  flex-shrink: 0;\n  color: var(--color-text-tertiary, #525252);\n  transition: color 0.15s ease;\n}\n.nav-sublink.active .esa-icon {\n  color: var(--_nav-active-color, #235069);\n}\n.esa-icon {\n  --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  width: var(--_icon-size);\n  height: var(--_icon-size);\n  line-height: 1;\n  color: inherit;\n}\n.esa-icon--sm {\n  --_icon-size: var(--icon-size-sm, var(--icon-size-small, 16px));\n}\n.esa-icon svg {\n  display: block;\n  width: var(--_icon-size);\n  height: var(--_icon-size);\n}\n.esa-icon--md {\n  --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));\n}\n.esa-icon--xs {\n  --_icon-size: var(--icon-size-xs, 14px);\n}",
+      "guide": {
+        "intent": "The page header on every Scenario Details tab: a breadcrumb trail, then a tight identity UNIT (a primary-blue glyph + the scenario name + a searchable scenario switcher, with a custom meta row directly beneath), then a horizontal tab strip linking the five tabs. Identity + meta read as one block; breadcrumbs above and tabs below sit at a wider gap so they never crowd it.",
+        "decisions": [
+          "A .stack spine at data-gap=\"2xl\" separates the three bands (breadcrumbs · identity+meta · tabs); the identity and meta nest in their own tight data-gap=\"sm\" stack so they read as one unit.",
+          "Identity lockup matches the Parcel Discovery page header (noria-page-title): a blue glyph beside a Google Sans Flex 500 title, BOTH in the same primary blue (#235069) so icon and title read as one unit.",
+          "Meta row = four bespoke facets, each expressing the SHAPE of its datum: Type as a transfer flow (A → B), Reporting Period as a calendar glyph + text, Participants as an overlapping party-color facepile (keyed on each participant colorHex, like noria-party-dot) + count, and Price Band as a floor–track–ceiling lockup.",
+          "All four facets share ONE type contract — 14px / medium (500) / primary ink, with a single muted glyph tone — so nothing reads heavier than its neighbor.",
+          "The tab strip is a route-linked underline bar: cross-page <a href> links (one per tab route), the active tab marked by primary-blue text + a 2px underline that overlaps the container hairline (no layout shift vs. inactive).",
+          "Composed legos: esa-breadcrumbs (trail), esa-combobox (searchable switcher, text trigger), esa-icon (identity glyph + tab glyphs)."
+        ],
+        "gotchas": [
+          "The tabs are CROSS-PAGE routes, not esa-tab-layout panels — esa-tab-layout switches client panels in place (activeIndex), which is the wrong model here. No esa- lego renders a route-linked underline bar, so this small scoped strip mirrors esa-tab-layout's \"underline\" appearance instead.",
+          "Keep the four meta facets on their one shared type contract; do not let any one facet (e.g. the price band or a longer Type string) grow heavier or larger than the others.",
+          "Tab glyphs (layers, receipt-text, chart-pie) and the identity/scenario glyph are NOT in esa-icon's built-in registry — pass the inner SVG explicitly via the paths prop.",
+          "The scenario switcher is a prototype stub: on change it console.logs and resets its value in a microtask so the trigger keeps its \"Switch scenario\" placeholder instead of latching onto the picked name.",
+          "The facepile dots overlap via a negative margin and carry a 2px surface-colored border so each reads as a distinct token against its neighbor."
+        ],
+        "acceptance": [
+          "Breadcrumbs → identity (glyph + name in the SAME blue) + meta facets → tab strip render top to bottom, with the identity+meta visually tighter than the gaps above and below.",
+          "The current tab is underlined in primary blue and carries aria-current=\"page\"; every tab links to its own route.",
+          "All four meta facets render at one visual weight; the switcher opens a searchable list of the other scenarios."
+        ]
+      },
+      "tokens": [
+        {
+          "name": "--breadcrumbs-link-color",
+          "value": "#525252",
+          "tier": "component"
+        },
+        {
+          "name": "--breadcrumbs-link-hover",
+          "value": "#171717",
+          "tier": "component"
+        },
+        {
+          "name": "--breadcrumbs-separator-color",
+          "value": "#a3a3a3",
+          "tier": "component"
+        },
+        {
+          "name": "--color-border",
+          "value": "#e5e5e5",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-primary",
+          "value": "#235069",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-surface",
+          "value": "#ffffff",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-muted",
+          "value": "#737373",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-primary",
+          "value": "#171717",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-secondary",
+          "value": "#525252",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-tertiary",
+          "value": "#404040",
+          "tier": "semantic"
+        },
+        {
+          "name": "--font-weight-medium",
+          "value": "450",
+          "tier": "primitive"
+        },
+        {
+          "name": "--gap",
+          "value": "3rem",
+          "tier": "component"
+        },
+        {
+          "name": "--icon-size-md",
+          "value": "20px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--icon-size-medium",
+          "value": "20px",
+          "tier": "component"
+        },
+        {
+          "name": "--icon-size-sm",
+          "value": "16px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--icon-size-small",
+          "value": "16px",
+          "tier": "component"
+        },
+        {
+          "name": "--icon-size-xs",
+          "value": "14px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--noria-blue-300",
+          "value": "#99c8e0",
+          "tier": "component"
+        },
+        {
+          "name": "--radius-full",
+          "value": "9999px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-100",
+          "value": ".25rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-200",
+          "value": ".5rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-300",
+          "value": ".75rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-400",
+          "value": "1rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-150",
+          "value": "clamp(.6875rem, .61rem + .38vw, .875rem)",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-200",
+          "value": "clamp(.75rem, .66rem + .44vw, .9375rem)",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-600",
+          "value": "clamp(1.375rem, 1.2rem + .88vw, 1.875rem)",
+          "tier": "primitive"
+        }
+      ],
+      "claudePath": "claude/scenario-header.md",
+      "repoPath": "public/handoff/prototypes-scenario-overview/claude/scenario-header.md"
+    },
+    {
+      "label": "Overview panel",
+      "tag": "section",
+      "selector": ".noria-overview-panel",
+      "html": "<section class=\"noria-overview-panel\">\n  <h2 class=\"type-section-title\">Overview</h2>\n  <div class=\"grid noria-overview__cards\" data-gap=\"md\">\n    <!-- Details -->\n    <div class=\"esa-card\">\n      <div class=\"esa-card__header\">\n        <div class=\"esa-card__header-content\">\n          <div class=\"esa-card__titles\"><h3 class=\"esa-card__title\">Details</h3></div>\n        </div>\n        <div class=\"esa-card__actions\">\n          <span id=\"edit-details-trigger\">\n            <span\n              class=\"esa-button esa-button--color-ghost esa-button--appearance-fill esa-button--sm\"\n            >\n              <button class=\"esa-button__native\" type=\"button\">\n                <span class=\"esa-icon esa-icon--sm\" aria-hidden=\"true\">\n                  <svg\n                    width=\"16\"\n                    height=\"16\"\n                    viewBox=\"0 0 24 24\"\n                    fill=\"none\"\n                    stroke=\"currentColor\"\n                    stroke-width=\"2\"\n                    stroke-linecap=\"round\"\n                    stroke-linejoin=\"round\"\n                    focusable=\"false\"\n                  >\n                    <path\n                      d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"\n                    ></path>\n                    <path d=\"m15 5 4 4\"></path>\n                  </svg>\n                </span>\n                <span class=\"esa-button__label\"> Edit </span>\n              </button>\n            </span>\n          </span>\n        </div>\n      </div>\n      <div class=\"esa-card__body\">\n        <dl class=\"noria-kv\">\n          <div class=\"noria-kv__row\">\n            <dt>Scenario Name</dt>\n            <dd>Deschutes 2026 Wholesale Exchange</dd>\n          </div>\n          <div class=\"noria-kv__row\">\n            <dt>Type</dt>\n            <dd>Wholesale to Wholesale</dd>\n          </div>\n          <div class=\"noria-kv__row\">\n            <dt>Reporting Period</dt>\n            <dd>2026 Water Year</dd>\n          </div>\n          <div class=\"noria-kv__row\">\n            <dt>Description</dt>\n            <dd class=\"noria-kv__prose\">\n              Wholesale water exchange modeling North Unit, Central Oregon, and Three\n              Sisters transfers for the 2026 water year.\n            </dd>\n          </div>\n        </dl>\n      </div>\n    </div>\n    <!-- Configure -->\n    <div class=\"esa-card\">\n      <div class=\"esa-card__header\">\n        <div class=\"esa-card__header-content\">\n          <div class=\"esa-card__titles\"><h3 class=\"esa-card__title\">Configure</h3></div>\n        </div>\n        <div class=\"esa-card__actions\">\n          <span id=\"edit-configure-trigger\">\n            <span\n              class=\"esa-button esa-button--color-ghost esa-button--appearance-fill esa-button--sm\"\n            >\n              <button class=\"esa-button__native\" type=\"button\">\n                <span class=\"esa-icon esa-icon--sm\" aria-hidden=\"true\">\n                  <svg\n                    width=\"16\"\n                    height=\"16\"\n                    viewBox=\"0 0 24 24\"\n                    fill=\"none\"\n                    stroke=\"currentColor\"\n                    stroke-width=\"2\"\n                    stroke-linecap=\"round\"\n                    stroke-linejoin=\"round\"\n                    focusable=\"false\"\n                  >\n                    <path\n                      d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"\n                    ></path>\n                    <path d=\"m15 5 4 4\"></path>\n                  </svg>\n                </span>\n                <span class=\"esa-button__label\"> Edit </span>\n              </button>\n            </span>\n          </span>\n        </div>\n      </div>\n      <div class=\"esa-card__body\">\n        <dl class=\"noria-kv\">\n          <div class=\"noria-kv__row\">\n            <dt>Participants</dt>\n            <dd>\n              <div class=\"noria-kv__list\">\n                <div class=\"cluster\" data-gap=\"xs\" data-align=\"center\">\n                  <span class=\"noria-party\" data-size=\"md\">\n                    <span class=\"noria-party__dot\" style=\"background: #7d4fa3\"></span>\n                    <span class=\"noria-party__name type-body\">North Unit</span>\n                  </span>\n                  <span class=\"type-body-small noria-muted\"\n                    >(Wholesale Buyer, Wholesale Seller)</span\n                  >\n                </div>\n                <div class=\"cluster\" data-gap=\"xs\" data-align=\"center\">\n                  <span class=\"noria-party\" data-size=\"md\">\n                    <span class=\"noria-party__dot\" style=\"background: #2e3a66\"></span>\n                    <span class=\"noria-party__name type-body\">Central Oregon</span>\n                  </span>\n                  <span class=\"type-body-small noria-muted\"\n                    >(Wholesale Buyer, Wholesale Seller)</span\n                  >\n                </div>\n                <div class=\"cluster\" data-gap=\"xs\" data-align=\"center\">\n                  <span class=\"noria-party\" data-size=\"md\">\n                    <span class=\"noria-party__dot\" style=\"background: #e07e2f\"></span>\n                    <span class=\"noria-party__name type-body\">Three Sisters</span>\n                  </span>\n                  <span class=\"type-body-small noria-muted\"\n                    >(Wholesale Buyer, Wholesale Seller)</span\n                  >\n                </div>\n              </div>\n            </dd>\n          </div>\n          <div class=\"noria-kv__row\">\n            <dt>Price Floor</dt>\n            <dd>$50.00</dd>\n          </div>\n          <div class=\"noria-kv__row\">\n            <dt>Price Ceiling</dt>\n            <dd>$200.00</dd>\n          </div>\n          <div class=\"noria-kv__row\">\n            <dt>Water Types</dt>\n            <dd>\n              <div class=\"noria-kv__list\">\n                <span> Fallowed Water (25% Instream Flow Set Aside) </span\n                ><span> Land Conversion Water (0% Instream Flow Set Aside) </span>\n              </div>\n            </dd>\n          </div>\n        </dl>\n      </div>\n    </div>\n  </div>\n</section>",
+      "css": ".noria-overview-panel {\n  display: flex;\n  flex-direction: column;\n  gap: var(--spacing-400, 16px);\n  padding-block-start: var(--spacing-400, 16px);\n}\n.noria-overview__cards {\n  --grid-min: 22rem;\n}\n.esa-card {\n  --_card-bg: var(--card-bg, var(--color-surface, #ffffff));\n  --_card-border: var(--card-border-color, var(--color-border, #e5e5e5));\n  --_card-radius: var(--card-radius, var(--radius-300, 0.5rem));\n  --_card-padding: var(--card-padding, var(--spacing-500, 1.5rem));\n  --_card-header-bg: var(--card-header-bg, transparent);\n  --_card-header-color: var(--card-header-color, var(--color-text-primary, #171717));\n  --_card-header-border: var(\n    --card-header-border-color,\n    var(--color-border-light, #efefef)\n  );\n  display: block;\n  background: var(--_card-bg);\n  border: 1px solid var(--_card-border);\n  border-radius: var(--_card-radius);\n  overflow: hidden;\n}\n.esa-card__header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--spacing-400, 1rem) var(--_card-padding);\n  background: var(--_card-header-bg);\n  color: var(--_card-header-color);\n  border-bottom: 1px solid var(--_card-header-border);\n  min-height: 56px;\n}\n.esa-card__header-content {\n  display: flex;\n  align-items: center;\n  gap: var(--spacing-300, 0.75rem);\n}\n.esa-card__titles {\n  display: flex;\n  flex-direction: column;\n  gap: var(--spacing-050, 0.125rem);\n}\n.esa-card__title {\n  font-size: var(--type-size-250, 1.0625rem);\n  font-weight: 600;\n  margin: 0;\n  color: inherit;\n  font-family: var(--font-sans, \"DM Sans\", sans-serif);\n}\n.esa-card__actions {\n  display: flex;\n  align-items: center;\n  gap: var(--spacing-200, 0.5rem);\n}\n.esa-card__body {\n  padding: var(--_card-padding);\n}\n.noria-kv {\n  margin: 0;\n}\n.noria-kv__row {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n  gap: var(--spacing-400, 16px);\n  padding: var(--spacing-300, 12px) 0;\n  border-bottom: 1px solid var(--color-border, #e5e5e5);\n}\n.noria-kv__row:first-child {\n  padding-top: 0;\n}\n.noria-kv__row dt {\n  flex: none;\n  color: var(--color-text-secondary, #525252);\n  font-size: 0.875rem;\n  font-weight: var(--font-weight-medium, 450);\n}\n.noria-kv__row dd {\n  max-width: 60%;\n  margin: 0;\n  text-align: right;\n  color: var(--color-text-primary, #171717);\n  font-size: 0.9375rem;\n  font-weight: var(--font-weight-medium, 450);\n}\n.noria-kv__row:last-child {\n  padding-bottom: 0;\n  border-bottom: 0;\n}\n.noria-kv__prose {\n  font-weight: var(--font-weight-regular, 350);\n  line-height: 1.5;\n}\n.noria-kv__list {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end;\n  gap: var(--spacing-100, 4px);\n  text-align: right;\n}\n.noria-party {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--spacing-200, 8px);\n  min-width: 0;\n}\n.noria-party__dot {\n  flex: none;\n  inline-size: 12px;\n  block-size: 12px;\n  border-radius: var(--radius-full, 999px);\n}\n.noria-party__name {\n  color: var(--color-text, #171717);\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.noria-muted {\n  color: var(--color-text-secondary);\n}\n.noria-configure__row .noria-party__name {\n  font-size: 0.875rem;\n  font-weight: var(--font-weight-semibold, 550);\n}\n.esa-icon {\n  --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  width: var(--_icon-size);\n  height: var(--_icon-size);\n  line-height: 1;\n  color: inherit;\n}\n.esa-icon--sm {\n  --_icon-size: var(--icon-size-sm, var(--icon-size-small, 16px));\n}\n.esa-icon svg {\n  display: block;\n  width: var(--_icon-size);\n  height: var(--_icon-size);\n}\n.esa-icon--md {\n  --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));\n}\n.esa-icon--xs {\n  --_icon-size: var(--icon-size-xs, 14px);\n}\n.user-trigger > .esa-icon:last-child {\n  flex-shrink: 0;\n  color: var(--color-text-muted, #737373);\n}\n.nav-sublink .esa-icon {\n  flex-shrink: 0;\n  color: var(--color-text-tertiary, #525252);\n  transition: color 0.15s ease;\n}\n.nav-sublink.active .esa-icon {\n  color: var(--_nav-active-color, #235069);\n}\n.esa-button {\n  --_btn-height: var(--form-height-md, 40px);\n  --_btn-padding-x: var(--form-padding-x-md, 16px);\n  --_btn-font-size: var(--form-font-size-md, 14px);\n  --_btn-radius: var(--form-radius-md, 6px);\n  --_accent: var(--color-primary, #43608a);\n  --_accent-hover: var(--color-primary-hover, #39506f);\n  --_on: var(--color-text-inverse, #ffffff);\n  display: inline-block;\n}\n.esa-button--sm {\n  --_btn-height: var(--form-height-sm, 32px);\n  --_btn-padding-x: var(--form-padding-x-sm, 12px);\n  --_btn-font-size: var(--form-font-size-sm, 12px);\n  --_btn-radius: var(--form-radius-sm, 4px);\n}\n.esa-button__native {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: var(--spacing-200, 8px);\n  width: 100%;\n  height: var(--_btn-height);\n  padding-inline: var(--_btn-padding-x);\n  border: 1px solid transparent;\n  border-radius: var(--_btn-radius);\n  font-size: var(--_btn-font-size);\n  font-family: var(--font-sans, system-ui, sans-serif);\n  font-weight: var(--font-weight-medium, 500);\n  line-height: 1;\n  text-decoration: none;\n  cursor: pointer;\n  transition:\n    background var(--transition-fast, 0.15s ease),\n    border-color var(--transition-fast, 0.15s ease);\n  -webkit-appearance: none;\n  appearance: none;\n}\n.esa-button--sm .esa-button__native {\n  height: auto;\n  padding-block: var(--spacing-150, 6px);\n}\n.esa-button--appearance-fill .esa-button__native {\n  background: var(--_accent);\n  color: var(--_on);\n  border-color: transparent;\n}\n.esa-button--color-ghost .esa-button__native {\n  background: transparent;\n  color: var(--color-text-primary, #171717);\n  border-color: transparent;\n}\n.esa-button__label {\n  white-space: nowrap;\n}\n.esa-button--appearance-outline .esa-button__native,\n.esa-button--appearance-dashed .esa-button__native {\n  background: transparent;\n  color: var(--_accent);\n  border-color: var(--_accent);\n}\n.esa-button--color-secondary {\n  --_accent: var(--color-secondary, #5787b9);\n  --_accent-hover: var(--color-secondary-hover, #43608a);\n}\n.cluster {\n  --gap: var(--spacing-300, 0.75rem);\n  --align: center;\n  --justify: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n  gap: var(--gap);\n  align-items: var(--align);\n  justify-content: var(--justify);\n}\n.type-section-title {\n  font-family: var(--font-display, var(--font-sans));\n  font-size: var(--type-size-500);\n  font-weight: var(--font-weight-semibold);\n  line-height: var(--line-height-tight);\n  letter-spacing: var(--letter-spacing-tight);\n}\n.grid {\n  --gap: var(--spacing-400, 1rem);\n  --grid-min: 16rem;\n  display: grid;\n  gap: var(--gap);\n  grid-template-columns: repeat(auto-fit, minmax(min(var(--grid-min), 100%), 1fr));\n}\n.type-body {\n  font-size: var(--type-size-200);\n  font-weight: var(--font-weight-regular);\n  line-height: var(--line-height-relaxed);\n  letter-spacing: var(--letter-spacing-normal);\n}\n.type-body-small {\n  font-size: var(--type-size-150);\n  font-weight: var(--font-weight-regular);\n  line-height: var(--line-height-normal);\n  letter-spacing: var(--letter-spacing-normal);\n}",
+      "guide": {
+        "intent": "The Overview tab body: two esa-cards side by side (a responsive .grid) — a read-only \"Details\" card and a read-only \"Configure\" summary (participants + their roles, price bounds, water types). Each card's ghost Edit button opens the matching edit dialog. Under an h2 \"Overview\" section title.",
+        "decisions": [
+          "Each card renders a key-value definition list (noria-kv): short scalar fields are inline rows (label left, value right); complex fields (Description, the participants list, the water-type list) are \"block\" rows (label above, content below) — all split by the same neutral hairline divider.",
+          "Composes legos: esa-card (card chrome), esa-button (ghost Edit triggers), noria-party-dot (participant identity), plus the two edit dialogs. Values read straight from the Scenario prop via the scenario.ts helpers.",
+          "The .grid uses --grid-min: 22rem so the two cards drop to one column on narrow widths.",
+          "Tab rhythm: an h2 section title with a 16px gap down to the cards (half the 32px inter-section rhythm)."
+        ],
+        "gotchas": [
+          "The value column is capped at max-width:60% and right-aligned, so a long value never overbears its short label — it leaves a gap in the middle instead of colliding with the label.",
+          "Multi-line value lists (participants, water types) stay right-aligned even when they wrap to several lines.",
+          "The cards are read-only summaries — all editing happens in the two dialogs, opened via each card's ghost Edit button."
+        ],
+        "acceptance": [
+          "Both cards render as label/value definition lists split by hairlines; the two cards sit side by side and collapse to one column when narrow.",
+          "Each card's Edit button opens its dialog (Details / Configure)."
+        ]
+      },
+      "tokens": [
+        {
+          "name": "--card-bg",
+          "value": "#ffffff",
+          "tier": "component"
+        },
+        {
+          "name": "--card-border-color",
+          "value": "#e5e5e5",
+          "tier": "component"
+        },
+        {
+          "name": "--card-header-bg",
+          "value": "transparent",
+          "tier": "component"
+        },
+        {
+          "name": "--card-header-border-color",
+          "value": "#efefef",
+          "tier": "component"
+        },
+        {
+          "name": "--card-header-color",
+          "value": "#171717",
+          "tier": "component"
+        },
+        {
+          "name": "--card-padding",
+          "value": "1.5rem",
+          "tier": "component"
+        },
+        {
+          "name": "--card-radius",
+          "value": ".25rem",
+          "tier": "component"
+        },
+        {
+          "name": "--color-border",
+          "value": "#e5e5e5",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-border-light",
+          "value": "#efefef",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-primary",
+          "value": "#235069",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-primary-hover",
+          "value": "#214459",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-secondary",
+          "value": "#2d759c",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-secondary-hover",
+          "value": "#265e7e",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-surface",
+          "value": "#ffffff",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-inverse",
+          "value": "#ffffff",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-muted",
+          "value": "#737373",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-primary",
+          "value": "#171717",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-secondary",
+          "value": "#525252",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-tertiary",
+          "value": "#404040",
+          "tier": "semantic"
+        },
+        {
+          "name": "--font-display",
+          "value": "\"DM Sans\", system-ui, sans-serif",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-sans",
+          "value": "\"DM Sans\", system-ui, sans-serif",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-weight-medium",
+          "value": "450",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-weight-regular",
+          "value": "350",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-weight-semibold",
+          "value": "550",
+          "tier": "primitive"
+        },
+        {
+          "name": "--form-font-size-md",
+          "value": "clamp(.75rem, .66rem + .44vw, .9375rem)",
+          "tier": "component"
+        },
+        {
+          "name": "--form-font-size-sm",
+          "value": "clamp(.625rem, .56rem + .32vw, .75rem)",
+          "tier": "component"
+        },
+        {
+          "name": "--form-height-md",
+          "value": "40px",
+          "tier": "component"
+        },
+        {
+          "name": "--form-height-sm",
+          "value": "32px",
+          "tier": "component"
+        },
+        {
+          "name": "--form-padding-x-md",
+          "value": ".75rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-padding-x-sm",
+          "value": ".625rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-radius-md",
+          "value": ".25rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-radius-sm",
+          "value": ".25rem",
+          "tier": "component"
+        },
+        {
+          "name": "--icon-size-md",
+          "value": "20px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--icon-size-medium",
+          "value": "20px",
+          "tier": "component"
+        },
+        {
+          "name": "--icon-size-sm",
+          "value": "16px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--icon-size-small",
+          "value": "16px",
+          "tier": "component"
+        },
+        {
+          "name": "--icon-size-xs",
+          "value": "14px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--letter-spacing-normal",
+          "value": ".01em",
+          "tier": "primitive"
+        },
+        {
+          "name": "--letter-spacing-tight",
+          "value": "-.01em",
+          "tier": "primitive"
+        },
+        {
+          "name": "--line-height-normal",
+          "value": "1.6",
+          "tier": "primitive"
+        },
+        {
+          "name": "--line-height-relaxed",
+          "value": "1.8",
+          "tier": "primitive"
+        },
+        {
+          "name": "--line-height-tight",
+          "value": "1.3",
+          "tier": "primitive"
+        },
+        {
+          "name": "--radius-300",
+          "value": ".25rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--radius-full",
+          "value": "9999px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-050",
+          "value": ".125rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-100",
+          "value": ".25rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-150",
+          "value": ".375rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-200",
+          "value": ".5rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-300",
+          "value": ".75rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-400",
+          "value": "1rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-500",
+          "value": "1.5rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--transition-fast",
+          "value": ".15s ease",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-150",
+          "value": "clamp(.6875rem, .61rem + .38vw, .875rem)",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-200",
+          "value": "clamp(.75rem, .66rem + .44vw, .9375rem)",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-250",
+          "value": "clamp(.8125rem, .71rem + .5vw, 1.0625rem)",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-500",
+          "value": "clamp(1.125rem, .98rem + .72vw, 1.5rem)",
+          "tier": "primitive"
+        }
+      ],
+      "claudePath": "claude/overview-panel.md",
+      "repoPath": "public/handoff/prototypes-scenario-overview/claude/overview-panel.md"
+    },
+    {
+      "label": "Edit Details dialog",
+      "tag": "esa-dialog",
+      "selector": "#edit-details-dialog",
+      "apply": [
+        {
+          "click": "#edit-details-trigger"
+        }
+      ],
+      "html": "<esa-dialog id=\"edit-details-dialog\" heading=\"Edit Scenario Details\" size=\"md\" open=\"\">\n  <div class=\"stack\" data-gap=\"md\">\n    <esa-text-field\n      label=\"Scenario Name\"\n      value=\"Deschutes 2026 Wholesale Exchange\"\n      required=\"\"\n      size=\"md\"\n    ></esa-text-field>\n    <esa-select\n      label=\"Reporting Period\"\n      options='[{\"label\":\"2026 Water Year\",\"value\":\"2026 Water Year\"},{\"label\":\"2025 Water Year\",\"value\":\"2025 Water Year\"},{\"label\":\"2024 Water Year\",\"value\":\"2024 Water Year\"}]'\n      data-default=\"2026 Water Year\"\n      size=\"md\"\n    ></esa-select>\n    <esa-select\n      label=\"Type\"\n      options='[{\"label\":\"Wholesale to Wholesale\",\"value\":\"Wholesale to Wholesale\"},{\"label\":\"Wholesale to Patron\",\"value\":\"Wholesale to Patron\"},{\"label\":\"Patron to Patron\",\"value\":\"Patron to Patron\"}]'\n      data-default=\"Wholesale to Wholesale\"\n      size=\"md\"\n    ></esa-select>\n    <esa-textarea\n      label=\"Description\"\n      value=\"Wholesale water exchange modeling North Unit, Central Oregon, and Three Sisters transfers for the 2026 water year.\"\n      rows=\"4\"\n      size=\"md\"\n    ></esa-textarea>\n  </div>\n  <div slot=\"footer\" class=\"cluster\" data-justify=\"end\" data-gap=\"sm\">\n    <span data-dialog-save=\"\">\n      <span\n        class=\"esa-button esa-button--color-primary esa-button--appearance-fill esa-button--md\"\n      >\n        <button class=\"esa-button__native\" type=\"button\">\n          <span class=\"esa-button__label\"> Save </span>\n        </button>\n      </span>\n    </span>\n    <span data-dialog-cancel=\"\">\n      <span\n        class=\"esa-button esa-button--color-primary esa-button--appearance-outline esa-button--md\"\n      >\n        <button class=\"esa-button__native\" type=\"button\">\n          <span class=\"esa-button__label\"> Cancel </span>\n        </button>\n      </span>\n    </span>\n  </div>\n</esa-dialog>",
+      "css": ".stack {\n  --gap: var(--spacing-400, 1rem);\n  display: flex;\n  flex-direction: column;\n  gap: var(--gap);\n}\n.cluster {\n  --gap: var(--spacing-300, 0.75rem);\n  --align: center;\n  --justify: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n  gap: var(--gap);\n  align-items: var(--align);\n  justify-content: var(--justify);\n}\n.esa-button {\n  --_btn-height: var(--form-height-md, 40px);\n  --_btn-padding-x: var(--form-padding-x-md, 16px);\n  --_btn-font-size: var(--form-font-size-md, 14px);\n  --_btn-radius: var(--form-radius-md, 6px);\n  --_accent: var(--color-primary, #43608a);\n  --_accent-hover: var(--color-primary-hover, #39506f);\n  --_on: var(--color-text-inverse, #ffffff);\n  display: inline-block;\n}\n.esa-button--sm {\n  --_btn-height: var(--form-height-sm, 32px);\n  --_btn-padding-x: var(--form-padding-x-sm, 12px);\n  --_btn-font-size: var(--form-font-size-sm, 12px);\n  --_btn-radius: var(--form-radius-sm, 4px);\n}\n.esa-button__native {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: var(--spacing-200, 8px);\n  width: 100%;\n  height: var(--_btn-height);\n  padding-inline: var(--_btn-padding-x);\n  border: 1px solid transparent;\n  border-radius: var(--_btn-radius);\n  font-size: var(--_btn-font-size);\n  font-family: var(--font-sans, system-ui, sans-serif);\n  font-weight: var(--font-weight-medium, 500);\n  line-height: 1;\n  text-decoration: none;\n  cursor: pointer;\n  transition:\n    background var(--transition-fast, 0.15s ease),\n    border-color var(--transition-fast, 0.15s ease);\n  -webkit-appearance: none;\n  appearance: none;\n}\n.esa-button--sm .esa-button__native {\n  height: auto;\n  padding-block: var(--spacing-150, 6px);\n}\n.esa-button--appearance-fill .esa-button__native {\n  background: var(--_accent);\n  color: var(--_on);\n  border-color: transparent;\n}\n.esa-button--color-ghost .esa-button__native {\n  background: transparent;\n  color: var(--color-text-primary, #171717);\n  border-color: transparent;\n}\n.esa-button__label {\n  white-space: nowrap;\n}\n.esa-button--appearance-fill .esa-button__native:hover:not(:disabled) {\n  background: var(--_accent-hover);\n}\n.esa-button--color-ghost .esa-button__native:hover:not(:disabled),\n.esa-button--color-ghost.esa-button--active .esa-button__native {\n  background: var(--color-surface-sunken, #efefef);\n}\n.esa-button--appearance-outline .esa-button__native,\n.esa-button--appearance-dashed .esa-button__native {\n  background: transparent;\n  color: var(--_accent);\n  border-color: var(--_accent);\n}",
+      "guide": {
+        "intent": "The \"Edit Scenario Details\" modal opened from the Overview Details card. A short form — scenario name, type, reporting period, description — over a Save / Cancel footer. Prototype: Save console.logs and closes; nothing persists.",
+        "decisions": [
+          "Purely composed from legos: esa-dialog (chrome, scrim, Esc, focus trap) wrapping esa-text-field / esa-select / esa-textarea.",
+          "Footer actions are esa-buttons in the house Windows order — primary Save sits LEFT of Cancel, both right-aligned.",
+          "Opened imperatively: the Overview panel calls this dialog's .show() (id edit-details-dialog)."
+        ],
+        "gotchas": [
+          "esa-select's selected value is a JS accessor (.value), NOT an attribute-bound prop — preset defaults through the data-default + .value pattern after the element upgrades, not via a value=\"\" attribute."
+        ],
+        "acceptance": [
+          "The Details Edit button opens a modal with the name/type/period/description fields prefilled; Save closes it (prototype no-op), Esc / scrim / Cancel dismiss it."
+        ]
+      },
+      "tokens": [
+        {
+          "name": "--color-primary",
+          "value": "#235069",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-primary-hover",
+          "value": "#214459",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-surface-sunken",
+          "value": "#efefef",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-inverse",
+          "value": "#ffffff",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-primary",
+          "value": "#171717",
+          "tier": "semantic"
+        },
+        {
+          "name": "--font-sans",
+          "value": "\"DM Sans\", system-ui, sans-serif",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-weight-medium",
+          "value": "450",
+          "tier": "primitive"
+        },
+        {
+          "name": "--form-font-size-md",
+          "value": "clamp(.75rem, .66rem + .44vw, .9375rem)",
+          "tier": "component"
+        },
+        {
+          "name": "--form-font-size-sm",
+          "value": "clamp(.625rem, .56rem + .32vw, .75rem)",
+          "tier": "component"
+        },
+        {
+          "name": "--form-height-md",
+          "value": "40px",
+          "tier": "component"
+        },
+        {
+          "name": "--form-height-sm",
+          "value": "32px",
+          "tier": "component"
+        },
+        {
+          "name": "--form-padding-x-md",
+          "value": ".75rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-padding-x-sm",
+          "value": ".625rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-radius-md",
+          "value": ".25rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-radius-sm",
+          "value": ".25rem",
+          "tier": "component"
+        },
+        {
+          "name": "--spacing-150",
+          "value": ".375rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-200",
+          "value": ".5rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-300",
+          "value": ".75rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-400",
+          "value": "1rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--transition-fast",
+          "value": ".15s ease",
+          "tier": "primitive"
+        }
+      ],
+      "claudePath": "claude/edit-details-dialog.md",
+      "repoPath": "public/handoff/prototypes-scenario-overview/claude/edit-details-dialog.md"
+    },
+    {
+      "label": "Configure Scenario dialog",
+      "tag": "esa-dialog",
+      "selector": "#edit-configure-dialog",
+      "apply": [
+        {
+          "click": "#edit-configure-trigger"
+        }
+      ],
+      "html": "<esa-dialog\n  id=\"edit-configure-dialog\"\n  class=\"noria-configure\"\n  heading=\"Configure Scenario\"\n  size=\"lg\"\n  open=\"\"\n>\n  <div class=\"stack\" data-gap=\"lg\">\n    <!-- Price bounds -->\n    <div class=\"noria-configure__cols\">\n      <esa-text-field\n        label=\"Price Floor\"\n        prefix=\"$\"\n        type=\"number\"\n        placeholder=\"Enter price floor\"\n        value=\"50\"\n        size=\"md\"\n      ></esa-text-field>\n      <esa-text-field\n        label=\"Price Ceiling\"\n        prefix=\"$\"\n        type=\"number\"\n        placeholder=\"Enter price ceiling\"\n        value=\"200\"\n        size=\"md\"\n      ></esa-text-field>\n    </div>\n    <!-- Districts | Conservation Buyers -->\n    <div class=\"noria-configure__cols\">\n      <!-- Districts -->\n      <section class=\"stack noria-configure__section\" data-gap=\"sm\">\n        <div class=\"repel\" data-align=\"center\">\n          <h3 class=\"noria-configure__section-title\">Districts</h3>\n          <span data-select-all=\"\">\n            <span\n              class=\"esa-button esa-button--color-secondary esa-button--appearance-fill esa-button--sm\"\n            >\n              <button class=\"esa-button__native\" type=\"button\">\n                <span class=\"esa-button__label\"> Select All </span>\n              </button>\n            </span>\n          </span>\n        </div>\n        <div class=\"stack\" data-gap=\"2xs\">\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #1f3a4d\"></span>\n              <span class=\"noria-party__name type-body\">Arnold</span>\n            </span>\n            <div class=\"cluster\" data-gap=\"md\" data-align=\"center\">\n              <esa-checkbox size=\"sm\" label=\"Buyer\"></esa-checkbox>\n              <esa-checkbox size=\"sm\" label=\"Seller\"></esa-checkbox>\n            </div>\n          </div>\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #2e3a66\"></span>\n              <span class=\"noria-party__name type-body\">Central Oregon</span>\n            </span>\n            <div class=\"cluster\" data-gap=\"md\" data-align=\"center\">\n              <esa-checkbox size=\"sm\" label=\"Buyer\" checked=\"\"></esa-checkbox>\n              <esa-checkbox size=\"sm\" label=\"Seller\" checked=\"\"></esa-checkbox>\n            </div>\n          </div>\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #5b5b8f\"></span>\n              <span class=\"noria-party__name type-body\">Lone Pine</span>\n            </span>\n            <div class=\"cluster\" data-gap=\"md\" data-align=\"center\">\n              <esa-checkbox size=\"sm\" label=\"Buyer\"></esa-checkbox>\n              <esa-checkbox size=\"sm\" label=\"Seller\"></esa-checkbox>\n            </div>\n          </div>\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #7d4fa3\"></span>\n              <span class=\"noria-party__name type-body\">North Unit</span>\n            </span>\n            <div class=\"cluster\" data-gap=\"md\" data-align=\"center\">\n              <esa-checkbox size=\"sm\" label=\"Buyer\" checked=\"\"></esa-checkbox>\n              <esa-checkbox size=\"sm\" label=\"Seller\" checked=\"\"></esa-checkbox>\n            </div>\n          </div>\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #b83e75\"></span>\n              <span class=\"noria-party__name type-body\">Ochoco</span>\n            </span>\n            <div class=\"cluster\" data-gap=\"md\" data-align=\"center\">\n              <esa-checkbox size=\"sm\" label=\"Buyer\"></esa-checkbox>\n              <esa-checkbox size=\"sm\" label=\"Seller\"></esa-checkbox>\n            </div>\n          </div>\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #e05545\"></span>\n              <span class=\"noria-party__name type-body\">Swalley</span>\n            </span>\n            <div class=\"cluster\" data-gap=\"md\" data-align=\"center\">\n              <esa-checkbox size=\"sm\" label=\"Buyer\"></esa-checkbox>\n              <esa-checkbox size=\"sm\" label=\"Seller\"></esa-checkbox>\n            </div>\n          </div>\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #e07e2f\"></span>\n              <span class=\"noria-party__name type-body\">Three Sisters</span>\n            </span>\n            <div class=\"cluster\" data-gap=\"md\" data-align=\"center\">\n              <esa-checkbox size=\"sm\" label=\"Buyer\" checked=\"\"></esa-checkbox>\n              <esa-checkbox size=\"sm\" label=\"Seller\" checked=\"\"></esa-checkbox>\n            </div>\n          </div>\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #e8a01f\"></span>\n              <span class=\"noria-party__name type-body\">Tumalo</span>\n            </span>\n            <div class=\"cluster\" data-gap=\"md\" data-align=\"center\">\n              <esa-checkbox size=\"sm\" label=\"Buyer\"></esa-checkbox>\n              <esa-checkbox size=\"sm\" label=\"Seller\"></esa-checkbox>\n            </div>\n          </div>\n        </div>\n      </section>\n      <!-- Conservation Buyers -->\n      <section class=\"stack noria-configure__section\" data-gap=\"sm\">\n        <div class=\"repel\" data-align=\"center\">\n          <h3 class=\"noria-configure__section-title\">Conservation Buyers</h3>\n          <span data-select-all=\"\">\n            <span\n              class=\"esa-button esa-button--color-secondary esa-button--appearance-fill esa-button--sm\"\n            >\n              <button class=\"esa-button__native\" type=\"button\">\n                <span class=\"esa-button__label\"> Select All </span>\n              </button>\n            </span>\n          </span>\n        </div>\n        <div class=\"stack\" data-gap=\"2xs\">\n          <div class=\"repel noria-configure__row\" data-align=\"center\">\n            <span class=\"noria-party\" data-size=\"md\">\n              <span class=\"noria-party__dot\" style=\"background: #2b2f3a\"></span>\n              <span class=\"noria-party__name type-body\">Deschutes River Conservancy</span>\n            </span>\n            <esa-checkbox size=\"sm\" label=\"Buyer\"></esa-checkbox>\n          </div>\n        </div>\n      </section>\n    </div>\n    <!-- Water Types: each row streamlines the type name + an inline set-aside field -->\n    <section class=\"stack\" data-gap=\"sm\">\n      <h3 class=\"noria-configure__section-title\">Water Types</h3>\n      <div class=\"noria-configure__cols\">\n        <div\n          class=\"repel noria-configure__row noria-configure__water\"\n          data-align=\"center\"\n        >\n          <span class=\"noria-configure__row-label\">Fallowed Water</span>\n          <div class=\"cluster\" data-gap=\"sm\" data-align=\"center\">\n            <span class=\"noria-configure__row-label\">Set Aside</span>\n            <esa-text-field\n              class=\"noria-configure__setaside\"\n              suffix=\"%\"\n              type=\"number\"\n              value=\"25\"\n              size=\"md\"\n            ></esa-text-field>\n          </div>\n        </div>\n        <div\n          class=\"repel noria-configure__row noria-configure__water\"\n          data-align=\"center\"\n        >\n          <span class=\"noria-configure__row-label\">Land Conversion Water</span>\n          <div class=\"cluster\" data-gap=\"sm\" data-align=\"center\">\n            <span class=\"noria-configure__row-label\">Set Aside</span>\n            <esa-text-field\n              class=\"noria-configure__setaside\"\n              suffix=\"%\"\n              type=\"number\"\n              value=\"0\"\n              size=\"md\"\n            ></esa-text-field>\n          </div>\n        </div>\n      </div>\n    </section>\n  </div>\n  <div slot=\"footer\" class=\"cluster\" data-justify=\"end\" data-gap=\"sm\">\n    <span data-dialog-save=\"\">\n      <span\n        class=\"esa-button esa-button--color-primary esa-button--appearance-fill esa-button--md\"\n      >\n        <button class=\"esa-button__native\" type=\"button\">\n          <span class=\"esa-button__label\"> Save </span>\n        </button>\n      </span>\n    </span>\n    <span data-dialog-cancel=\"\">\n      <span\n        class=\"esa-button esa-button--color-primary esa-button--appearance-outline esa-button--md\"\n      >\n        <button class=\"esa-button__native\" type=\"button\">\n          <span class=\"esa-button__label\"> Cancel </span>\n        </button>\n      </span>\n    </span>\n  </div>\n</esa-dialog>",
+      "css": ".esa-button {\n  --_btn-height: var(--form-height-md, 40px);\n  --_btn-padding-x: var(--form-padding-x-md, 16px);\n  --_btn-font-size: var(--form-font-size-md, 14px);\n  --_btn-radius: var(--form-radius-md, 6px);\n  --_accent: var(--color-primary, #43608a);\n  --_accent-hover: var(--color-primary-hover, #39506f);\n  --_on: var(--color-text-inverse, #ffffff);\n  display: inline-block;\n}\n.esa-button--sm {\n  --_btn-height: var(--form-height-sm, 32px);\n  --_btn-padding-x: var(--form-padding-x-sm, 12px);\n  --_btn-font-size: var(--form-font-size-sm, 12px);\n  --_btn-radius: var(--form-radius-sm, 4px);\n}\n.esa-button__native {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: var(--spacing-200, 8px);\n  width: 100%;\n  height: var(--_btn-height);\n  padding-inline: var(--_btn-padding-x);\n  border: 1px solid transparent;\n  border-radius: var(--_btn-radius);\n  font-size: var(--_btn-font-size);\n  font-family: var(--font-sans, system-ui, sans-serif);\n  font-weight: var(--font-weight-medium, 500);\n  line-height: 1;\n  text-decoration: none;\n  cursor: pointer;\n  transition:\n    background var(--transition-fast, 0.15s ease),\n    border-color var(--transition-fast, 0.15s ease);\n  -webkit-appearance: none;\n  appearance: none;\n}\n.esa-button--sm .esa-button__native {\n  height: auto;\n  padding-block: var(--spacing-150, 6px);\n}\n.esa-button--appearance-fill .esa-button__native {\n  background: var(--_accent);\n  color: var(--_on);\n  border-color: transparent;\n}\n.esa-button--color-ghost .esa-button__native {\n  background: transparent;\n  color: var(--color-text-primary, #171717);\n  border-color: transparent;\n}\n.esa-button__label {\n  white-space: nowrap;\n}\n.esa-button--appearance-outline .esa-button__native,\n.esa-button--appearance-dashed .esa-button__native {\n  background: transparent;\n  color: var(--_accent);\n  border-color: var(--_accent);\n}\n.esa-button--color-secondary {\n  --_accent: var(--color-secondary, #5787b9);\n  --_accent-hover: var(--color-secondary-hover, #43608a);\n}\n.esa-button--appearance-fill .esa-button__native:hover:not(:disabled) {\n  background: var(--_accent-hover);\n}\n.esa-button--color-ghost .esa-button__native:hover:not(:disabled),\n.esa-button--color-ghost.esa-button--active .esa-button__native {\n  background: var(--color-surface-sunken, #efefef);\n}\n.noria-party {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--spacing-200, 8px);\n  min-width: 0;\n}\n.noria-party__dot {\n  flex: none;\n  inline-size: 12px;\n  block-size: 12px;\n  border-radius: var(--radius-full, 999px);\n}\n.noria-party__name {\n  color: var(--color-text, #171717);\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.noria-configure__cols {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: var(--spacing-400, 16px);\n  align-items: start;\n}\n.noria-configure__section-title {\n  margin: 0;\n  font-size: 1rem;\n  font-weight: var(--font-weight-bold, 650);\n  line-height: var(--line-height-tight, 1.3);\n  color: var(--color-text-primary, #171717);\n}\n.noria-configure__row {\n  gap: var(--spacing-200, 8px);\n  padding: var(--spacing-200, 8px) var(--spacing-300, 12px);\n  background: var(--color-surface, #fff);\n  border: 1px solid var(--color-border, #e5e5e5);\n  border-radius: var(--radius-200, 8px);\n}\n.noria-configure__row .noria-party__name {\n  font-size: 0.875rem;\n  font-weight: var(--font-weight-semibold, 550);\n}\n.noria-configure__water {\n  background: var(--color-gray-50, #fafafa);\n}\n.noria-configure__row-label {\n  font-size: 0.875rem;\n  font-weight: var(--font-weight-semibold, 550);\n  color: var(--color-text-primary, #171717);\n}\n.noria-configure__setaside {\n  flex: 0 0 7rem;\n}\n.stack {\n  --gap: var(--spacing-400, 1rem);\n  display: flex;\n  flex-direction: column;\n  gap: var(--gap);\n}\n.cluster {\n  --gap: var(--spacing-300, 0.75rem);\n  --align: center;\n  --justify: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n  gap: var(--gap);\n  align-items: var(--align);\n  justify-content: var(--justify);\n}\n.type-body {\n  font-size: var(--type-size-200);\n  font-weight: var(--font-weight-regular);\n  line-height: var(--line-height-relaxed);\n  letter-spacing: var(--letter-spacing-normal);\n}\n.type-body-small {\n  font-size: var(--type-size-150);\n  font-weight: var(--font-weight-regular);\n  line-height: var(--line-height-normal);\n  letter-spacing: var(--letter-spacing-normal);\n}\n.repel {\n  --gap: var(--spacing-400, 1rem);\n  --align: center;\n  display: flex;\n  flex-wrap: wrap;\n  gap: var(--gap);\n  align-items: var(--align);\n  justify-content: space-between;\n}",
+      "guide": {
+        "intent": "The \"Configure Scenario\" modal opened from the Overview Configure card. Ports the production modal's shape: a two-column body — Price Floor | Price Ceiling, then Districts | Conservation Buyers (each a Select-All section of party-dot + name + role checkboxes), then Water Types set-asides across the bottom.",
+        "decisions": [
+          "esa-dialog widened via --dialog-width-lg (64rem) so the two-column body has room; size=\"lg\".",
+          "Reads the FULL water-bank roster (all districts + conservation buyers), NOT just this scenario's active participants — the active three come pre-checked.",
+          "Price bounds + each water type's set-aside use esa-text-field with segmented affixes — a \"$\" prefix on prices, a \"%\" suffix on set-asides (gray affix background + hairline border).",
+          "Water types sit in a gray-50 box (border + radius) with the set-aside label inline, so each reads as one streamlined horizontal control; district rows are denser (tighter padding, size=\"sm\" checkboxes).",
+          "Composes legos: esa-dialog + esa-text-field + esa-button (Select All + footer) + noria-party-dot + esa-checkbox pairs."
+        ],
+        "gotchas": [
+          "Select-All and Save are client stubs in the prototype — no persistence.",
+          "The roster is the full district + conservation-buyer list; do not filter it to the scenario's active participants (those are just the pre-checked subset).",
+          "Form labels and water-type / district names run smaller + heavier than default (14px / semibold) to match the prod density — driven by the spoke's --form-label-font-size / --form-label-font-weight hooks."
+        ],
+        "acceptance": [
+          "The Configure Edit button opens a wide two-column modal; prices show a $ prefix and set-asides a % suffix; the active participants are pre-checked; Save closes it (prototype no-op)."
+        ]
+      },
+      "tokens": [
+        {
+          "name": "--color-border",
+          "value": "#e5e5e5",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-gray-50",
+          "value": "#fafafa",
+          "tier": "primitive"
+        },
+        {
+          "name": "--color-primary",
+          "value": "#235069",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-primary-hover",
+          "value": "#214459",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-secondary",
+          "value": "#2d759c",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-secondary-hover",
+          "value": "#265e7e",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-surface",
+          "value": "#ffffff",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-surface-sunken",
+          "value": "#efefef",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-inverse",
+          "value": "#ffffff",
+          "tier": "semantic"
+        },
+        {
+          "name": "--color-text-primary",
+          "value": "#171717",
+          "tier": "semantic"
+        },
+        {
+          "name": "--font-sans",
+          "value": "\"DM Sans\", system-ui, sans-serif",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-weight-bold",
+          "value": "650",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-weight-medium",
+          "value": "450",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-weight-regular",
+          "value": "350",
+          "tier": "primitive"
+        },
+        {
+          "name": "--font-weight-semibold",
+          "value": "550",
+          "tier": "primitive"
+        },
+        {
+          "name": "--form-font-size-md",
+          "value": "clamp(.75rem, .66rem + .44vw, .9375rem)",
+          "tier": "component"
+        },
+        {
+          "name": "--form-font-size-sm",
+          "value": "clamp(.625rem, .56rem + .32vw, .75rem)",
+          "tier": "component"
+        },
+        {
+          "name": "--form-height-md",
+          "value": "40px",
+          "tier": "component"
+        },
+        {
+          "name": "--form-height-sm",
+          "value": "32px",
+          "tier": "component"
+        },
+        {
+          "name": "--form-padding-x-md",
+          "value": ".75rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-padding-x-sm",
+          "value": ".625rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-radius-md",
+          "value": ".25rem",
+          "tier": "component"
+        },
+        {
+          "name": "--form-radius-sm",
+          "value": ".25rem",
+          "tier": "component"
+        },
+        {
+          "name": "--letter-spacing-normal",
+          "value": ".01em",
+          "tier": "primitive"
+        },
+        {
+          "name": "--line-height-normal",
+          "value": "1.6",
+          "tier": "primitive"
+        },
+        {
+          "name": "--line-height-relaxed",
+          "value": "1.8",
+          "tier": "primitive"
+        },
+        {
+          "name": "--line-height-tight",
+          "value": "1.3",
+          "tier": "primitive"
+        },
+        {
+          "name": "--radius-200",
+          "value": ".25rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--radius-full",
+          "value": "9999px",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-150",
+          "value": ".375rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-200",
+          "value": ".5rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-300",
+          "value": ".75rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--spacing-400",
+          "value": "1rem",
+          "tier": "primitive"
+        },
+        {
+          "name": "--transition-fast",
+          "value": ".15s ease",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-150",
+          "value": "clamp(.6875rem, .61rem + .38vw, .875rem)",
+          "tier": "primitive"
+        },
+        {
+          "name": "--type-size-200",
+          "value": "clamp(.75rem, .66rem + .44vw, .9375rem)",
+          "tier": "primitive"
+        }
+      ],
+      "claudePath": "claude/configure-scenario-dialog.md",
+      "repoPath": "public/handoff/prototypes-scenario-overview/claude/configure-scenario-dialog.md"
+    }
+  ]
+}

@@ -48,6 +48,18 @@ The prototype screen's title lockup: a primary-blue compass glyph beside the pag
 
 ## Styles
 ```css
+.user-trigger > .esa-icon:last-child {
+  flex-shrink: 0;
+  color: var(--color-text-muted, #737373);
+}
+.nav-sublink .esa-icon {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary, #525252);
+  transition: color 0.15s ease;
+}
+.nav-sublink.active .esa-icon {
+  color: var(--_nav-active-color, #235069);
+}
 .esa-icon {
   --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));
   display: inline-flex;
@@ -100,18 +112,6 @@ The prototype screen's title lockup: a primary-blue compass glyph beside the pag
   font-size: var(--type-size-300, 1.125rem);
   line-height: 1.4;
   color: var(--color-text-secondary, #525252);
-}
-.user-trigger > .esa-icon:last-child {
-  flex-shrink: 0;
-  color: var(--color-text-muted, #737373);
-}
-.nav-sublink .esa-icon {
-  flex-shrink: 0;
-  color: var(--color-text-tertiary, #525252);
-  transition: color 0.15s ease;
-}
-.nav-sublink.active .esa-icon {
-  color: var(--_nav-active-color, #235069);
 }
 ```
 
