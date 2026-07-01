@@ -1,0 +1,374 @@
+---
+// noria-balance-sheet — the Balance Sheet section of the Scenario → Report page.
+// A three-band "flow" inside an esa-card: Offers (two opposing proportional bars) ·
+// Transactions (a dimensioned value block — width = Volume Transacted, height =
+// Avg Price/ac-ft, area = Transaction Price) · Allocation (a donut splitting the
+// transacted volume into Delivery + In-stream). Each band is a DIFFERENT mark
+// (length → area → arc) so the section reads as one instrument, not repeated tiles.
+//
+// bcn-lego-checked: no esa- lego models a multi-band metric flow — esa-stat is a
+// single value, esa-progress-bar is one bar, and none compose bars + a value block
+// + a donut. Checked Beacon (no balance-sheet viz equivalent). Composes the esa-card
+// lego as the frame; the bars, value block, and donut are genuine bespoke viz whose
+// reusable, documented home is this component.
+import EsaCard from '@esa/ecology/esa-card.astro';
+import { usd, num, type BalanceSheet } from '../../data/scenario';
+
+interface Props {
+  bs: BalanceSheet;
+}
+const { bs } = Astro.props;
+
+// Offers — two opposing bars on a shared scale (the larger side fills the track).
+const offersMax = Math.max(bs.offersToSell, bs.offersToBuy, 1);
+const sellPct = (bs.offersToSell / offersMax) * 100;
+const buyPct = (bs.offersToBuy / offersMax) * 100;
+
+// Allocation donut — split the transacted volume into Delivery + In-stream.
+// Green (in-stream) is drawn first from 12 o'clock; blue (delivery) follows it.
+const R = 42;
+const C = 2 * Math.PI * R;
+const vol = bs.volumeTransacted;
+const instreamFrac = vol > 0 ? bs.instreamBenefit / vol : 0;
+const deliveryFrac = vol > 0 ? bs.approvedForDelivery / vol : 0;
+const instreamLen = instreamFrac * C;
+const deliveryLen = deliveryFrac * C;
+const instreamPct = Math.round(instreamFrac * 100);
+const deliveryPct = Math.round(deliveryFrac * 100);
+
+// Display strings (share the scenario's usd/num formatters).
+const avgPriceStr = bs.avgPrice != null ? usd(bs.avgPrice) : '—';
+const totalStr = usd(bs.transactionPrice, 0);
+const volStr = num(bs.volumeTransacted, 0);
+const sellStr = num(bs.offersToSell, 0);
+const buyStr = num(bs.offersToBuy, 0);
+const deliveryStr = num(bs.approvedForDelivery, 0);
+const instreamStr = num(bs.instreamBenefit, 0);
+---
+<EsaCard title="Balance Sheet">
+  <div class="noria-balance">
+
+    <!-- Offers — two opposing quantities on a shared scale. -->
+    <div class="noria-balance__band">
+      <p class="noria-balance__cap">Offers</p>
+      <div class="noria-balance__bars">
+        <div>
+          <div class="noria-balance__barhead">
+            <span class="noria-balance__barlbl">Offers to Sell</span>
+            <span class="noria-balance__barval">{sellStr}<span class="noria-balance__u">ac-ft</span></span>
+          </div>
+          <div class="noria-balance__bar noria-balance__bar--sell"><span style={`width:${sellPct}%`}></span></div>
+        </div>
+        <div>
+          <div class="noria-balance__barhead">
+            <span class="noria-balance__barlbl">Offers to Buy</span>
+            <span class="noria-balance__barval">{buyStr}<span class="noria-balance__u">ac-ft</span></span>
+          </div>
+          <div class="noria-balance__bar noria-balance__bar--buy"><span style={`width:${buyPct}%`}></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions — a dimensioned value block: Volume × Avg Price = Transaction Price. -->
+    <div class="noria-balance__band">
+      <p class="noria-balance__cap">Transactions</p>
+      <div class="noria-balance__measured">
+        <div class="noria-balance__avglbl">
+          <div class="noria-balance__mname">Avg Price</div>
+          <div class="noria-balance__mval">{avgPriceStr}<span class="noria-balance__u">/ac-ft</span></div>
+        </div>
+        <div class="noria-balance__avgdim">
+          <div class="noria-balance__vdim"><span class="noria-balance__vcap"></span><span class="noria-balance__vline"></span><span class="noria-balance__vcap"></span></div>
+        </div>
+        <div class="noria-balance__block">
+          <div class="noria-balance__total">{totalStr}</div>
+          <div class="noria-balance__blockcap">Transaction Price · total</div>
+        </div>
+        <div class="noria-balance__voldim">
+          <div class="noria-balance__hdim"><span class="noria-balance__hcap"></span><span class="noria-balance__hline"></span><span class="noria-balance__hcap"></span></div>
+        </div>
+        <div class="noria-balance__vollbl">
+          <div class="noria-balance__mval">{volStr}<span class="noria-balance__u">ac-ft</span></div>
+          <div class="noria-balance__mname">Volume Transacted</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Allocation — the transacted volume split into Delivery + In-stream. -->
+    <div class="noria-balance__band">
+      <p class="noria-balance__cap">Allocation</p>
+      <div class="noria-balance__alloc">
+        <div class="noria-balance__donut">
+          <svg width="92" height="92" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r={R} fill="none" stroke="var(--color-gray-100)" stroke-width="13"></circle>
+            <circle
+              cx="50" cy="50" r={R} fill="none" stroke="var(--noria-blue-700)" stroke-width="13"
+              stroke-dasharray={`${deliveryLen} ${C}`} stroke-dashoffset={-instreamLen}
+              transform="rotate(-90 50 50)"
+            ></circle>
+            <circle
+              cx="50" cy="50" r={R} fill="none" stroke="var(--noria-green-500)" stroke-width="13"
+              stroke-dasharray={`${instreamLen} ${C}`} stroke-dashoffset="0"
+              transform="rotate(-90 50 50)" stroke-linecap="butt"
+            ></circle>
+          </svg>
+          <div class="noria-balance__donutlbl">
+            <span class="noria-balance__donutc">{volStr}</span>
+            <span class="noria-balance__donutu">ac-ft</span>
+          </div>
+        </div>
+        <div class="noria-balance__legend">
+          <div class="noria-balance__legrow">
+            <span class="noria-balance__sw noria-balance__sw--del"></span>
+            <span class="noria-balance__legtext">
+              <span class="noria-balance__legtop"><span class="noria-balance__pct">{deliveryPct}%</span> <span class="noria-balance__legl">Approved for Delivery</span></span>
+              <span class="noria-balance__legq">{deliveryStr} ac-ft</span>
+            </span>
+          </div>
+          <div class="noria-balance__legrow">
+            <span class="noria-balance__sw noria-balance__sw--eco"></span>
+            <span class="noria-balance__legtext">
+              <span class="noria-balance__legtop"><span class="noria-balance__pct">{instreamPct}%</span> <span class="noria-balance__legl">In-stream Benefit</span></span>
+              <span class="noria-balance__legq">{instreamStr} ac-ft</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</EsaCard>
+
+<style>
+  /* bcn-lego-checked: three-band balance-sheet viz; the esa-card frame is the lego,
+     these bars / value block / donut are the bespoke marks this component owns. */
+
+  /* Three bands, top-aligned (stretched columns → content flows from a common top
+     line), separated by full-height hairlines with wide gaps. No connectors. */
+  .noria-balance {
+    display: grid;
+    grid-template-columns: 0.95fr 1.15fr 0.95fr;
+    align-items: stretch;
+  }
+  .noria-balance__band {
+    padding-inline: var(--spacing-650);
+  }
+  .noria-balance__band:first-child { padding-left: 0; }
+  .noria-balance__band:last-child { padding-right: 0; }
+  .noria-balance__band + .noria-balance__band {
+    border-left: 1px solid var(--color-border);
+  }
+  .noria-balance__cap {
+    margin: 0 0 var(--spacing-400);
+    font-size: 0.9375rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+  }
+
+  /* shared metric label + unit suffix */
+  .noria-balance__mname {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+  }
+  .noria-balance__mval {
+    font-size: 1.0625rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .noria-balance__u {
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    margin-left: 0.2em;
+  }
+
+  /* Offers — opposing bars */
+  .noria-balance__bars {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-400);
+  }
+  .noria-balance__barhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--spacing-150);
+  }
+  .noria-balance__barlbl {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+  }
+  .noria-balance__barval {
+    font-size: 1.125rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .noria-balance__bar {
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-sunken);
+    overflow: hidden;
+  }
+  .noria-balance__bar > span {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-full);
+  }
+  .noria-balance__bar--sell > span { background: var(--noria-blue-400); }
+  .noria-balance__bar--buy > span { background: var(--noria-blue-600); }
+
+  /* Transactions — measured value block */
+  .noria-balance__measured {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "avglbl avgdim block"
+      ".      .      voldim"
+      ".      .      vollbl";
+    column-gap: var(--spacing-250);
+    row-gap: var(--spacing-200);
+    align-items: stretch;
+  }
+  .noria-balance__avglbl {
+    grid-area: avglbl;
+    align-self: center;
+    text-align: right;
+  }
+  .noria-balance__avgdim { grid-area: avgdim; }
+  .noria-balance__block {
+    grid-area: block;
+    height: 78px;
+    background: var(--noria-blue-600);
+    border-radius: var(--radius-100);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+  }
+  .noria-balance__total {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .noria-balance__blockcap {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: var(--spacing-100);
+  }
+  .noria-balance__voldim {
+    grid-area: voldim;
+    padding-top: var(--spacing-100);
+  }
+  .noria-balance__vollbl {
+    grid-area: vollbl;
+    text-align: center;
+  }
+  /* dimension lines with end ticks */
+  .noria-balance__hdim { display: flex; align-items: center; width: 100%; }
+  .noria-balance__hcap { height: 7px; width: 1px; background: var(--color-gray-400); flex: none; }
+  .noria-balance__hline { height: 1px; flex: 1; background: var(--color-gray-400); }
+  .noria-balance__vdim { display: flex; flex-direction: column; align-items: center; height: 100%; }
+  .noria-balance__vcap { width: 7px; height: 1px; background: var(--color-gray-400); flex: none; }
+  .noria-balance__vline { width: 1px; flex: 1; background: var(--color-gray-400); }
+
+  /* Allocation — donut + legend */
+  .noria-balance__alloc {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-400);
+  }
+  .noria-balance__donut {
+    width: 92px;
+    height: 92px;
+    flex: none;
+    position: relative;
+  }
+  .noria-balance__donutlbl {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .noria-balance__donutc {
+    font-size: 1.0625rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .noria-balance__donutu {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+  .noria-balance__legend {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-250);
+  }
+  .noria-balance__legrow {
+    display: flex;
+    gap: var(--spacing-200);
+    align-items: flex-start;
+  }
+  .noria-balance__sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex: none;
+    margin-top: 5px;
+  }
+  .noria-balance__sw--eco { background: var(--noria-green-500); }
+  .noria-balance__sw--del { background: var(--noria-blue-700); }
+  .noria-balance__legtext {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .noria-balance__legtop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.35em;
+  }
+  .noria-balance__pct {
+    font-size: 1rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .noria-balance__legl {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+  }
+  .noria-balance__legq {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Narrow: stack the three bands with top separators instead of side hairlines. */
+  @media (max-width: 860px) {
+    .noria-balance {
+      grid-template-columns: 1fr;
+      row-gap: var(--spacing-500);
+    }
+    .noria-balance__band { padding-inline: 0; }
+    .noria-balance__band + .noria-balance__band {
+      border-left: 0;
+      border-top: 1px solid var(--color-border);
+      padding-top: var(--spacing-500);
+    }
+  }
+</style>
