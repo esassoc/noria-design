@@ -158,8 +158,14 @@ The collapsible left navigation. The brand lockup (mountain + water mark beside 
           stroke-linejoin="round"
           focusable="false"
         >
-          <path d="M16 7h6v6"></path>
-          <path d="m22 7-8.5 8.5-5-5L2 17"></path>
+          <path d="M12 16v5"></path>
+          <path d="M16 14.639V21"></path>
+          <path d="M20 10.656V21"></path>
+          <path
+            d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"
+          ></path>
+          <path d="M4 18.463V21"></path>
+          <path d="M8 14.656V21"></path>
         </svg>
       </span>
       <span class="nav-sublink__label">Scenarios</span>
@@ -209,30 +215,6 @@ The collapsible left navigation. The brand lockup (mountain + water mark beside 
 
 ## Styles
 ```css
-.esa-icon {
-  --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--_icon-size);
-  height: var(--_icon-size);
-  line-height: 1;
-  color: inherit;
-}
-.esa-icon--sm {
-  --_icon-size: var(--icon-size-sm, var(--icon-size-small, 16px));
-}
-.esa-icon svg {
-  display: block;
-  width: var(--_icon-size);
-  height: var(--_icon-size);
-}
-.esa-icon--md {
-  --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));
-}
-.esa-icon--xs {
-  --_icon-size: var(--icon-size-xs, 14px);
-}
 .user-trigger > .esa-icon:last-child {
   flex-shrink: 0;
   color: var(--color-text-muted, #737373);
@@ -336,6 +318,30 @@ The collapsible left navigation. The brand lockup (mountain + water mark beside 
   margin: var(--spacing-200, 0.5rem) var(--spacing-100, 0.25rem);
   border: 0;
   background: var(--_chrome-border);
+}
+.esa-icon {
+  --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+  line-height: 1;
+  color: inherit;
+}
+.esa-icon--sm {
+  --_icon-size: var(--icon-size-sm, var(--icon-size-small, 16px));
+}
+.esa-icon svg {
+  display: block;
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+}
+.esa-icon--md {
+  --_icon-size: var(--icon-size-md, var(--icon-size-medium, 20px));
+}
+.esa-icon--xs {
+  --_icon-size: var(--icon-size-xs, 14px);
 }
 ```
 

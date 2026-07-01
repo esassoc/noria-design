@@ -24,6 +24,15 @@ export interface Prototype {
 
 export const prototypes: Prototype[] = [
   {
+    slug: 'scenario',
+    title: 'Scenario Details',
+    description:
+      'The full scenario workspace — Overview, Offers, Transactions, Report, and User Management — for a Deschutes wholesale water exchange, inside the Deschutes Water Bank app shell.',
+    route: '/prototypes/scenario/overview',
+    createdAt: '2026-07-01',
+    status: 'live',
+  },
+  {
     slug: 'parcel-discovery',
     title: 'Parcel Discovery Tool',
     description:
@@ -37,3 +46,25 @@ export const prototypes: Prototype[] = [
 /** Newest first — the order the index table renders. */
 export const prototypesByNewest = (): Prototype[] =>
   [...prototypes].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+/** One curated handoff bundle target. */
+export interface HandoffTarget {
+  /** Spec file basename: src/data/handoff/<slug>.mjs. */
+  slug: string;
+  /** Route to capture; the bundle folder is this path dashified (see gen-handoff). */
+  route: string;
+}
+
+// Curated-handoff capture targets — DECOUPLED from the home-index `prototypes`
+// list above. A multi-tab prototype like Scenario Details is ONE index card but
+// MANY handoff bundles (one per tab route), so the two lists can't be the same.
+// gen-handoff reads these compact `{ slug, route }` objects; each needs a matching
+// spec at src/data/handoff/<slug>.mjs or it's skipped.
+export const handoffTargets: HandoffTarget[] = [
+  { slug: 'parcel-discovery', route: '/prototypes/parcel-discovery' },
+  { slug: 'scenario-overview', route: '/prototypes/scenario/overview' },
+  { slug: 'scenario-offers', route: '/prototypes/scenario/offers' },
+  { slug: 'scenario-transactions', route: '/prototypes/scenario/transactions' },
+  { slug: 'scenario-report', route: '/prototypes/scenario/report' },
+  { slug: 'scenario-users', route: '/prototypes/scenario/users' },
+];

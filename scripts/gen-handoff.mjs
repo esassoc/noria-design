@@ -28,13 +28,15 @@ const HUB_SRC = new URL('../node_modules/@esa/handoff/src/', import.meta.url);
 const { buildTierIndex, classifyTokens } = await import(new URL('tokens.mjs', HUB_SRC).href);
 const tierIndex = await buildTierIndex(root('node_modules/@esa/tokens'));
 
-// Routes from the registry (parse, not import — keeps this dep-free). Keep only
-// the ones with an authored spec.
+// Capture targets from the registry's `handoffTargets` array (parse, not import —
+// keeps this dep-free). This is DECOUPLED from the home-index `prototypes` list: a
+// multi-tab prototype (e.g. Scenario Details) is ONE index card but MANY handoff
+// bundles, one per tab route. Each target is a compact `{ slug, route }` object; the
+// multi-field `prototypes` rows never match that shape, so only handoffTargets are
+// picked up. Keep only targets with an authored spec at src/data/handoff/<slug>.mjs.
 const registry = readFileSync(root('src/data/prototypes.ts'), 'utf8');
-const slugs = [...registry.matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1]);
-const routes = [...registry.matchAll(/route:\s*'([^']+)'/g)].map((m) => m[1]);
-const targets = slugs
-  .map((slug, i) => ({ slug, route: routes[i] }))
+const targets = [...registry.matchAll(/\{\s*slug:\s*'([^']+)',\s*route:\s*'([^']+)'\s*\}/g)]
+  .map((m) => ({ slug: m[1], route: m[2] }))
   .filter((t) => existsSync(root(`src/data/handoff/${t.slug}.mjs`)));
 if (!targets.length) {
   console.error('gen-handoff — no prototypes with a spec in src/data/handoff/. Nothing to do.');
