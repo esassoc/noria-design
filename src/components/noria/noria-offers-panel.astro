@@ -87,9 +87,9 @@ const sellerMenu = sellerOptions.length
   : [{ label: 'No sellers in this scenario', disabled: true }];
 ---
 
-<section class="noria-offers-panel stack" data-gap="md">
+<section class="noria-offers-panel">
   <div class="repel">
-    <div></div>
+    <h2 class="type-section-title">Offers</h2>
     <div class="cluster" data-gap="sm">
       <esa-dropdown-menu
         id="offer-buy-menu"
@@ -97,7 +97,7 @@ const sellerMenu = sellerOptions.length
         position="below-end"
         items={JSON.stringify(buyerMenu)}
       >
-        <EsaButton appearance="outline">Make an Offer to Buy +</EsaButton>
+        <EsaButton appearance="outline" size="sm">Make an Offer to Buy +</EsaButton>
       </esa-dropdown-menu>
       <esa-dropdown-menu
         id="offer-sell-menu"
@@ -105,7 +105,7 @@ const sellerMenu = sellerOptions.length
         position="below-end"
         items={JSON.stringify(sellerMenu)}
       >
-        <EsaButton appearance="outline">Make an Offer to Sell +</EsaButton>
+        <EsaButton appearance="outline" size="sm">Make an Offer to Sell +</EsaButton>
       </esa-dropdown-menu>
     </div>
   </div>
@@ -117,7 +117,7 @@ const sellerMenu = sellerOptions.length
       rows={rows}
       downloadFileName="offers.csv"
       searchPlaceholder="Search offers…"
-      height="100%"
+      autoHeight
     />
   </div>
 
@@ -127,14 +127,14 @@ const sellerMenu = sellerOptions.length
 </section>
 
 <style>
-  /* Panel fills the tab; the grid section grows so the table gets real height. */
+  /* Panel fills the tab; the grid section grows so the table gets real height.
+     Tab-heading rhythm: ~32px from the tabs above to the h2 (16px AppPage gutter +
+     16px pad) and 16px from the h2 down to the grid. */
   .noria-offers-panel {
-    block-size: 100%;
-    min-block-size: 0;
-  }
-  .noria-offers-panel__grid {
-    flex: 1;
-    min-block-size: 24rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-400, 16px);
+    padding-block-start: var(--spacing-400, 16px);
   }
 </style>
 

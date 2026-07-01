@@ -46,8 +46,8 @@ const rows = users.map((u) => ({
 
 <section class="noria-users-panel">
   <div class="repel noria-users-panel__toolbar">
-    <span aria-hidden="true"></span>
-    <span id="add-user-btn"><EsaButton appearance="outline">Add User +</EsaButton></span>
+    <h2 class="type-section-title">User Management</h2>
+    <span id="add-user-btn"><EsaButton appearance="outline" size="sm">Add User +</EsaButton></span>
   </div>
 
   <div class="noria-users-panel__grid">
@@ -57,7 +57,7 @@ const rows = users.map((u) => ({
       rows={rows}
       downloadFileName="scenario-users"
       searchPlaceholder="Search users…"
-      height="100%"
+      autoHeight
     />
   </div>
 
@@ -71,19 +71,8 @@ const rows = users.map((u) => ({
   .noria-users-panel {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-300, 12px);
-    height: 100%;
-    min-height: 0;
-  }
-
-  .noria-users-panel__grid {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-  .noria-users-panel__grid > :global(*) {
-    flex: 1;
-    min-width: 0;
+    gap: var(--spacing-400, 16px);
+    padding-block-start: var(--spacing-400, 16px);
   }
 </style>
 

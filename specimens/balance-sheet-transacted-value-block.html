@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Transacted — the value block</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,400..900;1,400..900&family=DM+Sans:opsz,wght@9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --gray-0:#ffffff;--gray-50:#fafafa;--gray-100:#efefef;--gray-200:#e5e5e5;--gray-300:#d4d4d4;
+  --gray-400:#a3a3a3;--gray-500:#737373;--gray-600:#525252;--gray-700:#404040;--gray-800:#262626;--gray-900:#171717;
+  --blue-50:#f3f8fc;--blue-100:#e7f1f7;--blue-200:#c9e1ee;--blue-400:#75b6d4;--blue-500:#3e92b9;
+  --blue-600:#2d759c;--blue-700:#265e7e;--blue-800:#235069;--blue-900:#214459;
+  --green-50:#f7f8ed;--green-500:#859b44;--green-600:#687c34;--green-700:#51602b;
+  --color-primary:var(--blue-800);--color-secondary:var(--blue-600);
+  --color-background:var(--gray-50);--color-surface:var(--gray-0);--color-surface-sunken:var(--gray-100);
+  --color-text-primary:var(--gray-900);--color-text-secondary:var(--gray-600);--color-text-tertiary:var(--gray-700);--color-text-muted:var(--gray-500);
+  --color-border:var(--gray-200);--color-border-light:var(--gray-100);--color-border-strong:var(--gray-300);
+  --font-sans:'DM Sans',system-ui,sans-serif;--font-decorative:'Besley',serif;
+  --w-regular:350;--w-medium:450;--w-semibold:550;--w-bold:650;
+  --sp-100:.25rem;--sp-150:.375rem;--sp-200:.5rem;--sp-250:.625rem;--sp-300:.75rem;--sp-400:1rem;--sp-450:1.25rem;--sp-500:1.5rem;--sp-600:2rem;--sp-650:2.5rem;--sp-700:3rem;
+  --radius:4px;--radius-full:9999px;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--color-background);color:var(--color-text-primary);font-family:var(--font-sans);font-weight:var(--w-regular);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+.page{max-width:1080px;margin:0 auto;padding:var(--sp-700) var(--sp-500);}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+svg.i{width:22px;height:22px;stroke-width:2;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;}
+
+.head h1{font-family:var(--font-decorative);font-weight:600;font-size:1.875rem;line-height:1.2;letter-spacing:-.01em;margin:0 0 var(--sp-200);}
+.head p{margin:0 0 var(--sp-200);max-width:78ch;color:var(--color-text-secondary);}
+.head b{color:var(--color-text-primary);font-weight:var(--w-semibold);}
+.head .eq{font-family:var(--font-sans);font-weight:var(--w-semibold);color:var(--color-primary);}
+
+.candidate{margin-top:var(--sp-600);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);overflow:hidden;}
+.candidate__hd{display:flex;align-items:center;gap:var(--sp-250);padding:var(--sp-400) var(--sp-500);border-bottom:1px solid var(--color-border-light);}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 var(--sp-200);border-radius:var(--radius);background:var(--blue-50);color:var(--blue-800);font-size:.8125rem;font-weight:var(--w-semibold);}
+.tag--rec{background:var(--green-50);color:var(--green-700);}
+.candidate__name{font-size:1.0625rem;font-weight:var(--w-semibold);}
+.candidate__body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,320px);gap:var(--sp-600);padding:var(--sp-500) var(--sp-500) var(--sp-600);align-items:center;}
+@media (max-width:820px){.candidate__body{grid-template-columns:1fr;gap:var(--sp-500);}}
+.cap{font-size:.9375rem;font-weight:var(--w-semibold);color:var(--color-text-secondary);margin:0 0 var(--sp-400);}
+.explain h4{margin:0 0 var(--sp-150);font-size:.9375rem;font-weight:var(--w-semibold);color:var(--color-text-tertiary);}
+.explain p{margin:0 0 var(--sp-300);color:var(--color-text-secondary);}
+.explain p:last-child{margin-bottom:0;}
+.explain b{color:var(--color-text-primary);font-weight:var(--w-semibold);}
+
+/* ===== shared value block ===== */
+.vblock{
+  background:var(--blue-600);border-radius:var(--radius);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;text-align:center;
+}
+.vblock__total{font-size:1.75rem;font-weight:var(--w-bold);letter-spacing:-.02em;line-height:1;}
+.vblock__cap{font-size:.8125rem;color:rgba(255,255,255,.85);margin-top:var(--sp-150);}
+
+/* metric label (name + value), reused */
+.mlbl__name{font-size:.875rem;color:var(--color-text-secondary);font-weight:var(--w-medium);}
+.mlbl__val{font-size:1.125rem;font-weight:var(--w-semibold);letter-spacing:-.01em;}
+.mlbl__val .u{font-size:.75rem;color:var(--color-text-muted);font-weight:var(--w-medium);margin-left:.2em;}
+
+/* dimension ticks */
+.hdim{display:flex;align-items:center;width:100%;}
+.hdim__cap{height:8px;width:1px;background:var(--gray-400);flex:none;}
+.hdim__line{height:1px;flex:1;background:var(--gray-400);}
+.vdim{display:flex;flex-direction:column;align-items:center;height:100%;}
+.vdim__cap{width:8px;height:1px;background:var(--gray-400);flex:none;}
+.vdim__line{width:1px;flex:1;background:var(--gray-400);}
+
+/* ---- TV-1 measured block (grid with dimension gutters) ---- */
+.measured{
+  display:grid;
+  grid-template-columns:auto auto minmax(180px,300px);
+  grid-template-rows:auto auto auto;
+  grid-template-areas:
+    "avglbl avgdim block"
+    ".      .      voldim"
+    ".      .      vollbl";
+  column-gap:var(--sp-250);row-gap:var(--sp-200);align-items:stretch;
+}
+.measured__block{grid-area:block;height:132px;}
+.measured__avgdim{grid-area:avgdim;}
+.measured__avglbl{grid-area:avglbl;align-self:center;text-align:right;}
+.measured__voldim{grid-area:voldim;padding-top:var(--sp-100);}
+.measured__vollbl{grid-area:vollbl;text-align:center;}
+
+/* ---- TV-2 framed block (edge captions, no ticks) ---- */
+.framed{display:flex;flex-direction:column;gap:var(--sp-300);}
+.framed__row{display:flex;align-items:stretch;gap:var(--sp-400);}
+.framed__avg{align-self:center;text-align:right;flex:none;width:120px;}
+.framed__block{flex:1;height:130px;}
+.framed__vol{text-align:center;padding-left:136px;}
+@media (max-width:820px){.framed__vol{padding-left:0;}}
+
+/* ---- TV-3 stats + motif ---- */
+.trio{display:flex;align-items:center;gap:var(--sp-600);}
+.trio__motif{flex:none;width:150px;height:112px;}
+.trio__stats{display:flex;flex-direction:column;gap:var(--sp-400);}
+.trio__stat .mlbl__val{font-size:1.375rem;}
+.trio__stat--total .mlbl__val{color:var(--color-primary);font-weight:var(--w-bold);}
+
+/* ===== assembled ===== */
+.section2{margin-top:var(--sp-700);}
+.section2 h2{font-size:1.375rem;font-weight:var(--w-semibold);letter-spacing:-.01em;margin:0 0 var(--sp-100);}
+.section2 .lede{margin:0 0 var(--sp-450);color:var(--color-text-secondary);max-width:78ch;}
+.section2 .lede b{color:var(--color-text-primary);font-weight:var(--w-semibold);}
+.assembled{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);overflow:hidden;}
+.assembled__hd{padding:var(--sp-400) var(--sp-500);border-bottom:1px solid var(--color-border-light);}
+.assembled__hd h3{margin:0;font-size:1.0625rem;font-weight:600;}
+.assembled__body{padding:var(--sp-500);}
+.flow{display:grid;grid-template-columns:.8fr auto 1.05fr auto .9fr;align-items:center;gap:var(--sp-450);}
+.flow .arrow{color:var(--color-border-strong);}
+@media (max-width:980px){.flow{grid-template-columns:1fr;}.flow .arrow{display:none;}}
+.ob{display:flex;flex-direction:column;gap:var(--sp-400);}
+.ob__top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--sp-150);}
+.ob__lbl{font-size:.875rem;color:var(--color-text-secondary);font-weight:var(--w-medium);}
+.ob__val{font-size:1.125rem;font-weight:var(--w-semibold);letter-spacing:-.01em;}
+.ob__val .u{font-size:.75rem;color:var(--color-text-muted);font-weight:var(--w-medium);margin-left:.2em;}
+.bar{height:6px;border-radius:var(--radius-full);background:var(--color-surface-sunken);overflow:hidden;}
+.bar>span{display:block;height:100%;border-radius:var(--radius-full);}
+.bar--sell>span{background:var(--blue-400);}
+.bar--buy>span{background:var(--blue-600);}
+.donut{width:92px;height:92px;flex:none;position:relative;}
+.donut__lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.donut__c{font-size:1rem;font-weight:var(--w-bold);letter-spacing:-.02em;}
+.donut__u{font-size:.6875rem;color:var(--color-text-muted);}
+.alloc{display:flex;align-items:center;gap:var(--sp-300);}
+.legend{display:flex;flex-direction:column;gap:var(--sp-200);}
+.legend__row{display:flex;gap:var(--sp-200);align-items:flex-start;}
+.legend__sw{width:10px;height:10px;border-radius:2px;flex:none;margin-top:5px;}
+.legend__sw--eco{background:var(--green-500);}
+.legend__sw--del{background:var(--blue-700);}
+.legend__v{font-size:.9375rem;font-weight:var(--w-semibold);letter-spacing:-.01em;}
+.legend__l{font-size:.8125rem;color:var(--color-text-secondary);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="head">
+    <h1>Transacted — the value block</h1>
+    <p>No average line. And the band must always carry the three figures we compute: <b>Volume Transacted</b>,
+       <b>Transaction Price</b> (total), and <b>Avg Price per ac-ft</b>.</p>
+    <p>Those three aren't independent — they're the two sides and the area of one rectangle:
+       <span class="eq">Volume × Avg Price = Transaction Price</span>. So the average price needs no line of its own;
+       it simply <em>is</em> the block's height. Three refinements of that one idea below.</p>
+  </header>
+
+  <!-- ===== TV-1 MEASURED BLOCK ===== -->
+  <div class="candidate">
+    <div class="candidate__hd"><span class="tag tag--rec">TV-1 · recommended</span><span class="candidate__name">Measured block</span></div>
+    <div class="candidate__body">
+      <div>
+        <p class="cap">Transacted</p>
+        <div class="measured">
+          <div class="measured__avglbl">
+            <div class="mlbl__name">Avg Price</div>
+            <div class="mlbl__val num">$107.14<span class="u">/ac-ft</span></div>
+          </div>
+          <div class="measured__avgdim"><div class="vdim"><span class="vdim__cap"></span><span class="vdim__line"></span><span class="vdim__cap"></span></div></div>
+          <div class="measured__block vblock">
+            <div class="vblock__total num">$15,000</div>
+            <div class="vblock__cap">Transaction Price · total</div>
+          </div>
+          <div class="measured__voldim"><div class="hdim"><span class="hdim__cap"></span><span class="hdim__line"></span><span class="hdim__cap"></span></div></div>
+          <div class="measured__vollbl">
+            <div class="mlbl__val num">140<span class="u">ac-ft</span></div>
+            <div class="mlbl__name">Volume Transacted</div>
+          </div>
+        </div>
+      </div>
+      <div class="explain">
+        <h4>What it shows</h4>
+        <p>The block is measured like a drawing: its height is the <b>average price</b>, its width is the <b>volume</b>,
+           and the area they enclose is the <b>transaction total</b>.</p>
+        <h4>Why it fits</h4>
+        <p>Every figure has one job and one place. The average reads as a dimension, not an extra annotation — so the
+           line disappears but the number stays.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TV-2 FRAMED BLOCK ===== -->
+  <div class="candidate">
+    <div class="candidate__hd"><span class="tag">TV-2</span><span class="candidate__name">Framed block</span></div>
+    <div class="candidate__body">
+      <div>
+        <p class="cap">Transacted</p>
+        <div class="framed">
+          <div class="framed__row">
+            <div class="framed__avg">
+              <div class="mlbl__name">Avg Price</div>
+              <div class="mlbl__val num">$107.14<span class="u">/ac-ft</span></div>
+            </div>
+            <div class="framed__block vblock">
+              <div class="vblock__total num">$15,000</div>
+              <div class="vblock__cap">Transaction Price · total</div>
+            </div>
+          </div>
+          <div class="framed__vol">
+            <div class="mlbl__val num">140<span class="u">ac-ft</span></div>
+            <div class="mlbl__name">Volume Transacted</div>
+          </div>
+        </div>
+      </div>
+      <div class="explain">
+        <h4>What it shows</h4>
+        <p>Same geometry, no drawing chrome. The two factors sit as clean captions on the block's edges; the total fills it.</p>
+        <h4>Why it fits</h4>
+        <p>Quieter than the measured version — reads as a dashboard tile first, a diagram second. Best if the ticks feel too technical.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TV-3 STATS + MOTIF ===== -->
+  <div class="candidate">
+    <div class="candidate__hd"><span class="tag">TV-3</span><span class="candidate__name">Stats + motif</span></div>
+    <div class="candidate__body">
+      <div>
+        <p class="cap">Transacted</p>
+        <div class="trio">
+          <div class="trio__motif vblock">
+            <div class="vblock__total num" style="font-size:1.375rem">$15,000</div>
+            <div class="vblock__cap">the area</div>
+          </div>
+          <div class="trio__stats">
+            <div class="trio__stat"><div class="mlbl__name">Volume Transacted</div><div class="mlbl__val num">140<span class="u">ac-ft</span></div></div>
+            <div class="trio__stat"><div class="mlbl__name">Avg Price per ac-ft</div><div class="mlbl__val num">$107.14</div></div>
+            <div class="trio__stat trio__stat--total"><div class="mlbl__name">Transaction Price · total</div><div class="mlbl__val num">$15,000</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="explain">
+        <h4>What it shows</h4>
+        <p>The three figures as full-size, explicitly named stats — guaranteed legible — with the block kept small as a
+           reminder that they multiply into the total.</p>
+        <h4>Why it fits</h4>
+        <p>The safest for scanning. Trades some of the "aha" for certainty that no number is ever hard to read.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ASSEMBLED ===== -->
+  <section class="section2">
+    <h2>In context</h2>
+    <p class="lede">The <b>TV-1 measured block</b> between the locked order book (bars) and locked allocation (donut).
+       Length → area → arc, three different marks, one palette — and the three transacted figures all present, no line.</p>
+    <div class="assembled">
+      <div class="assembled__hd"><h3>Balance Sheet</h3></div>
+      <div class="assembled__body">
+        <div class="flow">
+          <div>
+            <p class="cap">Order book</p>
+            <div class="ob">
+              <div><div class="ob__top"><span class="ob__lbl">Offers to Sell</span><span class="ob__val num">260<span class="u">ac-ft</span></span></div><div class="bar bar--sell"><span style="width:81.25%"></span></div></div>
+              <div><div class="ob__top"><span class="ob__lbl">Offers to Buy</span><span class="ob__val num">320<span class="u">ac-ft</span></span></div><div class="bar bar--buy"><span style="width:100%"></span></div></div>
+            </div>
+          </div>
+          <div class="arrow"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+          <div>
+            <p class="cap">Transacted</p>
+            <div class="measured">
+              <div class="measured__avglbl">
+                <div class="mlbl__name">Avg Price</div>
+                <div class="mlbl__val num" style="font-size:1rem">$107.14<span class="u">/ac-ft</span></div>
+              </div>
+              <div class="measured__avgdim"><div class="vdim"><span class="vdim__cap"></span><span class="vdim__line"></span><span class="vdim__cap"></span></div></div>
+              <div class="measured__block vblock" style="height:118px">
+                <div class="vblock__total num" style="font-size:1.5rem">$15,000</div>
+                <div class="vblock__cap">Transaction Price · total</div>
+              </div>
+              <div class="measured__voldim"><div class="hdim"><span class="hdim__cap"></span><span class="hdim__line"></span><span class="hdim__cap"></span></div></div>
+              <div class="measured__vollbl">
+                <div class="mlbl__val num" style="font-size:1rem">140<span class="u">ac-ft</span></div>
+                <div class="mlbl__name">Volume Transacted</div>
+              </div>
+            </div>
+          </div>
+          <div class="arrow"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+          <div>
+            <p class="cap">Allocation of the 140</p>
+            <div class="alloc">
+              <div class="donut">
+                <svg width="92" height="92" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--gray-100)" stroke-width="13"/>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--blue-700)" stroke-width="13" stroke-dasharray="226.195 263.894" stroke-dashoffset="-37.699" transform="rotate(-90 50 50)"/>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--green-500)" stroke-width="13" stroke-dasharray="37.699 263.894" stroke-dashoffset="0" transform="rotate(-90 50 50)" stroke-linecap="butt"/>
+                </svg>
+                <div class="donut__lbl"><span class="donut__c num">140</span><span class="donut__u">ac-ft</span></div>
+              </div>
+              <div class="legend">
+                <div class="legend__row"><span class="legend__sw legend__sw--del"></span><span><span class="legend__v num">120</span> <span class="legend__l">Delivery · 86%</span></span></div>
+                <div class="legend__row"><span class="legend__sw legend__sw--eco"></span><span><span class="legend__v num">20</span> <span class="legend__l">In-stream · 14%</span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

@@ -43,6 +43,15 @@ const { scenario, activeTab } = Astro.props;
 const CHART =
   '<path d="M12 16v5"/><path d="M16 14.639V21"/><path d="M20 10.656V21"/><path d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"/><path d="M4 18.463V21"/><path d="M8 14.656V21"/>';
 
+// Tab glyphs not in esa-icon's built-in registry — pass the inner SVG via the
+// paths prop (Lucide: layers, receipt-text, chart-pie).
+const LAYERS =
+  '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/>';
+const RECEIPT_TEXT =
+  '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M13 16H8"/>';
+const CHART_PIE =
+  '<path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>';
+
 // Lucide "house" for the Home crumb — esa-breadcrumbs' `icon` takes a full <svg>
 // string (set:html), inheriting the crumb's link color via stroke=currentColor.
 const HOME_ICON =
@@ -70,11 +79,11 @@ const participantCount = scenario.participants.length;
 
 // Cross-page routes (NOT esa-tab-layout panels) — the tab whose slug === activeTab is current.
 const tabs = [
-  { slug: 'overview', label: 'Overview', href: withBase('/prototypes/scenario/overview'), icon: 'layout-dashboard' },
-  { slug: 'offers', label: 'Offers', href: withBase('/prototypes/scenario/offers'), icon: 'file-text' },
-  { slug: 'transactions', label: 'Transactions', href: withBase('/prototypes/scenario/transactions'), icon: 'credit-card' },
-  { slug: 'report', label: 'Report', href: withBase('/prototypes/scenario/report'), icon: 'trending-up' },
-  { slug: 'users', label: 'User Management', href: withBase('/prototypes/scenario/users'), icon: 'users' },
+  { slug: 'overview', label: 'Overview', href: withBase('/prototypes/scenario/overview'), icon: 'layout-dashboard', paths: undefined as string | undefined },
+  { slug: 'offers', label: 'Offers', href: withBase('/prototypes/scenario/offers'), icon: 'layers', paths: LAYERS },
+  { slug: 'transactions', label: 'Transactions', href: withBase('/prototypes/scenario/transactions'), icon: 'receipt-text', paths: RECEIPT_TEXT },
+  { slug: 'report', label: 'Report', href: withBase('/prototypes/scenario/report'), icon: 'chart-pie', paths: CHART_PIE },
+  { slug: 'users', label: 'User Management', href: withBase('/prototypes/scenario/users'), icon: 'users', paths: undefined as string | undefined },
 ];
 
 // Switcher options — the OTHER scenarios (exclude the one we're on). esa-combobox
@@ -158,7 +167,7 @@ const switcherOptions = otherScenarios
         class:list={['scenario-header__tab', { 'is-active': t.slug === activeTab }]}
         aria-current={t.slug === activeTab ? 'page' : undefined}
       >
-        <EsaIcon name={t.icon} size="sm" />
+        <EsaIcon name={t.icon} paths={t.paths} size="sm" />
         {t.label}
       </a>
     ))}

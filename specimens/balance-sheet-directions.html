@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Balance Sheet — Design Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,400..900;1,400..900&family=DM+Sans:opsz,wght@9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================================
+   NORIA / ECOLOGY TOKEN LAYER — extracted verbatim from @esa/tokens + theme-noria
+   so this specimen renders in the real product habitat, not an approximation.
+   ========================================================================== */
+:root {
+  /* neutral ramp */
+  --gray-0:#ffffff; --gray-50:#fafafa; --gray-100:#efefef; --gray-200:#e5e5e5;
+  --gray-300:#d4d4d4; --gray-400:#a3a3a3; --gray-500:#737373; --gray-600:#525252;
+  --gray-700:#404040; --gray-800:#262626; --gray-900:#171717; --gray-950:#0a0a0a;
+
+  /* Noria blue — signature */
+  --blue-50:#f3f8fc; --blue-100:#e7f1f7; --blue-200:#c9e1ee; --blue-300:#99c8e0;
+  --blue-400:#75b6d4; --blue-500:#3e92b9; --blue-600:#2d759c; --blue-700:#265e7e;
+  --blue-800:#235069; --blue-900:#214459; --blue-950:#162c3b;
+
+  /* Noria green — the logo's olive band (ecological accent) */
+  --green-50:#f7f8ed; --green-100:#ebefd8; --green-200:#d8e1b5; --green-300:#becd89;
+  --green-400:#a4b863; --green-500:#859b44; --green-600:#687c34; --green-700:#51602b;
+  --green-800:#414d27; --green-900:#394324; --green-950:#1d2310;
+
+  /* semantic */
+  --color-primary:var(--blue-800); --color-secondary:var(--blue-600);
+  --color-primary-subtle:var(--blue-50); --color-primary-border:var(--blue-200);
+  --color-background:var(--gray-50); --color-surface:var(--gray-0);
+  --color-surface-sunken:var(--gray-100);
+  --color-text-primary:var(--gray-900); --color-text-secondary:var(--gray-600);
+  --color-text-tertiary:var(--gray-700); --color-text-muted:var(--gray-500);
+  --color-border:var(--gray-200); --color-border-light:var(--gray-100);
+  --color-border-strong:var(--gray-300);
+
+  /* type */
+  --font-sans:'DM Sans', system-ui, sans-serif;
+  --font-mono:'JetBrains Mono', ui-monospace, monospace;
+  --font-decorative:'Besley', serif;
+  --w-regular:350; --w-medium:450; --w-semibold:550; --w-bold:650;
+
+  /* spacing / radius / shadow */
+  --sp-050:.125rem; --sp-100:.25rem; --sp-150:.375rem; --sp-200:.5rem;
+  --sp-250:.625rem; --sp-300:.75rem; --sp-400:1rem; --sp-500:1.5rem;
+  --sp-600:2rem; --sp-650:2.5rem; --sp-700:3rem;
+  --radius:4px; --radius-full:9999px;
+  --shadow-50:0 1px 4px 0 rgba(0,0,0,.03);
+  --shadow-100:0 2px 12px 0 rgba(0,0,0,.04);
+  --shadow-200:0 4px 20px -4px rgba(0,0,0,.06);
+}
+
+/* ============================================================================
+   PAGE CHROME (the specimen scaffold — not part of any direction)
+   ========================================================================== */
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--color-background); color:var(--color-text-primary);
+  font-family:var(--font-sans); font-weight:var(--w-regular);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.page { max-width:1140px; margin:0 auto; padding:var(--sp-700) var(--sp-500) var(--sp-900); }
+.page-head { margin-bottom:var(--sp-650); }
+.page-head h1 {
+  font-family:var(--font-decorative); font-weight:600;
+  font-size:2rem; line-height:1.2; letter-spacing:-.01em; margin:0 0 var(--sp-200);
+}
+.page-head p { margin:0; max-width:60ch; color:var(--color-text-secondary); font-size:1rem; }
+.legend { display:flex; flex-wrap:wrap; gap:var(--sp-400) var(--sp-600); margin-top:var(--sp-400);
+  padding-top:var(--sp-400); border-top:1px solid var(--color-border); }
+.legend div { font-size:.9375rem; color:var(--color-text-secondary); }
+.legend b { color:var(--color-text-primary); font-weight:var(--w-semibold); }
+
+.direction { margin-top:var(--sp-700); }
+.direction__head { margin-bottom:var(--sp-300); }
+.direction__eyebrow {
+  display:inline-block; font-size:.9375rem; font-weight:var(--w-semibold);
+  color:var(--color-primary); margin:0 0 var(--sp-100);
+}
+.direction__name { font-size:1.375rem; font-weight:var(--w-semibold); margin:0; letter-spacing:-.01em; }
+.direction__thesis { margin:var(--sp-150) 0 0; color:var(--color-text-secondary); max-width:72ch; font-size:1rem; }
+.reference .direction__eyebrow { color:var(--color-text-muted); }
+
+/* faithful esa-card frame */
+.card {
+  background:var(--color-surface); border:1px solid var(--color-border);
+  border-radius:var(--radius); overflow:hidden;
+}
+.card__header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:var(--sp-400) var(--sp-500);
+  border-bottom:1px solid var(--color-border-light);
+}
+.card__title {
+  margin:0; font-family:var(--font-sans); font-size:1.0625rem; font-weight:600;
+  color:var(--color-text-primary); line-height:1.3;
+}
+.card__body { padding:var(--sp-500); }
+
+/* shared number styling — tabular figures everywhere so digits align */
+.num { font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
+
+/* icon sizing default */
+svg.i { width:20px; height:20px; stroke-width:2; fill:none; stroke:currentColor;
+  stroke-linecap:round; stroke-linejoin:round; }
+
+/* ============================================================================
+   REFERENCE — current implementation (esa-stat @ type-size-700 ≈ 36px)
+   ========================================================================== */
+.cur-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(12rem,1fr)); gap:var(--sp-500); }
+.cur-stat__value { font-size:2.25rem; font-weight:var(--w-bold); line-height:1.3; letter-spacing:-.01em; }
+.cur-stat--accent .cur-stat__value { color:var(--color-secondary); }
+.cur-stat__label { font-size:.9375rem; font-weight:var(--w-medium); color:var(--color-text-secondary); line-height:1.6; }
+.cur-stat__sub { font-size:.875rem; color:var(--color-text-muted); }
+
+/* ============================================================================
+   DIRECTION A — QUIET LEDGER
+   One instrument row. Values drop to 24px, unit split off as a muted suffix so
+   the digit is the loud part; hairline dividers bind the tiles into one panel.
+   ========================================================================== */
+.dir-a .row {
+  display:grid; grid-template-columns:repeat(7, 1fr);
+}
+.dir-a .cell {
+  padding:0 var(--sp-400); border-left:1px solid var(--color-border-light);
+}
+.dir-a .cell:first-child { padding-left:0; border-left:0; }
+.dir-a .cell:last-child { padding-right:0; }
+.dir-a .lbl { font-size:.875rem; color:var(--color-text-secondary); font-weight:var(--w-medium); margin-bottom:var(--sp-150); }
+.dir-a .val { font-size:1.5rem; font-weight:var(--w-semibold); line-height:1.15; letter-spacing:-.01em; color:var(--color-text-primary); white-space:nowrap; }
+.dir-a .unit { font-size:.9375rem; font-weight:var(--w-medium); color:var(--color-text-muted); margin-left:.25em; }
+.dir-a .sub { font-size:.8125rem; color:var(--color-text-muted); margin-top:var(--sp-050); }
+.dir-a .cell--accent .val { color:var(--color-secondary); }
+.dir-a .cell--accent .unit { color:var(--blue-500); }
+@media (max-width:860px){ .dir-a .row { grid-template-columns:repeat(2,1fr); gap:var(--sp-400) 0; }
+  .dir-a .cell { border-left:0; padding:var(--sp-200) var(--sp-400); border-top:1px solid var(--color-border-light); }
+  .dir-a .cell:first-child,.dir-a .cell:nth-child(2){ border-top:0; } }
+
+/* ============================================================================
+   DIRECTION B — GROUPED CLUSTERS
+   The 7 metrics carry 3 different jobs. Name the jobs (Order book / Transacted /
+   Allocation), separate them, and the awkward orphan row disappears by design.
+   ========================================================================== */
+.dir-b .groups { display:grid; grid-template-columns:1.1fr 1.6fr 1.3fr; gap:0; }
+.dir-b .group { padding:0 var(--sp-500); border-left:1px solid var(--color-border); }
+.dir-b .group:first-child { padding-left:0; border-left:0; }
+.dir-b .group:last-child { padding-right:0; }
+.dir-b .group__name {
+  display:flex; align-items:center; gap:var(--sp-200);
+  font-size:.9375rem; font-weight:var(--w-semibold); color:var(--color-text-tertiary);
+  margin-bottom:var(--sp-400);
+}
+.dir-b .dot { width:8px; height:8px; border-radius:var(--radius-full); flex:none; }
+.dir-b .group--market .dot { background:var(--blue-400); }
+.dir-b .group--deal .dot { background:var(--blue-700); }
+.dir-b .group--alloc .dot { background:var(--green-500); }
+.dir-b .stats { display:flex; flex-wrap:wrap; gap:var(--sp-500) var(--sp-600); }
+.dir-b .stat { min-width:0; }
+.dir-b .lbl { font-size:.875rem; color:var(--color-text-secondary); font-weight:var(--w-medium); margin-bottom:var(--sp-100); }
+.dir-b .val { font-size:1.5rem; font-weight:var(--w-semibold); line-height:1.15; letter-spacing:-.01em; white-space:nowrap; }
+.dir-b .unit { font-size:.875rem; font-weight:var(--w-medium); color:var(--color-text-muted); margin-left:.25em; }
+.dir-b .sub { font-size:.8125rem; color:var(--color-text-muted); margin-top:var(--sp-050); }
+.dir-b .stat--eco .val { color:var(--green-700); }
+.dir-b .stat--eco .unit { color:var(--green-600); }
+@media (max-width:860px){ .dir-b .groups { grid-template-columns:1fr; }
+  .dir-b .group { border-left:0; padding:var(--sp-400) 0; border-top:1px solid var(--color-border); }
+  .dir-b .group:first-child { border-top:0; padding-top:0; } }
+
+/* ============================================================================
+   DIRECTION C — ICON CHIPS
+   A small tinted glyph carries the meaning, so the number can shrink and still
+   scan fast. Color is coded by domain: blue = market/money, green = ecological.
+   ========================================================================== */
+.dir-c .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--sp-400) var(--sp-500); }
+.dir-c .grid > :nth-child(5) { grid-column:1; }
+.dir-c .tile { display:flex; gap:var(--sp-300); align-items:flex-start; }
+.dir-c .chip {
+  flex:none; width:38px; height:38px; border-radius:var(--radius);
+  display:grid; place-items:center; background:var(--blue-50); color:var(--blue-800);
+}
+.dir-c .chip svg { width:20px; height:20px; }
+.dir-c .tile--eco .chip { background:var(--green-50); color:var(--green-700); }
+.dir-c .meta { min-width:0; }
+.dir-c .val { font-size:1.375rem; font-weight:var(--w-semibold); line-height:1.2; letter-spacing:-.01em; white-space:nowrap; }
+.dir-c .unit { font-size:.8125rem; font-weight:var(--w-medium); color:var(--color-text-muted); margin-left:.25em; }
+.dir-c .lbl { font-size:.875rem; color:var(--color-text-secondary); margin-top:var(--sp-050); }
+.dir-c .tile--eco .val { color:var(--green-700); }
+@media (max-width:860px){ .dir-c .grid { grid-template-columns:repeat(2,1fr); } }
+
+/* ============================================================================
+   DIRECTION D — HERO + STRIP
+   Not all seven are equal. Volume Transacted is the outcome; make it the one
+   loud number (in a quiet tinted panel) and demote the rest to a support strip.
+   ========================================================================== */
+.dir-d .wrap { display:grid; grid-template-columns:minmax(220px,.9fr) 2fr; gap:var(--sp-500); align-items:stretch; }
+.dir-d .hero {
+  background:var(--color-primary-subtle); border:1px solid var(--color-primary-border);
+  border-radius:var(--radius); padding:var(--sp-500);
+  display:flex; flex-direction:column; justify-content:center;
+}
+.dir-d .hero__lbl { font-size:.9375rem; font-weight:var(--w-semibold); color:var(--blue-800); }
+.dir-d .hero__val { font-size:2.5rem; font-weight:var(--w-bold); line-height:1.05; letter-spacing:-.02em; color:var(--blue-900); margin:var(--sp-150) 0 var(--sp-100); }
+.dir-d .hero__val .u { font-size:1.125rem; font-weight:var(--w-semibold); color:var(--blue-700); margin-left:.2em; }
+.dir-d .hero__sub { font-size:.9375rem; color:var(--blue-700); }
+.dir-d .strip { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-400) var(--sp-500); align-content:center; }
+.dir-d .s-lbl { font-size:.875rem; color:var(--color-text-secondary); font-weight:var(--w-medium); margin-bottom:var(--sp-050); }
+.dir-d .s-val { font-size:1.25rem; font-weight:var(--w-semibold); line-height:1.2; letter-spacing:-.01em; white-space:nowrap; }
+.dir-d .s-unit { font-size:.8125rem; font-weight:var(--w-medium); color:var(--color-text-muted); margin-left:.25em; }
+.dir-d .strip .s--eco .s-val { color:var(--green-700); }
+@media (max-width:860px){ .dir-d .wrap { grid-template-columns:1fr; } .dir-d .strip { grid-template-columns:repeat(2,1fr); } }
+
+/* ============================================================================
+   DIRECTION E — BALANCE FLOW
+   Lean into "balance sheet." Read left→right: the order book, the settled deal,
+   and how the settled water splits — In-stream (20) + Approved (120) = 140,
+   drawn as one stacked bar so the identity is visible, not just implied.
+   ========================================================================== */
+.dir-e .flow { display:grid; grid-template-columns:1fr auto 1.15fr auto 1.3fr; align-items:center; gap:var(--sp-500); }
+.dir-e .arrow { color:var(--color-border-strong); }
+.dir-e .arrow svg { width:22px; height:22px; }
+.dir-e .band__cap { font-size:.9375rem; font-weight:var(--w-semibold); color:var(--color-text-secondary); margin-bottom:var(--sp-300); }
+/* order book: two opposing quantity rows */
+.dir-e .ob { display:flex; flex-direction:column; gap:var(--sp-300); }
+.dir-e .ob__row { }
+.dir-e .ob__top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:var(--sp-100); }
+.dir-e .ob__lbl { font-size:.875rem; color:var(--color-text-secondary); font-weight:var(--w-medium); }
+.dir-e .ob__val { font-size:1.25rem; font-weight:var(--w-semibold); letter-spacing:-.01em; }
+.dir-e .ob__val .u { font-size:.8125rem; color:var(--color-text-muted); font-weight:var(--w-medium); margin-left:.2em; }
+.dir-e .bar { height:6px; border-radius:var(--radius-full); background:var(--color-surface-sunken); overflow:hidden; }
+.dir-e .bar > span { display:block; height:100%; border-radius:var(--radius-full); }
+.dir-e .bar--sell > span { background:var(--blue-400); }
+.dir-e .bar--buy  > span { background:var(--blue-600); }
+/* the deal */
+.dir-e .deal { text-align:center; }
+.dir-e .deal__val { font-size:1.75rem; font-weight:var(--w-bold); letter-spacing:-.02em; line-height:1.1; }
+.dir-e .deal__val .u { font-size:.875rem; font-weight:var(--w-semibold); color:var(--color-text-muted); margin-left:.2em; }
+.dir-e .deal__lbl { font-size:.875rem; color:var(--color-text-secondary); font-weight:var(--w-medium); margin-top:var(--sp-050); }
+.dir-e .deal__money { font-size:.9375rem; color:var(--color-text-tertiary); margin-top:var(--sp-200); }
+.dir-e .deal__money b { font-weight:var(--w-semibold); }
+/* allocation split bar */
+.dir-e .splitbar { display:flex; height:34px; border-radius:var(--radius); overflow:hidden; }
+.dir-e .splitbar > span { display:flex; align-items:center; padding:0 var(--sp-250); color:#fff; font-size:.8125rem; font-weight:var(--w-semibold); white-space:nowrap; }
+.dir-e .seg--eco { background:var(--green-500); }
+.dir-e .seg--del { background:var(--blue-700); }
+.dir-e .keys { display:flex; gap:var(--sp-500); margin-top:var(--sp-300); }
+.dir-e .key { display:flex; align-items:baseline; gap:var(--sp-200); }
+.dir-e .key .sw { width:10px; height:10px; border-radius:2px; flex:none; align-self:center; }
+.dir-e .key .kv { font-size:1.125rem; font-weight:var(--w-semibold); letter-spacing:-.01em; }
+.dir-e .key .kl { font-size:.8125rem; color:var(--color-text-secondary); }
+.dir-e .key--eco .sw { background:var(--green-500); }
+.dir-e .key--del .sw { background:var(--blue-700); }
+@media (max-width:900px){ .dir-e .flow { grid-template-columns:1fr; gap:var(--sp-500); }
+  .dir-e .arrow { display:none; } .dir-e .deal { text-align:left; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="page-head">
+    <h1>Balance Sheet — five directions</h1>
+    <p>Same seven metrics, same real numbers. Each direction pulls a different lever to fix
+       the three problems in the current section: the values are oversized, color and iconography
+       are barely used, and seven equal tiles wrap into a loose, unbalanced scatter.</p>
+    <div class="legend">
+      <div><b>Values</b> every direction drops from ~36px to 22–30px</div>
+      <div><b>Balance</b> no more orphaned 7th tile</div>
+      <div><b>Hidden identity</b> In-stream 20 + Approved 120 = Volume 140</div>
+    </div>
+  </header>
+
+  <!-- ===================== REFERENCE ===================== -->
+  <section class="direction reference">
+    <div class="direction__head">
+      <span class="direction__eyebrow">Current</span>
+      <h2 class="direction__name">What ships today</h2>
+      <p class="direction__thesis">Seven <code>esa-stat</code> tiles at the display size, one accent. The 7th tile
+        orphans onto its own row and the units repeat loudly at full weight.</p>
+    </div>
+    <div class="card">
+      <div class="card__header"><h3 class="card__title">Balance Sheet</h3></div>
+      <div class="card__body">
+        <div class="cur-grid">
+          <div class="cur-stat"><div class="cur-stat__value num">260 ac-ft</div><div class="cur-stat__label">Offers to Sell</div></div>
+          <div class="cur-stat"><div class="cur-stat__value num">320 ac-ft</div><div class="cur-stat__label">Offers to Buy</div></div>
+          <div class="cur-stat"><div class="cur-stat__value num">140 ac-ft</div><div class="cur-stat__label">Volume Transacted</div></div>
+          <div class="cur-stat"><div class="cur-stat__value num">$15,000</div><div class="cur-stat__label">Transaction Price</div><div class="cur-stat__sub">total</div></div>
+          <div class="cur-stat"><div class="cur-stat__value num">$107.14</div><div class="cur-stat__label">Avg. Price per ac-ft</div></div>
+          <div class="cur-stat cur-stat--accent"><div class="cur-stat__value num">20 ac-ft</div><div class="cur-stat__label">In-stream Benefit</div></div>
+          <div class="cur-stat"><div class="cur-stat__value num">120 ac-ft</div><div class="cur-stat__label">Approved for Delivery</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== A — QUIET LEDGER ===================== -->
+  <section class="direction dir-a">
+    <div class="direction__head">
+      <span class="direction__eyebrow">Direction A</span>
+      <h2 class="direction__name">Quiet Ledger</h2>
+      <p class="direction__thesis">Least change, most cohesion. One instrument row: values at 24px, the unit
+        demoted to a muted suffix so the digit reads first, hairline dividers binding the seven into a single panel.</p>
+    </div>
+    <div class="card">
+      <div class="card__header"><h3 class="card__title">Balance Sheet</h3></div>
+      <div class="card__body">
+        <div class="row">
+          <div class="cell"><div class="lbl">Offers to Sell</div><div class="val num">260<span class="unit">ac-ft</span></div></div>
+          <div class="cell"><div class="lbl">Offers to Buy</div><div class="val num">320<span class="unit">ac-ft</span></div></div>
+          <div class="cell"><div class="lbl">Volume Transacted</div><div class="val num">140<span class="unit">ac-ft</span></div></div>
+          <div class="cell"><div class="lbl">Transaction Price</div><div class="val num">$15,000</div><div class="sub">total</div></div>
+          <div class="cell"><div class="lbl">Avg. Price / ac-ft</div><div class="val num">$107.14</div></div>
+          <div class="cell cell--accent"><div class="lbl">In-stream Benefit</div><div class="val num">20<span class="unit">ac-ft</span></div></div>
+          <div class="cell"><div class="lbl">Approved for Delivery</div><div class="val num">120<span class="unit">ac-ft</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== B — GROUPED CLUSTERS ===================== -->
+  <section class="direction dir-b">
+    <div class="direction__head">
+      <span class="direction__eyebrow">Direction B</span>
+      <h2 class="direction__name">Grouped Clusters</h2>
+      <p class="direction__thesis">The seven metrics do three different jobs. Name the jobs and separate them —
+        the market's offers, the settled deal, the allocation of that water — and the orphaned tile becomes a deliberate third column.</p>
+    </div>
+    <div class="card">
+      <div class="card__header"><h3 class="card__title">Balance Sheet</h3></div>
+      <div class="card__body">
+        <div class="groups">
+          <div class="group group--market">
+            <div class="group__name"><span class="dot"></span>Order book</div>
+            <div class="stats">
+              <div class="stat"><div class="lbl">Offers to Sell</div><div class="val num">260<span class="unit">ac-ft</span></div></div>
+              <div class="stat"><div class="lbl">Offers to Buy</div><div class="val num">320<span class="unit">ac-ft</span></div></div>
+            </div>
+          </div>
+          <div class="group group--deal">
+            <div class="group__name"><span class="dot"></span>Transacted</div>
+            <div class="stats">
+              <div class="stat"><div class="lbl">Volume</div><div class="val num">140<span class="unit">ac-ft</span></div></div>
+              <div class="stat"><div class="lbl">Transaction Price</div><div class="val num">$15,000</div><div class="sub">total</div></div>
+              <div class="stat"><div class="lbl">Avg. / ac-ft</div><div class="val num">$107.14</div></div>
+            </div>
+          </div>
+          <div class="group group--alloc">
+            <div class="group__name"><span class="dot"></span>Allocation</div>
+            <div class="stats">
+              <div class="stat stat--eco"><div class="lbl">In-stream Benefit</div><div class="val num">20<span class="unit">ac-ft</span></div></div>
+              <div class="stat"><div class="lbl">Approved for Delivery</div><div class="val num">120<span class="unit">ac-ft</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== C — ICON CHIPS ===================== -->
+  <section class="direction dir-c">
+    <div class="direction__head">
+      <span class="direction__eyebrow">Direction C</span>
+      <h2 class="direction__name">Icon Chips</h2>
+      <p class="direction__thesis">A small tinted glyph carries the meaning so the number can shrink and still scan.
+        Color is coded by domain — blue for the market and money, green for the ecological outcome.</p>
+    </div>
+    <div class="card">
+      <div class="card__header"><h3 class="card__title">Balance Sheet</h3></div>
+      <div class="card__body">
+        <div class="grid">
+          <div class="tile">
+            <span class="chip"><svg class="i" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+            <div class="meta"><div class="val num">260<span class="unit">ac-ft</span></div><div class="lbl">Offers to Sell</div></div>
+          </div>
+          <div class="tile">
+            <span class="chip"><svg class="i" viewBox="0 0 24 24"><path d="m7 7 10 10"/><path d="M17 7v10H7"/></svg></span>
+            <div class="meta"><div class="val num">320<span class="unit">ac-ft</span></div><div class="lbl">Offers to Buy</div></div>
+          </div>
+          <div class="tile">
+            <span class="chip"><svg class="i" viewBox="0 0 24 24"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg></span>
+            <div class="meta"><div class="val num">140<span class="unit">ac-ft</span></div><div class="lbl">Volume Transacted</div></div>
+          </div>
+          <div class="tile">
+            <span class="chip"><svg class="i" viewBox="0 0 24 24"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+            <div class="meta"><div class="val num">$15,000</div><div class="lbl">Transaction Price · total</div></div>
+          </div>
+          <div class="tile">
+            <span class="chip"><svg class="i" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg></span>
+            <div class="meta"><div class="val num">$107.14</div><div class="lbl">Avg. Price per ac-ft</div></div>
+          </div>
+          <div class="tile tile--eco">
+            <span class="chip"><svg class="i" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></span>
+            <div class="meta"><div class="val num">20<span class="unit">ac-ft</span></div><div class="lbl">In-stream Benefit</div></div>
+          </div>
+          <div class="tile">
+            <span class="chip"><svg class="i" viewBox="0 0 24 24"><path d="M21.8 10A10 10 0 1 1 17 3.3"/><path d="m9 11 3 3L22 4"/></svg></span>
+            <div class="meta"><div class="val num">120<span class="unit">ac-ft</span></div><div class="lbl">Approved for Delivery</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== D — HERO + STRIP ===================== -->
+  <section class="direction dir-d">
+    <div class="direction__head">
+      <span class="direction__eyebrow">Direction D</span>
+      <h2 class="direction__name">Hero + Strip</h2>
+      <p class="direction__thesis">Give the eye one place to land. Volume Transacted is the outcome the whole page is about —
+        make it the single loud number in a quiet tinted panel, and let the other six support it at a calm size.</p>
+    </div>
+    <div class="card">
+      <div class="card__header"><h3 class="card__title">Balance Sheet</h3></div>
+      <div class="card__body">
+        <div class="wrap">
+          <div class="hero">
+            <div class="hero__lbl">Volume Transacted</div>
+            <div class="hero__val num">140<span class="u">ac-ft</span></div>
+            <div class="hero__sub">$15,000 total · $107.14 / ac-ft</div>
+          </div>
+          <div class="strip">
+            <div><div class="s-lbl">Offers to Sell</div><div class="s-val num">260<span class="s-unit">ac-ft</span></div></div>
+            <div><div class="s-lbl">Offers to Buy</div><div class="s-val num">320<span class="s-unit">ac-ft</span></div></div>
+            <div><div class="s-lbl">Transaction Price</div><div class="s-val num">$15,000</div></div>
+            <div><div class="s-lbl">Avg. Price / ac-ft</div><div class="s-val num">$107.14</div></div>
+            <div class="s--eco"><div class="s-lbl">In-stream Benefit</div><div class="s-val num">20<span class="s-unit">ac-ft</span></div></div>
+            <div><div class="s-lbl">Approved for Delivery</div><div class="s-val num">120<span class="s-unit">ac-ft</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== E — BALANCE FLOW ===================== -->
+  <section class="direction dir-e">
+    <div class="direction__head">
+      <span class="direction__eyebrow">Direction E</span>
+      <h2 class="direction__name">Balance Flow</h2>
+      <p class="direction__thesis">Lean all the way into "balance sheet." Read it left to right — the order book, the settled deal,
+        and how that water splits. The split bar draws the real identity: In-stream 20 + Approved 120 = the 140 transacted.</p>
+    </div>
+    <div class="card">
+      <div class="card__header"><h3 class="card__title">Balance Sheet</h3></div>
+      <div class="card__body">
+        <div class="flow">
+          <!-- order book -->
+          <div class="band">
+            <div class="band__cap">Order book</div>
+            <div class="ob">
+              <div class="ob__row">
+                <div class="ob__top"><span class="ob__lbl">Offers to Sell</span><span class="ob__val num">260<span class="u">ac-ft</span></span></div>
+                <div class="bar bar--sell"><span style="width:81%"></span></div>
+              </div>
+              <div class="ob__row">
+                <div class="ob__top"><span class="ob__lbl">Offers to Buy</span><span class="ob__val num">320<span class="u">ac-ft</span></span></div>
+                <div class="bar bar--buy"><span style="width:100%"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arrow"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+
+          <!-- the deal -->
+          <div class="band deal">
+            <div class="band__cap">Transacted</div>
+            <div class="deal__val num">140<span class="u">ac-ft</span></div>
+            <div class="deal__lbl">Volume Transacted</div>
+            <div class="deal__money num"><b>$15,000</b> total · <b>$107.14</b>/ac-ft</div>
+          </div>
+
+          <div class="arrow"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+
+          <!-- allocation -->
+          <div class="band">
+            <div class="band__cap">Allocation of the 140 transacted</div>
+            <div class="splitbar">
+              <span class="seg--eco" style="width:14.3%">20</span>
+              <span class="seg--del" style="width:85.7%">120</span>
+            </div>
+            <div class="keys">
+              <div class="key key--eco"><span class="sw"></span><span><span class="kv num">20</span> <span class="kl">In-stream Benefit</span></span></div>
+              <div class="key key--del"><span class="sw"></span><span><span class="kv num">120</span> <span class="kl">Approved for Delivery</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

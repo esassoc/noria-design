@@ -11,10 +11,10 @@
 // sending/receiving side). Everything else is a lego: esa-select (filters),
 // esa-button (Export PDF), esa-card (Balance Sheet), esa-stat (the 7 metrics),
 // esa-button-toggle (the view switch), NoriaDataGrid (the parcels grid).
-import EsaCard from '@esa/ecology/esa-card.astro';
-import EsaStat from '@esa/ecology/esa-stat.astro';
 import EsaButton from '@esa/ecology/esa-button.astro';
+import EsaFilterClearButton from '@esa/ecology/esa-filter-clear-button.astro';
 import NoriaDataGrid from './noria-data-grid.astro';
+import NoriaBalanceSheet from './noria-balance-sheet.astro';
 import '../../styles/noria-map.css'; // Leaflet-injected chrome restyled to Noria tokens
 import {
   balanceSheet,
@@ -22,8 +22,6 @@ import {
   sellerOptions,
   buyerOptions,
   transactionStatusOptions,
-  usd,
-  num,
   type Scenario,
 } from '../../data/scenario';
 
@@ -35,16 +33,6 @@ const { scenario } = Astro.props;
 // Balance Sheet — computed once with default filters (status = Approved). Wiring
 // the selects to recompute is a prototype bonus; the demo ships the default view.
 const bs = balanceSheet();
-const acft = (n: number) => `${num(n, 0)} ac-ft`;
-const stats: { label: string; value: string; sub?: string; accent?: boolean }[] = [
-  { label: 'Offers to Sell', value: acft(bs.offersToSell) },
-  { label: 'Offers to Buy', value: acft(bs.offersToBuy) },
-  { label: 'Volume Transacted', value: acft(bs.volumeTransacted) },
-  { label: 'Transaction Price', value: usd(bs.transactionPrice, 0), sub: 'total' },
-  { label: 'Avg. Price per ac-ft', value: bs.avgPrice != null ? usd(bs.avgPrice) : '—' },
-  { label: 'In-stream Benefit', value: acft(bs.instreamBenefit), accent: true },
-  { label: 'Approved for Delivery', value: acft(bs.approvedForDelivery) },
-];
 
 // Transaction Parcels — one row per sending/receiving parcel, default filters.
 // The SAME rows feed the grid and the map (grid gets an actions menu; the map
@@ -93,51 +81,64 @@ const parcelColumns: ColSpec[] = [
 ---
 
 <section class="noria-report-panel" data-scenario={scenario.id}>
-  <!-- Filters: three multi-select facet filters (removable chips) + Export PDF. -->
-  <div class="noria-report-panel__filters repel" data-gap="md">
-    <div class="cluster" data-gap="md">
-      <esa-select
-        class="noria-report-panel__filter"
-        placeholder="All Sellers"
-        multiple
-        chip-mode
-        options={JSON.stringify(sellerOptions)}
-      ></esa-select>
-      <esa-select
-        class="noria-report-panel__filter"
-        placeholder="All Buyers"
-        multiple
-        chip-mode
-        options={JSON.stringify(buyerOptions)}
-      ></esa-select>
-      <esa-select
-        class="noria-report-panel__filter"
-        placeholder="Transaction Status"
-        multiple
-        chip-mode
-        data-default="Approved"
-        options={JSON.stringify(transactionStatusOptions)}
-      ></esa-select>
-    </div>
-    <span id="report-export-pdf">
-      <EsaButton color="primary">Export PDF</EsaButton>
-    </span>
-  </div>
+  <h2 class="noria-report-panel__title type-section-title">Report</h2>
 
-  <!-- Balance Sheet — 7 metric tiles. -->
-  <div class="noria-report-panel__balance">
-    <EsaCard title="Balance Sheet">
-      <div class="grid" style="--grid-min: 12rem" data-gap="lg">
-        {stats.map((s) => <EsaStat value={s.value} label={s.label} sub={s.sub} accent={s.accent} />)}
-      </div>
-    </EsaCard>
-  </div>
-
-  <!-- Transaction Parcels — the fill-remaining grid | map workspace. -->
-  <div class="noria-report-panel__workspace">
+  <!-- Filters: a bordered filter bar — three facet multi-selects + Export PDF. -->
+  <div class="noria-report-panel__filters">
     <div class="repel" data-gap="md">
-      <h2 class="type-section-title">Transaction Parcels</h2>
+      <div class="cluster noria-report-panel__facets" data-gap="sm">
+        <esa-select
+          class="noria-report-panel__filter"
+          size="sm"
+          placeholder="All Sellers"
+          multiple
+          chip-mode
+          options={JSON.stringify(sellerOptions)}
+        ></esa-select>
+        <esa-select
+          class="noria-report-panel__filter"
+          size="sm"
+          placeholder="All Buyers"
+          multiple
+          chip-mode
+          options={JSON.stringify(buyerOptions)}
+        ></esa-select>
+        <esa-select
+          class="noria-report-panel__filter"
+          size="sm"
+          placeholder="Transaction Status"
+          multiple
+          chip-mode
+          data-default="Approved"
+          options={JSON.stringify(transactionStatusOptions)}
+        ></esa-select>
+      </div>
+      <span id="report-export-pdf">
+        <EsaButton color="primary" size="sm">Export PDF</EsaButton>
+      </span>
+    </div>
+  </div>
+
+  <!-- Balance Sheet — three-band flow (Offers · Transactions · Allocation). -->
+  <div class="noria-report-panel__balance">
+    <NoriaBalanceSheet bs={bs} />
+  </div>
+
+  <!-- Transaction Parcels — an h3 sub-heading over a single toolbar axis (search +
+       clear · Grid/Hybrid/Map toggle), then the grid | map split. -->
+  <div class="noria-report-panel__workspace">
+    <h3 class="noria-report-panel__subtitle type-card-title">Transaction Parcels</h3>
+
+    <div class="noria-report-panel__toolbar">
+      <div class="noria-report-panel__search">
+        <esa-text-field
+          id="report-parcels-search"
+          placeholder="Search transaction parcels…"
+          size="sm"
+        ></esa-text-field>
+      </div>
       <esa-button-toggle id="report-view-toggle" size="sm"></esa-button-toggle>
+      <EsaFilterClearButton />
     </div>
 
     <div class="noria-report-panel__split is-hybrid" data-view="hybrid">
@@ -149,6 +150,7 @@ const parcelColumns: ColSpec[] = [
           downloadFileName="transaction-parcels.csv"
           searchPlaceholder="Search transaction parcels…"
           height="100%"
+          bare
         />
       </div>
       <div class="noria-report-panel__pane noria-report-panel__pane--map">
@@ -183,39 +185,81 @@ const parcelColumns: ColSpec[] = [
   .noria-report-panel {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-400);
-    height: 100%;
-    min-height: 0;
+    gap: var(--spacing-600, 32px);
+    /* Natural height so the whole page scrolls in the shell (header included) —
+       no height:100% cap, or the tall split would clip at the viewport. Do NOT set
+       overflow here, or this would become an internal scroll and pin the header. */
+    padding-block-start: var(--spacing-400, 16px);
+  }
+  /* Tab title (h2) — sits above the filter bar. The 32px panel gap sets the section
+     rhythm (filters · balance · workspace); a -50% bottom margin tightens ONLY the
+     h2→filters gap to 16px, leaving the inter-section gaps at 32px. */
+  .noria-report-panel__title {
+    flex: 0 0 auto;
+    margin-block-end: calc(var(--spacing-600, 32px) / -2);
+  }
+  /* Sub-heading (h3) — smaller than the tab h2; labels the parcels workspace. */
+  .noria-report-panel__subtitle {
+    margin: 0;
   }
   .noria-report-panel__filters,
-  .noria-report-panel__balance {
+  .noria-report-panel__balance,
+  .noria-report-panel__workspace {
     flex: 0 0 auto;
   }
-  /* The filter card's open dropdowns overflow downward — keep it above the split
-     so Leaflet's high-z panes can't paint over them. */
+  /* Filter bar — a bordered gray-50 container so the facets read as one control
+     group; its open dropdowns overflow downward, so keep it above the split. */
   .noria-report-panel__filters {
     position: relative;
     z-index: 2;
+    padding: var(--spacing-300, 12px) var(--spacing-400, 16px);
+    background: var(--color-gray-50, #fafafa);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: var(--radius-200, 8px);
+  }
+  /* Facets bottom-align so every dropdown box sits on one axis; a select's selected
+     chip (chip-mode) then stacks neatly ABOVE its own box instead of shoving the
+     row's boxes out of line. */
+  .noria-report-panel__facets {
+    align-items: flex-end;
   }
   /* Each facet filter holds its own width so the chips wrap inside a stable box. */
   .noria-report-panel__filter {
-    inline-size: 15rem;
+    inline-size: 13rem;
   }
 
-  /* Workspace: section header (natural) over a fill-remaining split. */
+  /* Workspace: h3 + a single toolbar axis (search/clear · view toggle) over the
+     grid|map split. (Bottom breathing room comes from AppPage's scroll-mode
+     padding now, so none is needed here.) */
   .noria-report-panel__workspace {
-    flex: 1;
-    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-300);
+    gap: var(--spacing-300, 12px);
+  }
+  /* Toolbar axis — a gray-50 bar spanning the full width above both panes. */
+  /* Toolbar axis — search (left) · view toggle (center) · clear (right). The
+     1fr auto 1fr grid keeps the toggle centered regardless of the side widths. */
+  .noria-report-panel__toolbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--spacing-300, 12px);
+    padding: var(--spacing-300, 12px) var(--spacing-400, 16px);
+    background: var(--color-gray-50, #fafafa);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: var(--radius-200, 8px);
+  }
+  .noria-report-panel__toolbar > :last-child {
+    justify-self: end;
+  }
+  .noria-report-panel__search {
+    inline-size: min(320px, 60vw);
   }
 
-  /* Hybrid = an even 50/50 split (grid | map); single-pane views collapse to one
-     column and hide the other pane. Mirrors noria-parcel-explorer. */
+  /* Hybrid = an even 50/50 split (grid | map) at a fixed height in the scroll flow;
+     single-pane views collapse to one column and hide the other pane. */
   .noria-report-panel__split {
-    flex: 1;
-    min-height: 520px;
+    height: clamp(28rem, 60vh, 40rem);
     display: grid;
     gap: var(--spacing-400);
     grid-template-columns: 1fr 1fr;
@@ -301,6 +345,7 @@ const parcelColumns: ColSpec[] = [
     .noria-report-panel__split,
     .noria-report-panel__split.is-grid,
     .noria-report-panel__split.is-map {
+      height: auto;
       grid-template-columns: 1fr;
       grid-auto-rows: minmax(360px, 1fr);
     }
@@ -310,6 +355,7 @@ const parcelColumns: ColSpec[] = [
 <script>
   import '@esa/ecology/esa-select';
   import '@esa/ecology/esa-button-toggle';
+  import '@esa/ecology/esa-text-field';
   import L from 'leaflet';
   import 'leaflet/dist/leaflet.css';
 
@@ -346,6 +392,31 @@ const parcelColumns: ColSpec[] = [
     // Prototype: no PDF is generated; the demo just proves the action wires up.
     console.log('[report] Export PDF requested (prototype no-op)');
   });
+
+  // The Transaction Parcels grid runs "bare" (no built-in search box) — drive its
+  // quick filter from the shared toolbar. Resolve the api lazily off the mount's
+  // __agApi handle so ordering vs. the grid's `noria-grid-ready` never matters.
+  const parcelsApi = (): { setGridOption(k: string, v: unknown): void } | null => {
+    const mount = document.querySelector(
+      '.noria-report-panel__pane--grid .noria-data-grid__mount',
+    ) as (HTMLElement & { __agApi?: { setGridOption(k: string, v: unknown): void } }) | null;
+    return mount?.__agApi ?? null;
+  };
+  const parcelsSearch = document.getElementById('report-parcels-search') as
+    | (HTMLElement & { value?: string })
+    | null;
+  parcelsSearch?.addEventListener('change', (event) => {
+    const value =
+      (event as CustomEvent<{ value?: string }>).detail?.value ?? parcelsSearch.value ?? '';
+    parcelsApi()?.setGridOption('quickFilterText', value);
+  });
+  // esa-filter-clear-button bubbles `esa-filter-clear` — reset the quick filter + field.
+  document
+    .querySelector('.noria-report-panel__toolbar')
+    ?.addEventListener('esa-filter-clear', () => {
+      parcelsApi()?.setGridOption('quickFilterText', '');
+      if (parcelsSearch) parcelsSearch.value = '';
+    });
 
   // ── Grid | Hybrid | Map view switch (mirrors noria-parcel-explorer) ─────────
   const views = [

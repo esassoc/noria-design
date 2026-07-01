@@ -1,18 +1,28 @@
 ---
-// AppPage — the reusable full-height content frame for prototype screens inside
-// AppShell. It pins natural-height sections (a page title, a filter card) at the
-// top and lets the LAST child (a workspace / grid / map) fill the shell's scroll
-// area with its own internal scroll. Any prototype composes:
-//   <AppShell><AppPage> …sections… </AppPage></AppShell>
+// AppPage — the reusable content frame for prototype screens inside AppShell.
+// Two modes:
+//   - FILL (default): natural-height sections pin at the top and the LAST child (a
+//     workspace / map / explorer) fills the shell's scroll area with its OWN
+//     internal scroll. The page never scrolls; nothing above the last child moves.
+//   - SCROLL (`scroll` prop): the page grows with its content and scrolls as ONE
+//     document in the shell — nothing is pinned, no section runs an internal
+//     scroll. Use for content pages (a header over cards/grids) that should read
+//     top-to-bottom without a sticky header.
+// Any prototype composes: <AppShell><AppPage> …sections… </AppPage></AppShell>,
 // so the page itself carries ZERO layout CSS.
 //
-// bcn-lego-checked: the full-height app-frame spine (flex column, spacing-600
-// gutter, last-child fills) — no stack/grid layout primitive expresses
-// fill-height-with-a-growing-last-child. A reusable layout, not a reinvented UI
-// primitive.
+// bcn-lego-checked: the app-frame spine (flex column, spacing-600 gutter, with a
+// fill-or-scroll mode) — no stack/grid layout primitive expresses it. A reusable
+// layout, not a reinvented UI primitive.
+interface Props {
+  /** Scroll mode: the page grows with its content and scrolls as one (nothing
+      pinned), instead of the fill model's scroll-inside-the-last-child. */
+  scroll?: boolean;
+}
+const { scroll = false } = Astro.props;
 ---
 
-<div class="app-page"><slot /></div>
+<div class:list={['app-page', { 'app-page--scroll': scroll }]}><slot /></div>
 
 <style>
   .app-page {
@@ -23,10 +33,18 @@
     min-height: 0;
     padding: var(--spacing-600, 32px);
   }
-  /* The last section (a workspace/explorer) claims the remaining height and runs
-     its own internal scroll; earlier sections keep their natural height. */
-  .app-page > :global(:last-child) {
+  /* Fill mode (default): the last section claims the remaining height and runs its
+     own internal scroll; earlier sections keep their natural height. */
+  .app-page:not(.app-page--scroll) > :global(:last-child) {
     flex: 1;
     min-height: 0;
   }
+  /* Scroll mode: natural height that grows past the viewport so the SHELL scrolls
+     the whole page (header included) — no pinned sections. min-height keeps a short
+     page filling the frame; the bottom padding is the page's bottom breathing room. */
+  .app-page--scroll {
+    height: auto;
+    min-height: 100%;
+  }
+  /* (scroll-mode grows the page so the shell scrolls it whole) */
 </style>

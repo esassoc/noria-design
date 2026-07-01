@@ -38,7 +38,9 @@ const priceFloor = scenario.priceFloor != null ? usd(scenario.priceFloor) : '—
 const priceCeiling = scenario.priceCeiling != null ? usd(scenario.priceCeiling) : '—';
 ---
 
-<div class="grid noria-overview__cards" data-gap="md">
+<section class="noria-overview-panel">
+  <h2 class="type-section-title">Overview</h2>
+  <div class="grid noria-overview__cards" data-gap="md">
     <!-- Details -->
     <EsaCard title="Details">
       <span slot="actions" id="edit-details-trigger">
@@ -112,7 +114,8 @@ const priceCeiling = scenario.priceCeiling != null ? usd(scenario.priceCeiling) 
         </div>
       </dl>
     </EsaCard>
-</div>
+  </div>
+</section>
 
 <NoriaEditDetailsDialog scenario={scenario} />
 <NoriaEditConfigureDialog scenario={scenario} />
@@ -124,6 +127,14 @@ const priceCeiling = scenario.priceCeiling != null ? usd(scenario.priceCeiling) 
      is chrome only; there is no esa- description-list). The scoped CSS is the
      .grid min-column knob + this kv definition-list — layout/token, not a
      reinvented primitive. */
+  /* Tab-heading rhythm to match the grid tabs: ~32px from the tabs above to the
+     h2 (16px AppPage gutter + 16px pad) and 16px from the h2 down to the cards. */
+  .noria-overview-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-400, 16px);
+    padding-block-start: var(--spacing-400, 16px);
+  }
   .noria-overview__cards {
     --grid-min: 22rem;
   }

@@ -50,6 +50,14 @@ interface Props {
   downloadFileName: string;
   searchPlaceholder?: string;
   height?: string;
+  /** Strip the built-in chrome — no search/clear header, no footer, no card
+      frame — so a host can supply its own toolbar and drive search via the grid
+      api (see the `noria-grid-ready` hand-back). Default false = full chrome. */
+  bare?: boolean;
+  /** Grow to fit ALL rows (AG Grid domLayout: autoHeight) instead of filling a
+      fixed box with an internal scroll — for pages that scroll as one document.
+      Overrides `height` to auto. Default false. */
+  autoHeight?: boolean;
 }
 
 const {
@@ -59,22 +67,27 @@ const {
   downloadFileName,
   searchPlaceholder = 'Search grid…',
   height = '100%',
+  bare = false,
+  autoHeight = false,
 } = Astro.props;
 ---
 
 <div
-  class="noria-data-grid"
+  class:list={['noria-data-grid', { 'noria-data-grid--bare': bare, 'noria-data-grid--auto': autoHeight }]}
   data-grid-id={gridId}
   data-download={downloadFileName}
-  style={`height:${height};`}
+  data-auto-height={autoHeight ? 'true' : undefined}
+  style={`height:${autoHeight ? 'auto' : height};`}
 >
   <!-- Header chrome: quick-filter search (drives AG Grid's quickFilterText) + clear-all. -->
-  <div class="noria-data-grid__toolbar repel">
-    <div class="noria-data-grid__search">
-      <esa-text-field placeholder={searchPlaceholder} size="sm"></esa-text-field>
+  {!bare && (
+    <div class="noria-data-grid__toolbar repel">
+      <div class="noria-data-grid__search">
+        <esa-text-field placeholder={searchPlaceholder} size="sm"></esa-text-field>
+      </div>
+      <EsaFilterClearButton />
     </div>
-    <EsaFilterClearButton />
-  </div>
+  )}
 
   <div class="noria-data-grid__mount"></div>
 
@@ -84,19 +97,23 @@ const {
   <script type="application/json" data-role="cols" is:inline set:html={JSON.stringify(columns)}></script>
   <script type="application/json" data-role="rows" is:inline set:html={JSON.stringify(rows)}></script>
 
-  <!-- Footer chrome: CSV download · live record counts · fullscreen toggle. -->
-  <div class="noria-data-grid__footer repel">
-    <div class="noria-data-grid__download">
-      <EsaButton appearance="outline" size="sm" icon="download">Download CSV</EsaButton>
-    </div>
-    <div class="cluster" data-gap="md">
-      <span class="noria-data-grid__total type-body-small">Total Records: 0</span>
-      <span class="noria-data-grid__filtered type-body-small" hidden>Filtered Records: 0</span>
-      <div class="noria-data-grid__fullscreen">
-        <EsaButton color="ghost" appearance="outline" size="sm" icon="expand">Fullscreen</EsaButton>
+  <!-- Footer chrome: fullscreen + CSV actions (left) · live record counts (right). -->
+  {!bare && (
+    <div class="noria-data-grid__footer repel">
+      <div class="cluster" data-gap="sm">
+        <div class="noria-data-grid__fullscreen">
+          <EsaButton appearance="outline" size="sm" icon="expand">Fullscreen</EsaButton>
+        </div>
+        <div class="noria-data-grid__download">
+          <EsaButton appearance="outline" size="sm" icon="download">Download CSV</EsaButton>
+        </div>
+      </div>
+      <div class="cluster" data-gap="md">
+        <span class="noria-data-grid__total type-body-small">Total Records: 0</span>
+        <span class="noria-data-grid__filtered type-body-small" hidden>Filtered Records: 0</span>
       </div>
     </div>
-  </div>
+  )}
 </div>
 
 <script>
@@ -147,7 +164,10 @@ const {
     fontSize: 14,
     headerFontSize: 14,
     borderRadius: 4,
-    wrapperBorderRadius: 4,
+    // The grid sits inside a bordered card (header/body/footer chrome), so it
+    // owns no outer frame of its own — no double borders at the band seams.
+    wrapperBorder: false,
+    wrapperBorderRadius: 0,
     oddRowBackgroundColor: '#f5f8fb',
   });
 
@@ -339,7 +359,9 @@ const {
       def.suppressMovable = true;
       def.valueFormatter = () => '';
       def.getQuickFilterText = () => '';
-      if (spec.width == null) def.width = 132;
+      // The "Actions ▾" trigger has a fixed footprint — never let a host's narrow
+      // width clip it (floor at 132); a wider explicit width is still honored.
+      def.width = spec.width != null ? Math.max(spec.width, 132) : 132;
     } else if (render === 'idHash') {
       def.valueFormatter = (p: ValueFormatterParams) => (p.value == null ? '' : `#${p.value}`);
     } else {
@@ -353,6 +375,7 @@ const {
   function initGrid(root: HTMLElement): void {
     const gridId = root.getAttribute('data-grid-id') || '';
     const downloadFileName = root.getAttribute('data-download') || 'export.csv';
+    const autoHeight = root.getAttribute('data-auto-height') === 'true';
     const mountEl = root.querySelector<HTMLElement>('.noria-data-grid__mount');
     const colsEl = root.querySelector('script[data-role="cols"]');
     const rowsEl = root.querySelector('script[data-role="rows"]');
@@ -372,7 +395,9 @@ const {
       const caret = document.createElement('span');
       caret.className = 'noria-grid-actions-caret';
       caret.setAttribute('aria-hidden', 'true');
-      caret.textContent = '▾';
+      // Lucide chevron-down (inherits currentColor via stroke).
+      caret.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
       btn.append(document.createTextNode('Actions '), caret);
       btn.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -406,6 +431,9 @@ const {
       columnDefs,
       defaultColDef: { sortable: true, resizable: true, filter: true },
       onModelUpdated: (event) => updateCounts(event.api),
+      // autoHeight → the grid grows to fit every row (no internal scroll), so the
+      // page can scroll as one document with nothing pinned.
+      ...(autoHeight ? { domLayout: 'autoHeight' as const } : {}),
     };
 
     const api: GridApi = createGrid(mountEl, gridOptions);
@@ -447,19 +475,50 @@ const {
 </script>
 
 <style>
-  /* Full-height column: toolbar and footer pin at natural height, the grid mount
-     fills the rest. min-height:0 lets AG Grid own (and scroll) its box. */
+  /* One bordered card framing the grid: a gray-50 header band (search / clear),
+     the grid body, and a gray-50 footer band (actions / counts) — header/body/
+     footer, like the dialog chrome. Toolbar + footer pin at natural height; the
+     mount fills the rest. min-height:0 lets AG Grid own (and scroll) its box. */
   .noria-data-grid {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-300, 12px);
     width: 100%;
     min-height: 0;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: var(--radius-200, 8px);
+    overflow: hidden;
+  }
+  /* Bare mode: the host frames + drives the grid (e.g. a shared toolbar over a
+     grid|map split), so drop this component's own card border. */
+  .noria-data-grid--bare {
+    border: 0;
+    border-radius: 0;
+  }
+  .noria-data-grid__toolbar {
+    flex: none;
+    gap: var(--spacing-300, 12px);
+    padding: var(--spacing-300, 12px) var(--spacing-400, 16px);
+    background: var(--color-gray-50, #fafafa);
+    border-bottom: 1px solid var(--color-gray-200, #e5e5e5);
+  }
+  .noria-data-grid__footer {
+    flex: none;
+    gap: var(--spacing-300, 12px);
+    padding: var(--spacing-300, 12px) var(--spacing-400, 16px);
+    background: var(--color-gray-50, #fafafa);
+    border-top: 1px solid var(--color-gray-200, #e5e5e5);
   }
   .noria-data-grid__mount {
     flex: 1;
     min-height: 0;
     width: 100%;
+  }
+  /* autoHeight: AG Grid sets the mount's height to fit all rows — let it size
+     naturally instead of flex-filling a fixed box. */
+  .noria-data-grid--auto .noria-data-grid__mount {
+    flex: none;
+    min-height: 0;
   }
   .noria-data-grid__search {
     width: min(320px, 100%);
@@ -560,6 +619,7 @@ const {
     background: color-mix(in srgb, var(--color-primary, #235069) 8%, transparent);
   }
   .noria-data-grid :global(.noria-grid-actions-caret) {
-    font-size: 0.75em;
+    display: inline-flex;
+    align-items: center;
   }
 </style>

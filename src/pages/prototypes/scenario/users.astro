@@ -16,7 +16,7 @@ import { scenario, scenarioUsers } from '../../../data/scenario';
 -->
 
 <AppShell title="Deschutes Water Bank" activeNavId="scenarios">
-  <AppPage>
+  <AppPage scroll>
     <NoriaScenarioHeader scenario={scenario} activeTab="users" />
     <NoriaUsersPanel scenario={scenario} users={scenarioUsers} />
   </AppPage>

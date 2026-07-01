@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Balance Sheet — assembled</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,400..900;1,400..900&family=DM+Sans:opsz,wght@9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --gray-0:#ffffff;--gray-50:#fafafa;--gray-100:#efefef;--gray-200:#e5e5e5;--gray-300:#d4d4d4;
+  --gray-400:#a3a3a3;--gray-500:#737373;--gray-600:#525252;--gray-700:#404040;--gray-800:#262626;--gray-900:#171717;
+  --blue-50:#f3f8fc;--blue-100:#e7f1f7;--blue-200:#c9e1ee;--blue-400:#75b6d4;--blue-500:#3e92b9;
+  --blue-600:#2d759c;--blue-700:#265e7e;--blue-800:#235069;--blue-900:#214459;
+  --green-50:#f7f8ed;--green-500:#859b44;--green-600:#687c34;--green-700:#51602b;
+  --color-primary:var(--blue-800);--color-secondary:var(--blue-600);
+  --color-background:var(--gray-50);--color-surface:var(--gray-0);--color-surface-sunken:var(--gray-100);
+  --color-text-primary:var(--gray-900);--color-text-secondary:var(--gray-600);--color-text-tertiary:var(--gray-700);--color-text-muted:var(--gray-500);
+  --color-border:var(--gray-200);--color-border-light:var(--gray-100);--color-border-strong:var(--gray-300);
+  --font-sans:'DM Sans',system-ui,sans-serif;--font-decorative:'Besley',serif;
+  --w-regular:350;--w-medium:450;--w-semibold:550;--w-bold:650;
+  --sp-100:.25rem;--sp-150:.375rem;--sp-200:.5rem;--sp-250:.625rem;--sp-300:.75rem;--sp-400:1rem;--sp-450:1.25rem;--sp-500:1.5rem;--sp-600:2rem;--sp-650:2.5rem;--sp-700:3rem;
+  --radius:4px;--radius-full:9999px;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--color-background);color:var(--color-text-primary);font-family:var(--font-sans);font-weight:var(--w-regular);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+.page{max-width:1080px;margin:0 auto;padding:var(--sp-700) var(--sp-500);}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+
+.head h1{font-family:var(--font-decorative);font-weight:600;font-size:1.875rem;line-height:1.2;letter-spacing:-.01em;margin:0 0 var(--sp-200);}
+.head p{margin:0;max-width:74ch;color:var(--color-text-secondary);}
+
+/* ===== card ===== */
+.card{margin-top:var(--sp-500);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);overflow:hidden;}
+.card__hd{padding:var(--sp-400) var(--sp-500);border-bottom:1px solid var(--color-border-light);}
+.card__hd h3{margin:0;font-size:1.0625rem;font-weight:600;}
+.card__body{padding:var(--sp-500) var(--sp-500) var(--sp-600);}
+
+/* ===== three-band flow: no arrows, full-height dividers, top-aligned ===== */
+.flow{display:grid;grid-template-columns:.95fr 1.15fr .95fr;align-items:stretch;column-gap:0;}
+.band{padding-inline:var(--sp-650);}
+.band:first-child{padding-left:0;}
+.band:last-child{padding-right:0;}
+.band + .band{border-left:1px solid var(--color-border);}
+.cap{font-size:.9375rem;font-weight:var(--w-semibold);color:var(--color-text-secondary);margin:0 0 var(--sp-400);}
+
+@media (max-width:860px){
+  .flow{grid-template-columns:1fr;row-gap:var(--sp-500);}
+  .band{padding-inline:0;}
+  .band + .band{border-left:0;border-top:1px solid var(--color-border);padding-top:var(--sp-500);}
+}
+
+/* metric label */
+.mlbl__name{font-size:.875rem;color:var(--color-text-secondary);font-weight:var(--w-medium);}
+.mlbl__val{font-size:1.0625rem;font-weight:var(--w-semibold);letter-spacing:-.01em;}
+.mlbl__val .u{font-size:.75rem;color:var(--color-text-muted);font-weight:var(--w-medium);margin-left:.2em;}
+
+/* order book */
+.ob{display:flex;flex-direction:column;gap:var(--sp-400);}
+.ob__top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--sp-150);}
+.ob__lbl{font-size:.875rem;color:var(--color-text-secondary);font-weight:var(--w-medium);}
+.ob__val{font-size:1.125rem;font-weight:var(--w-semibold);letter-spacing:-.01em;}
+.ob__val .u{font-size:.75rem;color:var(--color-text-muted);font-weight:var(--w-medium);margin-left:.2em;}
+.bar{height:6px;border-radius:var(--radius-full);background:var(--color-surface-sunken);overflow:hidden;}
+.bar>span{display:block;height:100%;border-radius:var(--radius-full);}
+.bar--sell>span{background:var(--blue-400);}
+.bar--buy>span{background:var(--blue-600);}
+
+/* transacted — compact measured block */
+.measured{
+  display:grid;
+  grid-template-columns:auto auto minmax(0,1fr);
+  grid-template-rows:auto auto auto;
+  grid-template-areas:
+    "avglbl avgdim block"
+    ".      .      voldim"
+    ".      .      vollbl";
+  column-gap:var(--sp-250);row-gap:var(--sp-200);align-items:stretch;
+}
+.measured__avglbl{grid-area:avglbl;align-self:center;text-align:right;}
+.measured__avgdim{grid-area:avgdim;}
+.measured__block{grid-area:block;height:78px;background:var(--blue-600);border-radius:var(--radius);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;}
+.measured__block .t{font-size:1.5rem;font-weight:var(--w-bold);letter-spacing:-.02em;line-height:1;}
+.measured__block .c{font-size:.75rem;color:rgba(255,255,255,.85);margin-top:var(--sp-100);}
+.measured__voldim{grid-area:voldim;padding-top:var(--sp-100);}
+.measured__vollbl{grid-area:vollbl;text-align:center;}
+.hdim{display:flex;align-items:center;width:100%;}
+.hdim__cap{height:7px;width:1px;background:var(--gray-400);flex:none;}
+.hdim__line{height:1px;flex:1;background:var(--gray-400);}
+.vdim{display:flex;flex-direction:column;align-items:center;height:100%;}
+.vdim__cap{width:7px;height:1px;background:var(--gray-400);flex:none;}
+.vdim__line{width:1px;flex:1;background:var(--gray-400);}
+
+/* allocation donut */
+.alloc{display:flex;align-items:center;gap:var(--sp-400);}
+.donut{width:92px;height:92px;flex:none;position:relative;}
+.donut__lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.donut__c{font-size:1.0625rem;font-weight:var(--w-bold);letter-spacing:-.02em;}
+.donut__u{font-size:.6875rem;color:var(--color-text-muted);}
+.legend{display:flex;flex-direction:column;gap:var(--sp-250);}
+.legend__row{display:flex;gap:var(--sp-200);align-items:flex-start;}
+.legend__sw{width:10px;height:10px;border-radius:2px;flex:none;margin-top:5px;}
+.legend__sw--eco{background:var(--green-500);}
+.legend__sw--del{background:var(--blue-700);}
+.legend__pct{font-size:1rem;font-weight:var(--w-bold);letter-spacing:-.01em;}
+.legend__l{font-size:.875rem;color:var(--color-text-secondary);font-weight:var(--w-medium);}
+.legend__q{font-size:.8125rem;color:var(--color-text-muted);white-space:nowrap;}
+.legend__row > span{display:flex;flex-direction:column;gap:2px;}
+.legend__top{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .35em;}
+.legend__l{white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="head">
+    <h1>Balance Sheet</h1>
+    <p>Offers, transacted, and allocation as three top-aligned bands — separated by hairlines, no connectors.</p>
+  </header>
+
+  <div class="card">
+    <div class="card__hd"><h3>Balance Sheet</h3></div>
+    <div class="card__body">
+      <div class="flow">
+
+        <!-- Offers -->
+        <div class="band">
+          <p class="cap">Offers</p>
+          <div class="ob">
+            <div><div class="ob__top"><span class="ob__lbl">Offers to Sell</span><span class="ob__val num">260<span class="u">ac-ft</span></span></div><div class="bar bar--sell"><span style="width:81.25%"></span></div></div>
+            <div><div class="ob__top"><span class="ob__lbl">Offers to Buy</span><span class="ob__val num">320<span class="u">ac-ft</span></span></div><div class="bar bar--buy"><span style="width:100%"></span></div></div>
+          </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="band">
+          <p class="cap">Transactions</p>
+          <div class="measured">
+            <div class="measured__avglbl">
+              <div class="mlbl__name">Avg Price</div>
+              <div class="mlbl__val num">$107.14<span class="u">/ac-ft</span></div>
+            </div>
+            <div class="measured__avgdim"><div class="vdim"><span class="vdim__cap"></span><span class="vdim__line"></span><span class="vdim__cap"></span></div></div>
+            <div class="measured__block">
+              <div class="t num">$15,000</div>
+              <div class="c">Transaction Price · total</div>
+            </div>
+            <div class="measured__voldim"><div class="hdim"><span class="hdim__cap"></span><span class="hdim__line"></span><span class="hdim__cap"></span></div></div>
+            <div class="measured__vollbl">
+              <div class="mlbl__val num">140<span class="u">ac-ft</span></div>
+              <div class="mlbl__name">Volume Transacted</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Allocation -->
+        <div class="band">
+          <p class="cap">Allocation</p>
+          <div class="alloc">
+            <div class="donut">
+              <svg width="92" height="92" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--gray-100)" stroke-width="13"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--blue-700)" stroke-width="13" stroke-dasharray="226.195 263.894" stroke-dashoffset="-37.699" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--green-500)" stroke-width="13" stroke-dasharray="37.699 263.894" stroke-dashoffset="0" transform="rotate(-90 50 50)" stroke-linecap="butt"/>
+              </svg>
+              <div class="donut__lbl"><span class="donut__c num">140</span><span class="donut__u">ac-ft</span></div>
+            </div>
+            <div class="legend">
+              <div class="legend__row"><span class="legend__sw legend__sw--del"></span><span><span class="legend__top"><span class="legend__pct num">86%</span> <span class="legend__l">Approved for Delivery</span></span> <span class="legend__q num">120 ac-ft</span></span></div>
+              <div class="legend__row"><span class="legend__sw legend__sw--eco"></span><span><span class="legend__top"><span class="legend__pct num">14%</span> <span class="legend__l">In-stream Benefit</span></span> <span class="legend__q num">20 ac-ft</span></span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -97,9 +97,9 @@ const rows = transactions.map((t) => {
 
 <section class="noria-transactions-panel">
   <div class="repel noria-transactions-panel__toolbar">
-    <div></div>
+    <h2 class="type-section-title">Transactions</h2>
     <span id="tx-create-btn">
-      <EsaButton color="primary">Create Transaction +</EsaButton>
+      <EsaButton color="primary" size="sm">Create Transaction +</EsaButton>
     </span>
   </div>
 
@@ -110,7 +110,7 @@ const rows = transactions.map((t) => {
       rows={rows}
       downloadFileName="transactions.csv"
       searchPlaceholder="Search transactions…"
-      height="100%"
+      autoHeight
     />
   </div>
 
@@ -124,22 +124,12 @@ const rows = transactions.map((t) => {
   .noria-transactions-panel {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-300, 12px);
-    height: 100%;
-    min-height: 0;
+    gap: var(--spacing-400, 16px);
+    padding-block-start: var(--spacing-400, 16px);
   }
   .noria-transactions-panel__toolbar {
     flex: none;
     align-items: center;
-  }
-  .noria-transactions-panel__grid {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-  }
-  .noria-transactions-panel__grid > :global(*) {
-    flex: 1;
-    min-width: 0;
   }
 </style>
 
