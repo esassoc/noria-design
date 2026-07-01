@@ -1,0 +1,23 @@
+---
+// Scenario Details — User Management tab. The scenario header over the users
+// panel (users grid + add/edit-role dialog).
+import AppShell from '../../../layouts/AppShell.astro';
+import AppPage from '../../../layouts/AppPage.astro';
+import NoriaScenarioHeader from '../../../components/noria/noria-scenario-header.astro';
+import NoriaUsersPanel from '../../../components/noria/noria-users-panel.astro';
+import { scenario, scenarioUsers } from '../../../data/scenario';
+---
+
+<!-- manifest:
+  layout: AppShell
+  sections:
+    - scenario header -> noria-scenario-header
+    - users panel     -> noria-users-panel
+-->
+
+<AppShell title="Deschutes Water Bank" activeNavId="scenarios">
+  <AppPage>
+    <NoriaScenarioHeader scenario={scenario} activeTab="users" />
+    <NoriaUsersPanel scenario={scenario} users={scenarioUsers} />
+  </AppPage>
+</AppShell>

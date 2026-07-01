@@ -1,0 +1,257 @@
+---
+// noria-offer-dialog — the create/edit Offer modal for the Offers tab.
+//
+// A single reusable esa-dialog instance driven imperatively by the offers panel:
+//   dialogEl.openOffer({ mode:'buy'|'sell', participantId })  → create
+//   dialogEl.openOfferEdit(offer)                             → edit
+// It presets the Party, shows the water-type Type select only in sell mode, and
+// live-computes the Total Price / In-Stream Benefit box on every price/volume/type
+// change (helpers from the data layer — no bespoke math).
+//
+// Composed from legos: esa-dialog (chrome/scrim/focus-trap/Esc), esa-select
+// (Party + Type), esa-text-field (Price + Volume), esa-button (footer actions).
+//
+// bcn-lego-checked: two bits of scoped chrome the legos don't provide —
+//   (1) the $/unit ADORNMENT row around esa-text-field: the lego has no
+//       prefix/suffix slot (only label/help/error), so the "$" and "per ac-ft" /
+//       "ac-ft" affixes are composed as text beside the field via a .cluster-style
+//       flex row (layout only, no reinvented input).
+//   (2) the COMPUTED box (Total Price / In-Stream Benefit) — build-conventions
+//       names computed boxes a legitimate bcn: a quiet brand-tinted summary tile,
+//       not an esa- lego. Checked Beacon (no equivalent). Tokens only.
+import EsaButton from '@esa/ecology/esa-button.astro';
+import type { Scenario } from '../../data/scenario';
+import { waterTypeOptions } from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+}
+const { scenario } = Astro.props;
+---
+
+<esa-dialog id="offer-dialog" size="md" heading="Offer to Buy" data-scenario-id={scenario.id}>
+  <div class="stack" data-gap="md">
+    <!-- SOURCE -->
+    <section class="stack" data-gap="sm">
+      <div class="stack" data-gap="3xs">
+        <span class="type-label">Source</span>
+        <span class="type-caption">Who is offering and what type of water.</span>
+      </div>
+      <esa-select
+        id="offer-party"
+        label="Party"
+        placeholder="Select a party"
+        required
+        show-color-dot
+      ></esa-select>
+      <div id="offer-type-wrap" hidden>
+        <esa-select
+          id="offer-type"
+          label="Type"
+          placeholder="Select a water type"
+          options={JSON.stringify(waterTypeOptions)}
+        ></esa-select>
+      </div>
+    </section>
+
+    <!-- TERMS -->
+    <section class="stack" data-gap="sm">
+      <div class="stack" data-gap="3xs">
+        <span class="type-label">Terms</span>
+        <span class="type-caption">Set the price and volume for your offer.</span>
+      </div>
+
+      <div class="stack" data-gap="2xs">
+        <span class="type-label">Price</span>
+        <div class="noria-offer-dialog__adorn">
+          <span class="noria-offer-dialog__affix type-body" aria-hidden="true">$</span>
+          <esa-text-field
+            id="offer-price"
+            type="number"
+            placeholder="0"
+            class="noria-offer-dialog__field"
+          ></esa-text-field>
+          <span class="noria-offer-dialog__affix type-body-small">per ac-ft</span>
+        </div>
+      </div>
+
+      <div class="stack" data-gap="2xs">
+        <span class="type-label">Volume</span>
+        <div class="noria-offer-dialog__adorn">
+          <esa-text-field
+            id="offer-volume"
+            type="number"
+            placeholder="0"
+            class="noria-offer-dialog__field"
+          ></esa-text-field>
+          <span class="noria-offer-dialog__affix type-body-small">ac-ft</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPUTED -->
+    <div class="noria-offer-dialog__computed stack" data-gap="2xs">
+      <div class="repel">
+        <span class="type-body noria-offer-dialog__computed-label">Total Price</span>
+        <span id="offer-total" class="type-body">-</span>
+      </div>
+      <div class="repel" id="offer-benefit-row" hidden>
+        <span class="type-body noria-offer-dialog__computed-label">In-Stream Benefit</span>
+        <span id="offer-benefit" class="type-body">-</span>
+      </div>
+    </div>
+  </div>
+
+  <div slot="footer" class="cluster" data-justify="end" data-gap="xs">
+    <span id="offer-save"><EsaButton color="primary">Save</EsaButton></span>
+    <span id="offer-cancel"><EsaButton color="ghost" appearance="outline">Cancel</EsaButton></span>
+  </div>
+</esa-dialog>
+
+<style>
+  /* $/unit adornment row — esa-text-field has no prefix/suffix slot, so the
+     affixes sit beside it in a flex row (layout only). */
+  .noria-offer-dialog__adorn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-200);
+  }
+  .noria-offer-dialog__field {
+    flex: 1;
+    min-inline-size: 0;
+  }
+  .noria-offer-dialog__affix {
+    flex: none;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  /* Computed box — quiet brand-tinted summary tile (shared pattern). */
+  .noria-offer-dialog__computed {
+    background: var(--color-primary-subtle);
+    border: 1px solid var(--color-primary-border);
+    border-radius: var(--radius-100);
+    padding: var(--spacing-300) var(--spacing-400);
+  }
+  .noria-offer-dialog__computed-label {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* [hidden] must beat the layout primitives' display — .repel/.cluster set
+     display:flex, which otherwise overrides the UA [hidden]{display:none} and
+     leaves a "hidden" .repel row (In-Stream Benefit in buy mode) still showing. */
+  [hidden] {
+    display: none !important;
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-dialog';
+  import '@esa/ecology/esa-select';
+  import '@esa/ecology/esa-text-field';
+  import {
+    buyerOptions,
+    sellerOptions,
+    waterTypeById,
+    totalPrice,
+    instreamBenefit,
+    type Offer,
+  } from '../../data/scenario';
+
+  type Mode = 'buy' | 'sell';
+  interface OfferDialog extends HTMLElement {
+    heading: string;
+    show(): void;
+    close(): void;
+    openOffer(arg: { mode: Mode; participantId: number }): void;
+    openOfferEdit(offer: Offer): void;
+  }
+  interface SelectEl extends HTMLElement {
+    options: Array<{ label: string; value: string; colorHex?: string }>;
+    value: string;
+    searchable: boolean;
+  }
+  interface FieldEl extends HTMLElement {
+    value: string;
+  }
+
+  const dialog = document.getElementById('offer-dialog') as OfferDialog | null;
+  if (dialog) {
+    const partySelect = document.getElementById('offer-party') as SelectEl;
+    const typeSelect = document.getElementById('offer-type') as SelectEl;
+    const typeWrap = document.getElementById('offer-type-wrap') as HTMLElement;
+    const priceField = document.getElementById('offer-price') as FieldEl;
+    const volumeField = document.getElementById('offer-volume') as FieldEl;
+    const totalEl = document.getElementById('offer-total') as HTMLElement;
+    const benefitEl = document.getElementById('offer-benefit') as HTMLElement;
+    const benefitRow = document.getElementById('offer-benefit-row') as HTMLElement;
+
+    const numOf = (el: FieldEl): number => parseFloat(el.value) || 0;
+    const isSell = (): boolean => !typeWrap.hidden;
+
+    function recompute(): void {
+      const price = numOf(priceField);
+      const volume = numOf(volumeField);
+      totalEl.textContent = totalPrice(price, volume);
+      if (isSell()) {
+        const setAside = waterTypeById(Number(typeSelect.value))?.instreamFlowSetAside ?? 0;
+        benefitEl.textContent = instreamBenefit(volume, setAside);
+      }
+    }
+
+    function applyMode(mode: Mode): void {
+      // Sell-only chrome: the water-type Type select AND the In-Stream Benefit
+      // row (its value depends on the type's set-aside). Buy offers show neither.
+      const sell = mode === 'sell';
+      typeWrap.hidden = !sell;
+      benefitRow.hidden = !sell;
+      const pool = mode === 'buy' ? buyerOptions : sellerOptions;
+      partySelect.options = pool.map((o) => ({ label: o.label, value: o.value, colorHex: o.colorHex }));
+    }
+
+    // Selects are simple pick-one controls — make them plain (non-typeahead).
+    customElements.whenDefined('esa-select').then(() => {
+      partySelect.searchable = false;
+      typeSelect.searchable = false;
+    });
+
+    dialog.openOffer = ({ mode, participantId }) => {
+      applyMode(mode);
+      dialog.heading = mode === 'buy' ? 'Offer to Buy' : 'Offer to Sell';
+      partySelect.value = String(participantId);
+      typeSelect.value = '';
+      priceField.value = '';
+      volumeField.value = '';
+      recompute();
+      dialog.show();
+    };
+
+    dialog.openOfferEdit = (offer) => {
+      const mode: Mode = offer.type === 'Buy' ? 'buy' : 'sell';
+      applyMode(mode);
+      dialog.heading = mode === 'buy' ? 'Edit Buy Offer' : 'Edit Sell Offer';
+      partySelect.value = String(offer.participantId);
+      typeSelect.value = offer.waterTypeId != null ? String(offer.waterTypeId) : '';
+      priceField.value = String(offer.price);
+      volumeField.value = String(offer.volume);
+      recompute();
+      dialog.show();
+    };
+
+    // Any field/select change (bubbles from slotted light-DOM children) re-computes.
+    dialog.addEventListener('change', recompute);
+
+    document.getElementById('offer-save')?.addEventListener('click', () => {
+      // Prototype: log the payload, don't persist.
+      console.log('[noria] save offer', {
+        heading: dialog.heading,
+        party: partySelect.value,
+        waterType: isSell() ? typeSelect.value : null,
+        price: numOf(priceField),
+        volume: numOf(volumeField),
+      });
+      dialog.close();
+    });
+    document.getElementById('offer-cancel')?.addEventListener('click', () => dialog.close());
+  }
+</script>

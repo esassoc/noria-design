@@ -1,0 +1,80 @@
+---
+// noria-edit-details-dialog — the "Edit Scenario Details" modal for the Overview
+// panel. Purely composed from legos: esa-dialog (chrome) wrapping esa-text-field /
+// esa-select / esa-textarea, footer actions are esa-buttons in Windows order
+// (Save left of Cancel). Prototype: Save console.logs + closes; nothing persists.
+//
+// Driven by the Overview panel, which calls this dialog's `.show()` (id
+// edit-details-dialog). Select values preset via the data-default + `.value`
+// pattern (esa-select's `value` is a JS accessor, not an attribute-bound prop).
+import type { Scenario } from '../../data/scenario';
+import { reportingPeriodOptions, scenarioTypeOptions } from '../../data/scenario';
+import EsaButton from '@esa/ecology/esa-button.astro';
+
+interface Props {
+  scenario: Scenario;
+}
+const { scenario } = Astro.props;
+---
+
+<esa-dialog id="edit-details-dialog" heading="Edit Scenario Details" size="md">
+  <div class="stack" data-gap="md">
+    <esa-text-field label="Scenario Name" value={scenario.name} required></esa-text-field>
+
+    <esa-select
+      label="Reporting Period"
+      options={JSON.stringify(reportingPeriodOptions)}
+      data-default={scenario.reportingPeriod}
+    ></esa-select>
+
+    <esa-select
+      label="Type"
+      options={JSON.stringify(scenarioTypeOptions)}
+      data-default={scenario.type}
+    ></esa-select>
+
+    <esa-textarea label="Description" value={scenario.description} rows={4}></esa-textarea>
+  </div>
+
+  <div slot="footer" class="cluster" data-justify="end" data-gap="sm">
+    <span data-dialog-save>
+      <EsaButton color="primary">Save</EsaButton>
+    </span>
+    <span data-dialog-cancel>
+      <EsaButton appearance="outline">Cancel</EsaButton>
+    </span>
+  </div>
+</esa-dialog>
+
+<script>
+  import '@esa/ecology/esa-dialog';
+  import '@esa/ecology/esa-text-field';
+  import '@esa/ecology/esa-select';
+  import '@esa/ecology/esa-textarea';
+
+  // esa-select is typeahead by default and its `value` is a JS accessor (not an
+  // attribute-bound reactive prop) — so make these simple pick-one selects and
+  // apply the preset through the public setter once each lego has upgraded.
+  customElements.whenDefined('esa-select').then(() => {
+    document
+      .querySelectorAll<HTMLElement>('#edit-details-dialog esa-select')
+      .forEach((node) => {
+        const el = node as HTMLElement & { searchable: boolean; value: string };
+        el.searchable = false;
+        const def = el.getAttribute('data-default');
+        if (def) el.value = def;
+      });
+  });
+
+  // Prototype footer wiring: Cancel closes; Save logs its intent, then closes.
+  const dialog = document.getElementById('edit-details-dialog') as
+    | (HTMLElement & { close(): void })
+    | null;
+  dialog
+    ?.querySelector('[data-dialog-cancel]')
+    ?.addEventListener('click', () => dialog.close());
+  dialog?.querySelector('[data-dialog-save]')?.addEventListener('click', () => {
+    console.log('[edit-details] Save (prototype — not persisted)');
+    dialog.close();
+  });
+</script>

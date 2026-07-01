@@ -1,0 +1,194 @@
+---
+// noria-transactions-panel — the Transactions tab workspace.
+//
+// A toolbar ("Create Transaction +") over the transactions data grid, plus the two
+// modals the grid's row actions drive: the full-screen create/edit/view wizard and
+// the small change-status dialog. Everything tabular goes through NoriaDataGrid
+// (never a raw <table>); the panel only builds the rows/columns and reacts to the
+// grid's bubbling `noria-grid-action` events, routing each to the right modal.
+//
+// bcn-lego-checked: composes NoriaDataGrid + esa-button + the wizard/change-status
+// section components. The only bespoke CSS is layout — a height-filling flex column
+// (toolbar pinned, grid flexes). No reinvented primitive; no esa- lego models a
+// grid-plus-toolbar workspace, so this is its reusable home.
+import EsaButton from '@esa/ecology/esa-button.astro';
+import NoriaDataGrid from './noria-data-grid.astro';
+import NoriaTransactionWizard from './noria-transaction-wizard.astro';
+import NoriaChangeStatusDialog from './noria-change-status-dialog.astro';
+import {
+  participantById,
+  waterTypeById,
+  parcelById,
+  transactionStatusBadge,
+  type Scenario,
+  type Transaction,
+} from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+  transactions: Transaction[];
+}
+const { scenario, transactions } = Astro.props;
+
+// Mirrors NoriaDataGrid's ColSpec (see build-conventions §1) so the column literals
+// keep their narrow types instead of widening to string.
+interface ColSpec {
+  field: string;
+  header: string;
+  width?: number;
+  flex?: number;
+  minWidth?: number;
+  align?: 'left' | 'right';
+  render?: 'text' | 'partyDot' | 'statusBadge' | 'actions' | 'idHash';
+  format?: 'usd' | 'usd0' | 'decimal' | 'text';
+  prefix?: string;
+  suffix?: string;
+  filter?: 'text' | 'number' | 'set' | false;
+}
+
+// A scannable subset of the transaction record. Number columns are right-aligned;
+// buyer/seller render as party dots; status as a quiet badge; # as a hash.
+const columns: ColSpec[] = [
+  { field: 'actions', header: '', render: 'actions', width: 64, filter: false },
+  { field: 'id', header: 'Transaction #', render: 'idHash', width: 140 },
+  { field: 'status', header: 'Status', render: 'statusBadge', width: 130, filter: 'set' },
+  { field: 'buyer', header: 'Buyer', render: 'partyDot', minWidth: 150, flex: 1 },
+  { field: 'seller', header: 'Seller', render: 'partyDot', minWidth: 150, flex: 1 },
+  { field: 'waterType', header: 'Water Type', minWidth: 150, flex: 1, filter: 'set' },
+  { field: 'volume', header: 'Volume (ac-ft)', format: 'decimal', align: 'right', width: 150 },
+  { field: 'price', header: 'Price ($/ac-ft)', format: 'usd', align: 'right', width: 160 },
+  { field: 'sendingParcels', header: 'Sending Parcels', minWidth: 160, flex: 1 },
+  { field: 'receivingParcels', header: 'Receiving Parcels', minWidth: 160, flex: 1 },
+];
+
+const apnList = (ids: number[]): string => {
+  const apns = ids.map((id) => parcelById(id)?.apn).filter(Boolean);
+  return apns.length ? apns.join(', ') : 'N/A';
+};
+
+const rows = transactions.map((t) => {
+  const buyer = participantById(t.buyerId);
+  const seller = participantById(t.sellerId);
+  const waterType = waterTypeById(t.waterTypeId);
+  const isPending = t.status === 'Pending';
+  return {
+    id: t.id,
+    actions: isPending
+      ? [
+          { label: 'Edit', action: 'edit' },
+          { label: 'Change Status', action: 'status' },
+          { label: 'Delete', action: 'delete', variant: 'danger' },
+        ]
+      : [
+          { label: 'View', action: 'view' },
+          { label: 'Change Status', action: 'status' },
+        ],
+    status: transactionStatusBadge(t.status),
+    buyer: { name: buyer?.name ?? '—', colorHex: buyer?.colorHex ?? '#737373' },
+    seller: { name: seller?.name ?? '—', colorHex: seller?.colorHex ?? '#737373' },
+    waterType: waterType?.name ?? '—',
+    volume: t.volume,
+    price: t.price,
+    sendingParcels: apnList(t.sendingParcelIds),
+    receivingParcels: apnList(t.receivingParcelIds),
+  };
+});
+---
+
+<section class="noria-transactions-panel">
+  <div class="repel noria-transactions-panel__toolbar">
+    <div></div>
+    <span id="tx-create-btn">
+      <EsaButton color="primary">Create Transaction +</EsaButton>
+    </span>
+  </div>
+
+  <div class="noria-transactions-panel__grid">
+    <NoriaDataGrid
+      gridId="transactions"
+      columns={columns}
+      rows={rows}
+      downloadFileName="transactions.csv"
+      searchPlaceholder="Search transactions…"
+      height="100%"
+    />
+  </div>
+
+  <NoriaTransactionWizard scenario={scenario} />
+  <NoriaChangeStatusDialog scenario={scenario} />
+</section>
+
+<style>
+  /* Height-filling workspace: the toolbar pins to the top, the grid flexes to fill
+     the rest. min-height:0 lets the grid own (and scroll) its own box. */
+  .noria-transactions-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-300, 12px);
+    height: 100%;
+    min-height: 0;
+  }
+  .noria-transactions-panel__toolbar {
+    flex: none;
+    align-items: center;
+  }
+  .noria-transactions-panel__grid {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
+  .noria-transactions-panel__grid > :global(*) {
+    flex: 1;
+    min-width: 0;
+  }
+</style>
+
+<script>
+  import { transactions } from '../../data/scenario';
+
+  type GridAction = CustomEvent<{ gridId: string; action: string; rowId: number | string }>;
+  type WizardApi = HTMLElement & {
+    openCreate: () => void;
+    openEdit: (txId: number) => void;
+    openView: (txId: number) => void;
+  };
+  type ChangeStatusApi = HTMLElement & {
+    open: (txId: number, currentStatus: string) => void;
+  };
+
+  const wizardEl = document.getElementById('noria-tx-wizard') as WizardApi | null;
+  const changeStatusEl = document.getElementById('noria-change-status') as ChangeStatusApi | null;
+
+  // Toolbar: launch the wizard in create mode.
+  document.getElementById('tx-create-btn')?.addEventListener('click', () => {
+    wizardEl?.openCreate();
+  });
+
+  // The grid announces row-action clicks as bubbling `noria-grid-action` events;
+  // route each to the right modal. Only react to this panel's grid.
+  document.addEventListener('noria-grid-action', (event) => {
+    const { gridId, action, rowId } = (event as GridAction).detail;
+    if (gridId !== 'transactions') return;
+    const id = Number(rowId);
+
+    switch (action) {
+      case 'edit':
+        wizardEl?.openEdit(id);
+        break;
+      case 'view':
+        wizardEl?.openView(id);
+        break;
+      case 'status': {
+        const tx = transactions.find((t) => t.id === id);
+        if (tx) changeStatusEl?.open(tx.id, tx.status);
+        break;
+      }
+      case 'delete':
+        // Prototype: no persistence — log the intent.
+        console.log('[transactions] delete', id);
+        break;
+      default:
+        break;
+    }
+  });
+</script>

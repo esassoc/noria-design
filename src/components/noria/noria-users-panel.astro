@@ -1,0 +1,112 @@
+---
+// noria-users-panel — the User Management tab: an "Add User" toolbar over a
+// full-height users grid, plus the add/edit-role dialog it drives.
+//
+// Composed from legos + section components — no hand-rolled toolbar/table:
+//   - esa-button (.astro)      → the "Add User +" action
+//   - NoriaDataGrid (.astro)   → the users table (search + download + record count
+//                                chrome is built in); emits `noria-grid-action`
+//   - NoriaUserDialog (.astro) → the add / edit-role dialog, opened imperatively
+//
+// Grid actions: an `Actions ▾` menu per row (Edit Role · Remove). The panel listens
+// for the grid's bubbling `noria-grid-action` and routes it to the dialog / a log.
+//
+// bcn-lego-checked: the only scoped CSS is the flex-height workspace shell (this is
+// the last/only section on the page, so it fills). Layout only — no reinvented
+// primitive; the toolbar uses the .repel primitive and everything inside is a lego.
+import EsaButton from '@esa/ecology/esa-button.astro';
+import NoriaDataGrid from './noria-data-grid.astro';
+import NoriaUserDialog from './noria-user-dialog.astro';
+import type { Scenario, ScenarioUser } from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+  users: ScenarioUser[];
+}
+const { scenario, users } = Astro.props;
+
+const columns = [
+  { field: 'actions', header: 'Actions', render: 'actions', width: 120, filter: false },
+  { field: 'name', header: 'Name', render: 'text', flex: 1, minWidth: 180 },
+  { field: 'email', header: 'Email', render: 'text', flex: 1, minWidth: 220 },
+  { field: 'role', header: 'Role', render: 'text', filter: 'set', width: 200 },
+];
+
+const rows = users.map((u) => ({
+  id: u.id,
+  actions: [
+    { label: 'Edit Role', action: 'edit' },
+    { label: 'Remove', action: 'remove', variant: 'danger' },
+  ],
+  name: u.fullName,
+  email: u.email,
+  role: u.role,
+}));
+---
+
+<section class="noria-users-panel">
+  <div class="repel noria-users-panel__toolbar">
+    <span aria-hidden="true"></span>
+    <span id="add-user-btn"><EsaButton appearance="outline">Add User +</EsaButton></span>
+  </div>
+
+  <div class="noria-users-panel__grid">
+    <NoriaDataGrid
+      gridId="users"
+      columns={columns}
+      rows={rows}
+      downloadFileName="scenario-users"
+      searchPlaceholder="Search users…"
+      height="100%"
+    />
+  </div>
+
+  <NoriaUserDialog scenario={scenario} />
+</section>
+
+<style>
+  /* Full-height workspace: the toolbar pins to the top, the grid fills the rest.
+     min-height:0 lets the grid own its box (so its internal scroll works).
+     bcn-lego-checked: layout-only shell composing legos — no reinvented primitive. */
+  .noria-users-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-300, 12px);
+    height: 100%;
+    min-height: 0;
+  }
+
+  .noria-users-panel__grid {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
+  .noria-users-panel__grid > :global(*) {
+    flex: 1;
+    min-width: 0;
+  }
+</style>
+
+<script>
+  // Wire the toolbar + grid to the user dialog. The dialog exposes open() on its
+  // wrapper (#user-dialog); the grid announces row actions via a bubbling
+  // `noria-grid-action` { gridId, action, rowId }.
+  type UserDialog = HTMLElement & { open?: (mode: 'add' | 'edit', userId?: number) => void };
+  const dialog = () => document.getElementById('user-dialog') as UserDialog | null;
+
+  document.getElementById('add-user-btn')?.addEventListener('click', () => {
+    dialog()?.open?.('add');
+  });
+
+  document.addEventListener('noria-grid-action', (event) => {
+    const detail = (event as CustomEvent<{ gridId: string; action: string; rowId: string | number }>)
+      .detail;
+    if (!detail || detail.gridId !== 'users') return;
+    if (detail.action === 'edit') {
+      dialog()?.open?.('edit', Number(detail.rowId));
+    } else if (detail.action === 'remove') {
+      // Prototype: no persistence — just log the intent.
+      console.log('[users] remove user', detail.rowId);
+    }
+  });
+</script>

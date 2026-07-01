@@ -1,0 +1,453 @@
+---
+// noria-report-panel — the Report tab of Scenario Details. A filter bar over a
+// Balance Sheet card over a Transaction Parcels workspace (a Grid | Hybrid | Map
+// split of a NoriaDataGrid beside a Leaflet map). Composes esa- legos + layout
+// primitives; the only bespoke CSS is the height-filling split, the map box, and
+// filter/legend chrome — all layout-only.
+//
+// bcn-lego-checked: no esa- lego models a grid|map workspace or a spoke map; the
+// split + Grid|Hybrid|Map toggle mirror noria-parcel-explorer (its reusable home),
+// and the map replicates the noria-parcel-map Leaflet pattern (colored by
+// sending/receiving side). Everything else is a lego: esa-select (filters),
+// esa-button (Export PDF), esa-card (Balance Sheet), esa-stat (the 7 metrics),
+// esa-button-toggle (the view switch), NoriaDataGrid (the parcels grid).
+import EsaCard from '@esa/ecology/esa-card.astro';
+import EsaStat from '@esa/ecology/esa-stat.astro';
+import EsaButton from '@esa/ecology/esa-button.astro';
+import NoriaDataGrid from './noria-data-grid.astro';
+import '../../styles/noria-map.css'; // Leaflet-injected chrome restyled to Noria tokens
+import {
+  balanceSheet,
+  transactionParcelRows,
+  sellerOptions,
+  buyerOptions,
+  transactionStatusOptions,
+  usd,
+  num,
+  type Scenario,
+} from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+}
+const { scenario } = Astro.props;
+
+// Balance Sheet — computed once with default filters (status = Approved). Wiring
+// the selects to recompute is a prototype bonus; the demo ships the default view.
+const bs = balanceSheet();
+const acft = (n: number) => `${num(n, 0)} ac-ft`;
+const stats: { label: string; value: string; sub?: string; accent?: boolean }[] = [
+  { label: 'Offers to Sell', value: acft(bs.offersToSell) },
+  { label: 'Offers to Buy', value: acft(bs.offersToBuy) },
+  { label: 'Volume Transacted', value: acft(bs.volumeTransacted) },
+  { label: 'Transaction Price', value: usd(bs.transactionPrice, 0), sub: 'total' },
+  { label: 'Avg. Price per ac-ft', value: bs.avgPrice != null ? usd(bs.avgPrice) : '—' },
+  { label: 'In-stream Benefit', value: acft(bs.instreamBenefit), accent: true },
+  { label: 'Approved for Delivery', value: acft(bs.approvedForDelivery) },
+];
+
+// Transaction Parcels — one row per sending/receiving parcel, default filters.
+// The SAME rows feed the grid and the map (grid gets an actions menu; the map
+// gets just the coordinates + side).
+const parcelRows = transactionParcelRows();
+const gridRows = parcelRows.map((r) => ({
+  ...r,
+  actions: [{ label: 'Download Transaction PDF', action: 'pdf' }],
+}));
+const mapPoints = parcelRows.map((r) => ({
+  lat: r.lat,
+  lng: r.lng,
+  type: r.parcelType,
+  apn: r.apn,
+  transactionId: r.transactionId,
+}));
+
+// NoriaDataGrid ColSpec[] (see noria-data-grid contract). Categorical/text cols
+// keep the default text filter; numbers get a number filter; actions none.
+// Local structural mirror of the grid's exported ColSpec — keeps the literal
+// unions (render/align/filter) type-checked without cross-.astro type imports.
+type ColSpec = {
+  field: string;
+  header: string;
+  width?: number;
+  flex?: number;
+  minWidth?: number;
+  align?: 'left' | 'right';
+  render?: 'text' | 'partyDot' | 'statusBadge' | 'actions' | 'idHash';
+  format?: 'usd' | 'usd0' | 'decimal' | 'text';
+  prefix?: string;
+  suffix?: string;
+  filter?: 'text' | 'number' | 'set' | false;
+};
+const parcelColumns: ColSpec[] = [
+  { field: 'actions', header: 'Actions', render: 'actions', width: 96, filter: false },
+  { field: 'transactionId', header: 'Transaction #', render: 'idHash', width: 130 },
+  { field: 'type', header: 'Type', render: 'text', width: 110 },
+  { field: 'apn', header: 'APN', render: 'text', minWidth: 150, flex: 1 },
+  { field: 'district', header: 'District', render: 'text', flex: 1 },
+  { field: 'buyer', header: 'Buyer', render: 'text', flex: 1 },
+  { field: 'seller', header: 'Seller', render: 'text', flex: 1 },
+  { field: 'volume', header: 'Volume (ac-ft)', format: 'decimal', align: 'right', width: 130, filter: 'number' },
+  { field: 'price', header: 'Price ($/ac-ft)', format: 'usd', align: 'right', width: 150, filter: 'number' },
+];
+---
+
+<section class="noria-report-panel" data-scenario={scenario.id}>
+  <!-- Filters: three multi-select facet filters (removable chips) + Export PDF. -->
+  <div class="noria-report-panel__filters repel" data-gap="md">
+    <div class="cluster" data-gap="md">
+      <esa-select
+        class="noria-report-panel__filter"
+        placeholder="All Sellers"
+        multiple
+        chip-mode
+        options={JSON.stringify(sellerOptions)}
+      ></esa-select>
+      <esa-select
+        class="noria-report-panel__filter"
+        placeholder="All Buyers"
+        multiple
+        chip-mode
+        options={JSON.stringify(buyerOptions)}
+      ></esa-select>
+      <esa-select
+        class="noria-report-panel__filter"
+        placeholder="Transaction Status"
+        multiple
+        chip-mode
+        data-default="Approved"
+        options={JSON.stringify(transactionStatusOptions)}
+      ></esa-select>
+    </div>
+    <span id="report-export-pdf">
+      <EsaButton color="primary">Export PDF</EsaButton>
+    </span>
+  </div>
+
+  <!-- Balance Sheet — 7 metric tiles. -->
+  <div class="noria-report-panel__balance">
+    <EsaCard title="Balance Sheet">
+      <div class="grid" style="--grid-min: 12rem" data-gap="lg">
+        {stats.map((s) => <EsaStat value={s.value} label={s.label} sub={s.sub} accent={s.accent} />)}
+      </div>
+    </EsaCard>
+  </div>
+
+  <!-- Transaction Parcels — the fill-remaining grid | map workspace. -->
+  <div class="noria-report-panel__workspace">
+    <div class="repel" data-gap="md">
+      <h2 class="type-section-title">Transaction Parcels</h2>
+      <esa-button-toggle id="report-view-toggle" size="sm"></esa-button-toggle>
+    </div>
+
+    <div class="noria-report-panel__split is-hybrid" data-view="hybrid">
+      <div class="noria-report-panel__pane noria-report-panel__pane--grid">
+        <NoriaDataGrid
+          gridId="report-parcels"
+          columns={parcelColumns}
+          rows={gridRows}
+          downloadFileName="transaction-parcels.csv"
+          searchPlaceholder="Search transaction parcels…"
+          height="100%"
+        />
+      </div>
+      <div class="noria-report-panel__pane noria-report-panel__pane--map">
+        <div class="noria-report-map">
+          <div id="report-parcels-map-mount"></div>
+          <!-- Server → client bridge: parcel points for the Leaflet script below. -->
+          <script
+            id="report-parcels-map-data"
+            type="application/json"
+            is:inline
+            set:html={JSON.stringify(mapPoints)}
+          ></script>
+          <div class="noria-report-map__legend type-body-small">
+            <span class="noria-report-map__key">
+              <span class="noria-report-map__swatch" data-side="sending"></span>Sending
+            </span>
+            <span class="noria-report-map__key">
+              <span class="noria-report-map__swatch" data-side="receiving"></span>Receiving
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Full-height panel: filters + balance sheet pin to the top at natural height;
+     the Transaction Parcels workspace fills the rest. min-height:0 lets the split's
+     grid/map children own their box.
+     bcn-lego-checked: layout-only shell composing esa- legos + NoriaDataGrid. */
+  .noria-report-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-400);
+    height: 100%;
+    min-height: 0;
+  }
+  .noria-report-panel__filters,
+  .noria-report-panel__balance {
+    flex: 0 0 auto;
+  }
+  /* The filter card's open dropdowns overflow downward — keep it above the split
+     so Leaflet's high-z panes can't paint over them. */
+  .noria-report-panel__filters {
+    position: relative;
+    z-index: 2;
+  }
+  /* Each facet filter holds its own width so the chips wrap inside a stable box. */
+  .noria-report-panel__filter {
+    inline-size: 15rem;
+  }
+
+  /* Workspace: section header (natural) over a fill-remaining split. */
+  .noria-report-panel__workspace {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-300);
+  }
+
+  /* Hybrid = an even 50/50 split (grid | map); single-pane views collapse to one
+     column and hide the other pane. Mirrors noria-parcel-explorer. */
+  .noria-report-panel__split {
+    flex: 1;
+    min-height: 520px;
+    display: grid;
+    gap: var(--spacing-400);
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    z-index: 1;
+  }
+  .noria-report-panel__split.is-grid,
+  .noria-report-panel__split.is-map {
+    grid-template-columns: 1fr;
+  }
+  .noria-report-panel__split.is-grid .noria-report-panel__pane--map,
+  .noria-report-panel__split.is-map .noria-report-panel__pane--grid {
+    display: none;
+  }
+
+  /* Each pane is a bounded, rounded card; its single child fills it. overflow clip
+     keeps the grid frame and map tiles inside the 4px radius. */
+  .noria-report-panel__pane {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-100);
+    background: var(--color-surface);
+  }
+  .noria-report-panel__pane > :global(*) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Map box — fills its pane; the mount is absolute so Leaflet always gets a real
+     pixel box. isolation confines Leaflet's pane/control z-indexes to this box. */
+  .noria-report-map {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+  }
+  #report-parcels-map-mount {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Legend decoding the by-side marker color. Sits above Leaflet's marker panes. */
+  .noria-report-map__legend {
+    position: absolute;
+    top: var(--spacing-200);
+    right: var(--spacing-200);
+    z-index: 800;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-100);
+    padding: var(--spacing-150) var(--spacing-250);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-100);
+    box-shadow: var(--shadow-100, 0 2px 12px 0 rgba(0, 0, 0, 0.04));
+  }
+  .noria-report-map__key {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-200);
+    color: var(--color-text-primary);
+  }
+  .noria-report-map__swatch {
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: var(--radius-full);
+    flex: none;
+  }
+  /* Same values the Leaflet canvas paints with (blue-800 / green-500). */
+  .noria-report-map__swatch[data-side='sending'] {
+    background: var(--color-primary);
+  }
+  .noria-report-map__swatch[data-side='receiving'] {
+    background: var(--noria-green-500);
+  }
+
+  /* Narrow screens: stack the two panes into comfortable bands. */
+  @media (max-width: 900px) {
+    .noria-report-panel__split,
+    .noria-report-panel__split.is-grid,
+    .noria-report-panel__split.is-map {
+      grid-template-columns: 1fr;
+      grid-auto-rows: minmax(360px, 1fr);
+    }
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-select';
+  import '@esa/ecology/esa-button-toggle';
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  // Hoisted so the view toggle (below) can resize/refit the map, which is created
+  // further down inside its data-island guard. The map lives in the Grid/Hybrid/Map
+  // split, so it (and the toggle) must repaint tiles whenever the pane resizes.
+  let reportMap: L.Map | null = null;
+  let reportBounds: L.LatLngBounds | null = null;
+  function fitReportMap(): void {
+    const map = reportMap;
+    const bounds = reportBounds;
+    if (!map) return;
+    // rAF: run after the class-driven layout has applied the pane's real width,
+    // so Leaflet loads tiles for the correct viewport instead of a zero/stale box.
+    requestAnimationFrame(() => {
+      map.invalidateSize();
+      if (bounds?.isValid()) map.fitBounds(bounds.pad(0.1), { maxZoom: 12 });
+    });
+  }
+
+  // ── Filters ────────────────────────────────────────────────────────────────
+  // Preset the Transaction Status facet to "Approved" through the public value
+  // setter once the lego has upgraded (value is a setter, not a JSON attribute).
+  customElements.whenDefined('esa-select').then(() => {
+    document
+      .querySelectorAll<HTMLElement & { value: string }>('.noria-report-panel esa-select[data-default]')
+      .forEach((el) => {
+        const def = el.getAttribute('data-default');
+        if (def) el.value = def;
+      });
+  });
+
+  document.getElementById('report-export-pdf')?.addEventListener('click', () => {
+    // Prototype: no PDF is generated; the demo just proves the action wires up.
+    console.log('[report] Export PDF requested (prototype no-op)');
+  });
+
+  // ── Grid | Hybrid | Map view switch (mirrors noria-parcel-explorer) ─────────
+  const views = [
+    {
+      value: 'grid',
+      label: 'Grid',
+      icon: "<path d='M3 12h.01'/><path d='M3 18h.01'/><path d='M3 6h.01'/><path d='M8 12h13'/><path d='M8 18h13'/><path d='M8 6h13'/>",
+    },
+    {
+      value: 'hybrid',
+      label: 'Hybrid',
+      icon: "<rect width='18' height='18' x='3' y='3' rx='2'/><path d='M12 3v18'/>",
+    },
+    {
+      value: 'map',
+      label: 'Map',
+      icon: "<path d='M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z'/><path d='M15 5.764v15'/><path d='M9 3.236v15'/>",
+    },
+  ];
+  customElements.whenDefined('esa-button-toggle').then(() => {
+    const toggle = document.getElementById('report-view-toggle') as
+      | (HTMLElement & { options: typeof views; value: string })
+      | null;
+    if (!toggle) return;
+    toggle.options = views;
+    toggle.value = 'hybrid';
+  });
+
+  const split = document.querySelector<HTMLElement>('.noria-report-panel__split');
+  function setView(view: string): void {
+    if (!split) return;
+    split.classList.remove('is-grid', 'is-hybrid', 'is-map');
+    split.classList.add(`is-${view}`);
+    split.dataset.view = view;
+    // The map pane gains/regains width when switching INTO Hybrid or Map — repaint
+    // tiles at the new size (Grid hides the pane, so nothing to repaint there).
+    if (view === 'hybrid' || view === 'map') fitReportMap();
+  }
+  document.getElementById('report-view-toggle')?.addEventListener('change', (event) => {
+    const value = (event as CustomEvent<{ value?: string }>).detail?.value;
+    if (value) setView(value);
+  });
+
+  // Grid row-action menu (Download Transaction PDF) — prototype console.log.
+  document.addEventListener('noria-grid-action', (event) => {
+    const detail = (event as CustomEvent<{ gridId: string; action: string; rowId: string }>).detail;
+    if (detail?.gridId !== 'report-parcels') return;
+    console.log('[report] grid action', detail.action, 'row', detail.rowId);
+  });
+
+  // ── Map (replicates the noria-parcel-map Leaflet pattern) ───────────────────
+  type MapPoint = { lat: number; lng: number; type: string; apn: string; transactionId: number };
+  const mount = document.getElementById('report-parcels-map-mount');
+  const dataEl = document.getElementById('report-parcels-map-data');
+
+  if (mount && dataEl) {
+    const points: MapPoint[] = JSON.parse(dataEl.textContent || '[]');
+
+    const map = L.map(mount, { scrollWheelZoom: true }).setView([44.32, -120.85], 10);
+    reportMap = map;
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles © Esri', maxZoom: 19 },
+    ).addTo(map);
+
+    // Color by transaction side (Leaflet's canvas paint takes literals, not vars):
+    // Sending = Noria blue-800, Receiving = Noria green-500 — the legend's values.
+    const SIDE: Record<string, string> = { Sending: '#235069', Receiving: '#859b44' };
+    const bounds = L.latLngBounds([]);
+    for (const p of points) {
+      const color = SIDE[p.type] ?? '#235069';
+      L.circleMarker([p.lat, p.lng], {
+        radius: 6,
+        color,
+        weight: 1.5,
+        fillColor: color,
+        fillOpacity: 0.55,
+      })
+        .bindTooltip(`${p.type} · APN ${p.apn} · TX #${p.transactionId}`)
+        .addTo(map);
+      bounds.extend([p.lat, p.lng]);
+    }
+    reportBounds = bounds;
+    if (bounds.isValid()) map.fitBounds(bounds.pad(0.15), { maxZoom: 12 });
+
+    // The map sits in a flex split pane that may still be zero-width on first
+    // paint, so tiles would load for a zero-size viewport (the gray basemap). The
+    // ResizeObserver fires the moment the pane lays out to its real width — resize
+    // AND re-fit there (guarded to a real >0 box) so tiles paint on initial load
+    // with no interaction, and again on every pane resize. The toggle handler
+    // still calls fitReportMap() directly for view switches.
+    new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (width > 0) fitReportMap();
+    }).observe(mount);
+
+    // The ResizeObserver's first callback can fire before the flex pane's layout
+    // has fully settled (reading a transitional size), so the initial Hybrid load
+    // could keep the gray basemap until an interaction. Re-fit once more after
+    // paint settles — one of these lands on the final box and tiles paint with no
+    // interaction. (A manual view-toggle re-fits later anyway.)
+    requestAnimationFrame(() => fitReportMap());
+    setTimeout(() => fitReportMap(), 300);
+  }
+</script>

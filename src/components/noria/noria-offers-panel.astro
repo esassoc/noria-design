@@ -1,0 +1,182 @@
+---
+// noria-offers-panel — the Offers tab body: a right-aligned "Make an Offer"
+// toolbar over the full-height offers grid, plus the offer create/edit dialog.
+//
+// Composed from legos + siblings:
+//   - esa-button + esa-dropdown-menu  → the two "Make an Offer to Buy/Sell +"
+//     split-menus (pick a participant → open the dialog in that mode)
+//   - NoriaDataGrid                   → the offers table (full chrome, one row/offer)
+//   - NoriaOfferDialog                → the create/edit modal, driven imperatively
+//
+// bcn-lego-checked: the only scoped CSS is the panel's flex column that lets the
+// grid section grow to fill the tab (layout only — no reinvented primitive). The
+// grid, dropdown, dialog, and buttons are all esa- legos / documented bcn siblings.
+import EsaButton from '@esa/ecology/esa-button.astro';
+import NoriaDataGrid from './noria-data-grid.astro';
+import NoriaOfferDialog from './noria-offer-dialog.astro';
+import type { Scenario, Offer } from '../../data/scenario';
+import {
+  participantById,
+  waterTypeById,
+  offerStatusBadge,
+  buyerOptions,
+  sellerOptions,
+} from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+  offers: Offer[];
+}
+const { scenario, offers } = Astro.props;
+
+// ── Grid contract (ColSpec per build-conventions §1) ─────────────────────────
+type ColSpec = {
+  field: string;
+  header: string;
+  width?: number;
+  flex?: number;
+  minWidth?: number;
+  align?: 'left' | 'right';
+  render?: 'text' | 'partyDot' | 'statusBadge' | 'actions' | 'idHash';
+  format?: 'usd' | 'usd0' | 'decimal' | 'text';
+  filter?: 'text' | 'number' | 'set' | false;
+};
+
+const columns: ColSpec[] = [
+  { field: 'actions', header: 'Actions', render: 'actions', filter: false, width: 110 },
+  { field: 'id', header: 'Offer #', render: 'idHash', filter: 'number', width: 110 },
+  { field: 'status', header: 'Status', render: 'statusBadge', filter: 'set', width: 120 },
+  { field: 'type', header: 'Offer Type', filter: 'set', width: 130 },
+  { field: 'party', header: 'Party', render: 'partyDot', minWidth: 160, flex: 1 },
+  { field: 'waterType', header: 'Water Type', minWidth: 150, flex: 1 },
+  { field: 'volume', header: 'Volume (ac-ft)', format: 'decimal', align: 'right', filter: 'number', width: 150 },
+  { field: 'price', header: 'Price ($/ac-ft)', format: 'usd', align: 'right', filter: 'number', width: 160 },
+  { field: 'created', header: 'Created', width: 130 },
+];
+
+const rows = offers.map((o) => {
+  const party = participantById(o.participantId);
+  return {
+    id: o.id,
+    status: offerStatusBadge(o.status),
+    type: o.type,
+    party: { name: party?.name ?? '—', colorHex: party?.colorHex ?? '#999999' },
+    waterType: waterTypeById(o.waterTypeId)?.name ?? '—',
+    volume: o.volume,
+    price: o.price,
+    created: o.created,
+    actions:
+      o.status !== 'Closed'
+        ? [
+            { label: 'Edit', action: 'edit' },
+            { label: 'Delete', action: 'delete', variant: 'danger' },
+            { label: 'Close', action: 'close' },
+          ]
+        : [],
+  };
+});
+
+// ── "Make an Offer" split-menus: participants, filtered to buyers / sellers.
+// (esa-dropdown-menu items carry only label + action; the party dot can't ride
+// inside the lego's item — see wiring notes. action = participant id.)
+const buyerMenu = buyerOptions.length
+  ? buyerOptions.map((o) => ({ label: o.label, action: o.value }))
+  : [{ label: 'No buyers in this scenario', disabled: true }];
+const sellerMenu = sellerOptions.length
+  ? sellerOptions.map((o) => ({ label: o.label, action: o.value }))
+  : [{ label: 'No sellers in this scenario', disabled: true }];
+---
+
+<section class="noria-offers-panel stack" data-gap="md">
+  <div class="repel">
+    <div></div>
+    <div class="cluster" data-gap="sm">
+      <esa-dropdown-menu
+        id="offer-buy-menu"
+        data-offer-mode="buy"
+        position="below-end"
+        items={JSON.stringify(buyerMenu)}
+      >
+        <EsaButton appearance="outline">Make an Offer to Buy +</EsaButton>
+      </esa-dropdown-menu>
+      <esa-dropdown-menu
+        id="offer-sell-menu"
+        data-offer-mode="sell"
+        position="below-end"
+        items={JSON.stringify(sellerMenu)}
+      >
+        <EsaButton appearance="outline">Make an Offer to Sell +</EsaButton>
+      </esa-dropdown-menu>
+    </div>
+  </div>
+
+  <div class="noria-offers-panel__grid">
+    <NoriaDataGrid
+      gridId="offers"
+      columns={columns}
+      rows={rows}
+      downloadFileName="offers.csv"
+      searchPlaceholder="Search offers…"
+      height="100%"
+    />
+  </div>
+
+  <NoriaOfferDialog scenario={scenario} />
+
+  <script type="application/json" id="offers-data" is:inline set:html={JSON.stringify(offers)}></script>
+</section>
+
+<style>
+  /* Panel fills the tab; the grid section grows so the table gets real height. */
+  .noria-offers-panel {
+    block-size: 100%;
+    min-block-size: 0;
+  }
+  .noria-offers-panel__grid {
+    flex: 1;
+    min-block-size: 24rem;
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-dropdown-menu';
+  import type { Offer } from '../../data/scenario';
+
+  interface OfferDialog extends HTMLElement {
+    openOffer(arg: { mode: 'buy' | 'sell'; participantId: number }): void;
+    openOfferEdit(offer: Offer): void;
+  }
+
+  const dialog = document.getElementById('offer-dialog') as OfferDialog | null;
+  const dataEl = document.getElementById('offers-data');
+  const offers: Offer[] = dataEl ? JSON.parse(dataEl.textContent || '[]') : [];
+  const offerById = (id: number): Offer | undefined => offers.find((o) => o.id === id);
+
+  // Toolbar menus → open the dialog in the picked mode with the chosen participant.
+  (['offer-buy-menu', 'offer-sell-menu'] as const).forEach((id) => {
+    const menu = document.getElementById(id);
+    if (!menu) return;
+    const mode = menu.dataset.offerMode as 'buy' | 'sell';
+    menu.addEventListener('menu-action', (event) => {
+      const participantId = (event as CustomEvent<string>).detail;
+      if (!participantId) return; // empty-state item carries no action
+      dialog?.openOffer({ mode, participantId: Number(participantId) });
+    });
+  });
+
+  // Grid row actions: edit → dialog (edit mode); delete/close → prototype log.
+  document.addEventListener('noria-grid-action', (event) => {
+    const { gridId, action, rowId } = (event as CustomEvent<{
+      gridId: string;
+      action: string;
+      rowId: string | number;
+    }>).detail;
+    if (gridId !== 'offers') return;
+    if (action === 'edit') {
+      const offer = offerById(Number(rowId));
+      if (offer) dialog?.openOfferEdit(offer);
+    } else {
+      console.log('[noria] offers grid action', action, 'row', rowId);
+    }
+  });
+</script>

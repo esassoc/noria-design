@@ -1,0 +1,23 @@
+---
+// Scenario Details — Offers tab. The scenario header over the offers panel
+// (Make-an-Offer party dropdowns + offers grid + offer dialog).
+import AppShell from '../../../layouts/AppShell.astro';
+import AppPage from '../../../layouts/AppPage.astro';
+import NoriaScenarioHeader from '../../../components/noria/noria-scenario-header.astro';
+import NoriaOffersPanel from '../../../components/noria/noria-offers-panel.astro';
+import { scenario, offers } from '../../../data/scenario';
+---
+
+<!-- manifest:
+  layout: AppShell
+  sections:
+    - scenario header -> noria-scenario-header
+    - offers panel    -> noria-offers-panel
+-->
+
+<AppShell title="Deschutes Water Bank" activeNavId="scenarios">
+  <AppPage>
+    <NoriaScenarioHeader scenario={scenario} activeTab="offers" />
+    <NoriaOffersPanel scenario={scenario} offers={offers} />
+  </AppPage>
+</AppShell>

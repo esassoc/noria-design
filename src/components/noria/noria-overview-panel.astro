@@ -1,0 +1,202 @@
+---
+// noria-overview-panel — the Overview tab body of Scenario Details. Two esa-cards
+// side by side (a responsive .grid): a read-only "Details" definition list and a
+// read-only "Configure" summary (participants + their roles, price bounds, water
+// types). Each card's ghost Edit button opens the matching edit dialog, both of
+// which are composed at the end of this panel.
+//
+// Both cards render as a key-value definition list (noria-kv): short scalar
+// fields are inline rows (label left, value right); complex fields (Description,
+// the participants list, the water-type list) are "block" rows (label above,
+// content below) — all split by the same neutral hairline divider.
+//
+// Composed from legos: esa-card (card chrome), esa-button (Edit triggers),
+// noria-party-dot (participant identity), and the two edit dialogs. Values are
+// read straight from the Scenario prop via the scenario.ts helpers.
+import type { Scenario } from '../../data/scenario';
+import { usd } from '../../data/scenario';
+import EsaCard from '@esa/ecology/esa-card.astro';
+import EsaButton from '@esa/ecology/esa-button.astro';
+import NoriaPartyDot from './noria-party-dot.astro';
+import NoriaEditDetailsDialog from './noria-edit-details-dialog.astro';
+import NoriaEditConfigureDialog from './noria-edit-configure-dialog.astro';
+
+interface Props {
+  scenario: Scenario;
+}
+const { scenario } = Astro.props;
+
+// The two wholesale role flags → the muted suffix beside a participant's dot.
+function roleSuffix(p: { isWholesaleBuyer: boolean; isWholesaleSeller: boolean }): string {
+  const roles: string[] = [];
+  if (p.isWholesaleBuyer) roles.push('Wholesale Buyer');
+  if (p.isWholesaleSeller) roles.push('Wholesale Seller');
+  return roles.length ? `(${roles.join(', ')})` : '';
+}
+
+const priceFloor = scenario.priceFloor != null ? usd(scenario.priceFloor) : '—';
+const priceCeiling = scenario.priceCeiling != null ? usd(scenario.priceCeiling) : '—';
+---
+
+<div class="grid noria-overview__cards" data-gap="md">
+    <!-- Details -->
+    <EsaCard title="Details">
+      <span slot="actions" id="edit-details-trigger">
+        <EsaButton color="ghost" size="sm" icon="pencil">Edit</EsaButton>
+      </span>
+      <dl class="noria-kv">
+        <div class="noria-kv__row">
+          <dt>Scenario Name</dt>
+          <dd>{scenario.name}</dd>
+        </div>
+        <div class="noria-kv__row">
+          <dt>Type</dt>
+          <dd>{scenario.type}</dd>
+        </div>
+        <div class="noria-kv__row">
+          <dt>Reporting Period</dt>
+          <dd>{scenario.reportingPeriod}</dd>
+        </div>
+        <div class="noria-kv__row">
+          <dt>Description</dt>
+          <dd class="noria-kv__prose">{scenario.description ?? '—'}</dd>
+        </div>
+      </dl>
+    </EsaCard>
+
+    <!-- Configure -->
+    <EsaCard title="Configure">
+      <span slot="actions" id="edit-configure-trigger">
+        <EsaButton color="ghost" size="sm" icon="pencil">Edit</EsaButton>
+      </span>
+      <dl class="noria-kv">
+        <div class="noria-kv__row">
+          <dt>Participants</dt>
+          <dd>
+            <div class="noria-kv__list">
+              {
+                scenario.participants.map((p) => {
+                  const suffix = roleSuffix(p);
+                  return (
+                    <div class="cluster" data-gap="xs" data-align="center">
+                      <NoriaPartyDot colorHex={p.colorHex} name={p.name} />
+                      {suffix && <span class="type-body-small noria-muted">{suffix}</span>}
+                    </div>
+                  );
+                })
+              }
+            </div>
+          </dd>
+        </div>
+        <div class="noria-kv__row">
+          <dt>Price Floor</dt>
+          <dd>{priceFloor}</dd>
+        </div>
+        <div class="noria-kv__row">
+          <dt>Price Ceiling</dt>
+          <dd>{priceCeiling}</dd>
+        </div>
+        <div class="noria-kv__row">
+          <dt>Water Types</dt>
+          <dd>
+            <div class="noria-kv__list">
+              {
+                scenario.waterTypes.map((w) => (
+                  <span>
+                    {w.name} ({Math.round(w.instreamFlowSetAside * 100)}% Instream Flow Set Aside)
+                  </span>
+                ))
+              }
+            </div>
+          </dd>
+        </div>
+      </dl>
+    </EsaCard>
+</div>
+
+<NoriaEditDetailsDialog scenario={scenario} />
+<NoriaEditConfigureDialog scenario={scenario} />
+
+<style>
+  /* bcn-lego-checked: composes esa-card + esa-button + noria-party-dot + the two
+     edit dialogs. No esa- lego provides a two-card scenario overview OR a
+     label-left/value-right definition list with hairline row dividers (esa-card
+     is chrome only; there is no esa- description-list). The scoped CSS is the
+     .grid min-column knob + this kv definition-list — layout/token, not a
+     reinvented primitive. */
+  .noria-overview__cards {
+    --grid-min: 22rem;
+  }
+
+  /* Key-value definition list: inline rows (label left / value right) split by a
+     neutral hairline; --block rows stack (label above, content below). */
+  .noria-kv {
+    margin: 0;
+  }
+  .noria-kv__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-400, 16px);
+    padding: var(--spacing-300, 12px) 0;
+    border-bottom: 1px solid var(--color-border, #e5e5e5);
+  }
+  .noria-kv__row:first-child {
+    padding-top: 0;
+  }
+  .noria-kv__row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .noria-kv__row dt {
+    flex: none;
+    color: var(--color-text-secondary, #525252);
+    font-size: 0.875rem; /* 14px */
+    font-weight: var(--font-weight-medium, 450);
+  }
+  .noria-kv__row dd {
+    /* Cap the value column so a long value never overbears its short label —
+       it right-aligns within this bound, leaving a gap in the middle. */
+    max-width: 60%;
+    margin: 0;
+    text-align: right;
+    color: var(--color-text-primary, #171717);
+    font-size: 0.9375rem; /* 15px */
+    font-weight: var(--font-weight-medium, 450);
+  }
+  /* Description prose — regular weight, comfortable (not loose) leading. */
+  .noria-kv__prose {
+    font-weight: var(--font-weight-regular, 350);
+    line-height: 1.5;
+  }
+  /* Right-aligned multi-line value lists (participants, water types) — the value
+     column stays right-aligned even when it wraps to several lines. */
+  .noria-kv__list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-100, 4px);
+    text-align: right;
+  }
+
+  .noria-muted {
+    color: var(--color-text-secondary);
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-dialog';
+
+  // Wire each card's Edit trigger to its dialog's imperative open API.
+  const wireOpen = (triggerId: string, dialogId: string) => {
+    const trigger = document.getElementById(triggerId);
+    const dialog = document.getElementById(dialogId) as
+      | (HTMLElement & { show(): void })
+      | null;
+    if (!trigger || !dialog) return;
+    trigger.addEventListener('click', () => dialog.show());
+  };
+
+  wireOpen('edit-details-trigger', 'edit-details-dialog');
+  wireOpen('edit-configure-trigger', 'edit-configure-dialog');
+</script>

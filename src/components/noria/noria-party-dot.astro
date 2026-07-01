@@ -1,0 +1,48 @@
+---
+// noria-party-dot — a participant's "party color" dot, optionally labelled with
+// the participant name. The colored dot beside a party everywhere it appears in
+// Scenario Details (Overview participants, offer/transaction summaries, select
+// options, grid cells — the grid replicates this markup in its cell renderer).
+//
+// bcn-lego-checked: esa-badge's dot mode colors from SEMANTIC variants only
+// (primary/success/danger…), not an arbitrary per-participant ColorHex. This is a
+// data-driven identity indicator keyed on ColorHex, so it can't be an esa-badge.
+// Checked Beacon (color-circle span idiom). noria-party-dot is the reusable home.
+interface Props {
+  colorHex: string;
+  name?: string;
+  /** Dot diameter. sm = 8px, md = 12px. Defaults to md. */
+  size?: 'sm' | 'md';
+}
+const { colorHex, name, size = 'md' } = Astro.props;
+---
+
+<span class="noria-party" data-size={size}>
+  <span class="noria-party__dot" style={`background:${colorHex};`}></span>
+  {name && <span class="noria-party__name type-body">{name}</span>}
+</span>
+
+<style>
+  .noria-party {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-200, 8px);
+    min-width: 0;
+  }
+  .noria-party__dot {
+    flex: none;
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: var(--radius-full, 999px);
+  }
+  .noria-party[data-size='sm'] .noria-party__dot {
+    inline-size: 8px;
+    block-size: 8px;
+  }
+  .noria-party__name {
+    color: var(--color-text, #171717);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>

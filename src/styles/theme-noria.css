@@ -88,4 +88,20 @@
   --radius-300: var(--radius-100); /* 8px  → 4px */
   --radius-400: var(--radius-100); /* 12px → 4px */
   --radius-500: var(--radius-100); /* 16px → 4px */
+
+  /* ===== (5) DIALOG CHROME — tint the header + footer surfaces =====
+     esa-dialog exposes --dialog-header-bg / --dialog-footer-bg (default
+     transparent); Noria fills them gray-50 so the chrome frames the white body.
+     --dialog-border-color drives the header bottom-border + footer top-border;
+     gray-200 makes the frame edges read clearly against the gray-50 fill. */
+  --dialog-header-bg: var(--color-gray-50);
+  --dialog-footer-bg: var(--color-gray-50);
+  --dialog-border-color: var(--color-gray-200);
+
+  /* ===== (6) FORM LABELS — compact + heavier (prod parity) =====
+     Noria's live app runs tight, semibold field labels. Both esa-text-field and
+     esa-select read these hooks (default 15px/medium), so re-pointing them here
+     re-skins every form label kit-wide — no per-field overrides. */
+  --form-label-font-size:   0.875rem;                 /* 14px, down from ~15px */
+  --form-label-font-weight: var(--font-weight-semibold); /* 550, up from 450 */
 }

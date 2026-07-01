@@ -1,0 +1,210 @@
+---
+// noria-edit-configure-dialog — the "Configure Scenario" modal for the Overview
+// panel. Ports the prod modal's shape: a two-column body — Price Floor | Price
+// Ceiling, then Districts | Conservation Buyers (each a Select-All section of
+// dot + name + role checkboxes), then Water Types set-asides across the bottom.
+//
+// Composed from legos: esa-dialog (chrome; widened via --dialog-width-lg for the
+// two-column body) wrapping esa-text-field (price bounds + set-aside), esa-button
+// (Select All + footer), and noria-party-dot + esa-checkbox pairs (each district's
+// Buyer/Seller roles). Reads the FULL water-bank roster (districts +
+// conservationBuyers), not just this scenario's active participants — the active
+// three come pre-checked. Prototype: Save/Select-All are client stubs.
+//
+// Driven by the Overview panel, which calls this dialog's `.show()`.
+import type { Scenario } from '../../data/scenario';
+import { districts, conservationBuyers } from '../../data/scenario';
+import NoriaPartyDot from './noria-party-dot.astro';
+import EsaButton from '@esa/ecology/esa-button.astro';
+
+interface Props {
+  scenario: Scenario;
+}
+const { scenario } = Astro.props;
+---
+
+<esa-dialog id="edit-configure-dialog" class="noria-configure" heading="Configure Scenario" size="lg">
+  <div class="stack" data-gap="lg">
+    <!-- Price bounds -->
+    <div class="noria-configure__cols">
+      <esa-text-field
+        label="Price Floor"
+        prefix="$"
+        type="number"
+        placeholder="Enter price floor"
+        value={String(scenario.priceFloor ?? '')}
+      ></esa-text-field>
+      <esa-text-field
+        label="Price Ceiling"
+        prefix="$"
+        type="number"
+        placeholder="Enter price ceiling"
+        value={String(scenario.priceCeiling ?? '')}
+      ></esa-text-field>
+    </div>
+
+    <!-- Districts | Conservation Buyers -->
+    <div class="noria-configure__cols">
+      <!-- Districts -->
+      <section class="stack noria-configure__section" data-gap="sm">
+        <div class="repel" data-align="center">
+          <h3 class="noria-configure__section-title">Districts</h3>
+          <span data-select-all>
+            <EsaButton color="secondary" size="sm">Select All</EsaButton>
+          </span>
+        </div>
+        <div class="stack" data-gap="2xs">
+          {districts.map((d) => (
+            <div class="repel noria-configure__row" data-align="center">
+              <NoriaPartyDot colorHex={d.colorHex} name={d.name} />
+              <div class="cluster" data-gap="md" data-align="center">
+                <esa-checkbox size="sm" label="Buyer" checked={d.isBuyer || undefined}></esa-checkbox>
+                <esa-checkbox size="sm" label="Seller" checked={d.isSeller || undefined}></esa-checkbox>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Conservation Buyers -->
+      <section class="stack noria-configure__section" data-gap="sm">
+        <div class="repel" data-align="center">
+          <h3 class="noria-configure__section-title">Conservation Buyers</h3>
+          <span data-select-all>
+            <EsaButton color="secondary" size="sm">Select All</EsaButton>
+          </span>
+        </div>
+        <div class="stack" data-gap="2xs">
+          {conservationBuyers.map((c) => (
+            <div class="repel noria-configure__row" data-align="center">
+              <NoriaPartyDot colorHex={c.colorHex} name={c.name} />
+              <esa-checkbox size="sm" label="Buyer" checked={c.isBuyer || undefined}></esa-checkbox>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+
+    <!-- Water Types: each row streamlines the type name + an inline set-aside field -->
+    <section class="stack" data-gap="sm">
+      <h3 class="noria-configure__section-title">Water Types</h3>
+      <div class="noria-configure__cols">
+        {scenario.waterTypes.map((w) => (
+          <div class="repel noria-configure__row noria-configure__water" data-align="center">
+            <span class="noria-configure__row-label">{w.name}</span>
+            <div class="cluster" data-gap="sm" data-align="center">
+              <span class="noria-configure__row-label">Set Aside</span>
+              <esa-text-field
+                class="noria-configure__setaside"
+                suffix="%"
+                type="number"
+                value={String(Math.round(w.instreamFlowSetAside * 100))}
+              ></esa-text-field>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  </div>
+
+  <div slot="footer" class="cluster" data-justify="end" data-gap="sm">
+    <span data-dialog-save>
+      <EsaButton color="primary">Save</EsaButton>
+    </span>
+    <span data-dialog-cancel>
+      <EsaButton appearance="outline">Cancel</EsaButton>
+    </span>
+  </div>
+</esa-dialog>
+
+<style>
+  /* bcn-lego-checked: composes esa-dialog + esa-text-field + esa-checkbox +
+     esa-button + noria-party-dot. No esa- lego lays out a price-bounds /
+     district-roster / water-type configure form; the scoped CSS is layout only
+     (a 2-col grid, per-row card sizing, field-box flex-basis) + widening the
+     esa-dialog via its public --dialog-width-lg knob — no reinvented primitive.
+     The $ / % affixes use esa-text-field's own prefix/suffix props. */
+  #edit-configure-dialog {
+    /* Widen the lg dialog for the two-column body (public knob the shadow reads). */
+    --dialog-width-lg: 64rem;
+  }
+  .noria-configure__cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-400, 16px);
+    align-items: start;
+  }
+  @media (max-width: 40rem) {
+    .noria-configure__cols {
+      grid-template-columns: 1fr;
+    }
+  }
+  /* Section headings — a tight, bold 16px label (prod's weight), not the softer
+     ~18px medium type-card-title role, which read too large/light in this dense form. */
+  .noria-configure__section-title {
+    margin: 0;
+    font-size: 1rem; /* 16px */
+    font-weight: var(--font-weight-bold, 650);
+    line-height: var(--line-height-tight, 1.3);
+    color: var(--color-text-primary, #171717);
+  }
+  /* Each district / conservation / water-type row as a quiet bordered card —
+     tightened padding + gap so the roster reads dense (prod-like), not roomy. */
+  .noria-configure__row {
+    gap: var(--spacing-200, 8px);
+    padding: var(--spacing-200, 8px) var(--spacing-300, 12px);
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: var(--radius-200, 8px);
+  }
+  /* Water-type rows read as a filled panel (prod), not a white card. */
+  .noria-configure__water {
+    background: var(--color-gray-50, #fafafa);
+  }
+  .noria-configure__setaside {
+    flex: 0 0 7rem;
+  }
+  /* Dense row labels — the district / water-type name + the inline "Set Aside"
+     label share one compact, semibold 14px (matches the form-label treatment). */
+  .noria-configure__row-label {
+    font-size: 0.875rem; /* 14px */
+    font-weight: var(--font-weight-semibold, 550);
+    color: var(--color-text-primary, #171717);
+  }
+  /* District / conservation names come from noria-party-dot (light DOM) — nudge
+     them to the same compact, semibold weight as the other dense labels. */
+  .noria-configure__row :global(.noria-party__name) {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-semibold, 550);
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-dialog';
+  import '@esa/ecology/esa-text-field';
+  import '@esa/ecology/esa-checkbox';
+
+  const dialog = document.getElementById('edit-configure-dialog') as
+    | (HTMLElement & { close(): void })
+    | null;
+
+  // Select All — check every role box in that section (toggles to clear when all
+  // are already checked). Prototype stub; nothing persists.
+  dialog?.querySelectorAll('[data-select-all]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const section = btn.closest('.noria-configure__section');
+      const boxes = Array.from(
+        section?.querySelectorAll('esa-checkbox') ?? []
+      ) as Array<HTMLElement & { checked: boolean }>;
+      const allOn = boxes.length > 0 && boxes.every((b) => b.checked);
+      boxes.forEach((b) => { b.checked = !allOn; });
+    });
+  });
+
+  // Footer wiring: Cancel closes; Save logs its intent, then closes.
+  dialog?.querySelector('[data-dialog-cancel]')?.addEventListener('click', () => dialog.close());
+  dialog?.querySelector('[data-dialog-save]')?.addEventListener('click', () => {
+    console.log('[edit-configure] Save (prototype — not persisted)');
+    dialog.close();
+  });
+</script>

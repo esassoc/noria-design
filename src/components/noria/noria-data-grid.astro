@@ -1,0 +1,565 @@
+---
+// noria-data-grid — the reusable Scenario Details data grid, powered by AG Grid.
+//
+// Generalizes noria-parcel-grid: same v36 Theming API (the Noria Quartz theme),
+// the same JSON data-island server→client bridge, and the same `noria-grid-ready`
+// hand-back — but column-driven. A host declares its columns as a ColSpec[] and
+// its rows, and the grid maps each spec to an AG Grid columnDef, wiring cell
+// renderers (party dot / status badge / actions menu / id hash), number
+// formatting (usd / usd0 / decimal), and per-column filters. Full standard chrome
+// is built in: a quick-filter search + clear-all in the header, and a CSV
+// download, live record counts, and a fullscreen toggle in the footer.
+//
+// Self-contained, and multi-instance-safe: the bundled client <script> runs once
+// per page and initializes EVERY `.noria-data-grid` on it, scoping all lookups to
+// each root — so a page may drop several grids without id collisions. NO AG Grid
+// CSS is imported anywhere; the theme carries every visual token. The host only
+// drops this into a sized box (or lets it fill via height:100%).
+//
+// bcn-lego-checked: no esa- data-grid lego exists; AG Grid Community is the
+// user-chosen grid engine — same justification as noria-parcel-grid. This is the
+// reusable home that wraps AG Grid, themes it to Noria tokens, and adds the shared
+// search / download / count / fullscreen chrome every Scenario Details grid needs.
+import EsaButton from '@esa/ecology/esa-button.astro';
+import EsaFilterClearButton from '@esa/ecology/esa-filter-clear-button.astro';
+
+/** One column of the grid. `render` picks a cell renderer; `format` shapes numbers. */
+export interface ColSpec {
+  field: string;
+  header: string;
+  width?: number;
+  flex?: number;
+  minWidth?: number;
+  align?: 'left' | 'right';
+  /** Cell renderer. Default 'text'. */
+  render?: 'text' | 'partyDot' | 'statusBadge' | 'actions' | 'idHash';
+  /** Number formatting for 'text' cells. */
+  format?: 'usd' | 'usd0' | 'decimal' | 'text';
+  prefix?: string;
+  suffix?: string;
+  /** Column filter. 'set' degrades to text in Community. Default 'text'. */
+  filter?: 'text' | 'number' | 'set' | false;
+}
+
+interface Props {
+  /** Unique per instance; echoed back in `noria-grid-action` / `noria-grid-ready`. */
+  gridId: string;
+  columns: ColSpec[];
+  /** Each row MUST carry an `id` (used as the action event's rowId). */
+  rows: any[];
+  downloadFileName: string;
+  searchPlaceholder?: string;
+  height?: string;
+}
+
+const {
+  gridId,
+  columns,
+  rows,
+  downloadFileName,
+  searchPlaceholder = 'Search grid…',
+  height = '100%',
+} = Astro.props;
+---
+
+<div
+  class="noria-data-grid"
+  data-grid-id={gridId}
+  data-download={downloadFileName}
+  style={`height:${height};`}
+>
+  <!-- Header chrome: quick-filter search (drives AG Grid's quickFilterText) + clear-all. -->
+  <div class="noria-data-grid__toolbar repel">
+    <div class="noria-data-grid__search">
+      <esa-text-field placeholder={searchPlaceholder} size="sm"></esa-text-field>
+    </div>
+    <EsaFilterClearButton />
+  </div>
+
+  <div class="noria-data-grid__mount"></div>
+
+  <!-- Server → client bridges: the columns + rows props, serialized for the AG Grid
+       script below (is:inline keeps Astro from bundling the JSON as JS). Scoped to
+       this root via data-role so multiple grids on a page never cross wires. -->
+  <script type="application/json" data-role="cols" is:inline set:html={JSON.stringify(columns)}></script>
+  <script type="application/json" data-role="rows" is:inline set:html={JSON.stringify(rows)}></script>
+
+  <!-- Footer chrome: CSV download · live record counts · fullscreen toggle. -->
+  <div class="noria-data-grid__footer repel">
+    <div class="noria-data-grid__download">
+      <EsaButton appearance="outline" size="sm" icon="download">Download CSV</EsaButton>
+    </div>
+    <div class="cluster" data-gap="md">
+      <span class="noria-data-grid__total type-body-small">Total Records: 0</span>
+      <span class="noria-data-grid__filtered type-body-small" hidden>Filtered Records: 0</span>
+      <div class="noria-data-grid__fullscreen">
+        <EsaButton color="ghost" appearance="outline" size="sm" icon="expand">Fullscreen</EsaButton>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import {
+    createGrid,
+    ModuleRegistry,
+    AllCommunityModule,
+    themeQuartz,
+    type ColDef,
+    type GridApi,
+    type GridOptions,
+    type ICellRendererParams,
+    type ValueFormatterParams,
+  } from 'ag-grid-community';
+  // Register the header quick-filter field (a .ts lego → import to upgrade <esa-text-field>).
+  import '@esa/ecology/esa-text-field';
+  // The client script may import the shared money/number formatters directly.
+  import { usd, num } from '../../data/scenario';
+
+  // Register the Community feature set once. With the Theming API there is no CSS
+  // to import — the theme below carries every visual token.
+  ModuleRegistry.registerModules([AllCommunityModule]);
+
+  // Mirror of the exported ColSpec (the client script can't read the .astro type).
+  type ColSpec = {
+    field: string;
+    header: string;
+    width?: number;
+    flex?: number;
+    minWidth?: number;
+    align?: 'left' | 'right';
+    render?: 'text' | 'partyDot' | 'statusBadge' | 'actions' | 'idHash';
+    format?: 'usd' | 'usd0' | 'decimal' | 'text';
+    prefix?: string;
+    suffix?: string;
+    filter?: 'text' | 'number' | 'set' | false;
+  };
+  type ActionItem = { label: string; action: string; icon?: string; variant?: string };
+
+  // Noria-themed Quartz: deep brand-blue header with white labels, DM Sans type,
+  // 4px corners, subtle row striping — matching noria-parcel-grid and house style.
+  const noriaTheme = themeQuartz.withParams({
+    accentColor: '#235069',
+    headerBackgroundColor: '#235069',
+    headerTextColor: '#ffffff',
+    headerFontWeight: 600,
+    fontFamily: 'DM Sans, system-ui, sans-serif',
+    fontSize: 14,
+    headerFontSize: 14,
+    borderRadius: 4,
+    wrapperBorderRadius: 4,
+    oddRowBackgroundColor: '#f5f8fb',
+  });
+
+  // ── Cell renderers ─────────────────────────────────────────────────────────
+  // partyDot: replicate noria-party-dot markup — a 12px color swatch + the name.
+  function partyDotRenderer(params: ICellRendererParams): HTMLElement | string {
+    const v = params.value as { name?: string; colorHex?: string } | null;
+    if (!v || typeof v !== 'object') return '';
+    const span = document.createElement('span');
+    span.className = 'noria-grid-party';
+    const dot = document.createElement('span');
+    dot.className = 'noria-grid-party__dot';
+    if (v.colorHex) dot.style.background = v.colorHex;
+    const name = document.createElement('span');
+    name.className = 'noria-grid-party__name';
+    name.textContent = v.name ?? '';
+    span.append(dot, name);
+    return span;
+  }
+
+  // statusBadge: a quiet 4px badge, colored by variant → semantic token step.
+  function badgeRenderer(params: ICellRendererParams): HTMLElement | string {
+    const v = params.value as { label?: string; variant?: string } | null;
+    if (!v || typeof v !== 'object') return '';
+    const span = document.createElement('span');
+    span.className = `noria-grid-badge noria-grid-badge--${v.variant || 'secondary'}`;
+    span.textContent = v.label ?? '';
+    return span;
+  }
+
+  // ── Actions menu (body-appended popup) ───────────────────────────────────────
+  // AG Grid cells clip overflow, so the menu can't live inside the cell. It mounts
+  // to <body>, fixed-positioned under the trigger; the item click dispatches the
+  // bubbling event FROM the trigger (in the grid subtree) so panels catch it.
+  let openMenu: HTMLElement | null = null;
+
+  function ensureActionsMenuStyles(): void {
+    if (document.getElementById('noria-grid-actions-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'noria-grid-actions-styles';
+    style.textContent = `
+      .noria-grid-actions-menu {
+        position: fixed; z-index: 9999;
+        background: var(--color-surface, #fff);
+        border: 1px solid var(--color-border, #e5e5e5);
+        border-radius: var(--radius-200, 8px);
+        box-shadow: var(--shadow-300, 0 6px 24px -6px rgba(0, 0, 0, 0.15));
+        min-width: 168px; padding: var(--spacing-100, 4px);
+        font-family: var(--font-sans, 'DM Sans', system-ui, sans-serif);
+      }
+      .noria-grid-actions-menu__item {
+        display: flex; align-items: center; gap: var(--spacing-200, 8px);
+        width: 100%; padding: var(--spacing-200, 8px) var(--spacing-300, 12px);
+        border: none; border-radius: var(--radius-100, 4px);
+        background: transparent; color: var(--color-text-primary, #171717);
+        font-family: inherit; font-size: var(--type-size-200, 0.9375rem);
+        text-align: left; cursor: pointer;
+      }
+      .noria-grid-actions-menu__item:hover { background: var(--color-surface-sunken, #efefef); }
+      .noria-grid-actions-menu__item--danger { color: var(--color-danger, #ef4444); }
+      .noria-grid-actions-menu__item--danger:hover { background: var(--color-danger-subtle, #fef2f2); }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function closeActionsMenu(): void {
+    if (!openMenu) return;
+    openMenu.remove();
+    openMenu = null;
+    document.removeEventListener('click', onDocClick, true);
+    document.removeEventListener('keydown', onMenuKey, true);
+    window.removeEventListener('scroll', closeActionsMenu, true);
+    window.removeEventListener('resize', closeActionsMenu);
+  }
+  function onDocClick(event: MouseEvent): void {
+    if (openMenu && !openMenu.contains(event.target as Node)) closeActionsMenu();
+  }
+  function onMenuKey(event: KeyboardEvent): void {
+    if (event.key === 'Escape') closeActionsMenu();
+  }
+
+  function openActionsMenu(
+    trigger: HTMLElement,
+    items: ActionItem[],
+    gridId: string,
+    rowId: unknown,
+  ): void {
+    closeActionsMenu();
+    ensureActionsMenuStyles();
+    const menu = document.createElement('div');
+    menu.className = 'noria-grid-actions-menu';
+    menu.setAttribute('role', 'menu');
+    items.forEach((item) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className =
+        'noria-grid-actions-menu__item' +
+        (item.variant === 'danger' ? ' noria-grid-actions-menu__item--danger' : '');
+      btn.textContent = item.label;
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        trigger.dispatchEvent(
+          new CustomEvent('noria-grid-action', {
+            detail: { gridId, action: item.action, rowId },
+            bubbles: true,
+          }),
+        );
+        closeActionsMenu();
+      });
+      menu.appendChild(btn);
+    });
+    document.body.appendChild(menu);
+
+    // Right-align to the trigger; flip above if it would overflow the viewport.
+    const r = trigger.getBoundingClientRect();
+    menu.style.right = `${Math.round(window.innerWidth - r.right)}px`;
+    menu.style.top = `${Math.round(r.bottom + 4)}px`;
+    const mh = menu.offsetHeight;
+    if (r.bottom + 4 + mh > window.innerHeight && r.top - 4 - mh > 0) {
+      menu.style.top = `${Math.round(r.top - 4 - mh)}px`;
+    }
+    openMenu = menu;
+    // Defer global listeners so the opening click doesn't immediately close it.
+    setTimeout(() => {
+      document.addEventListener('click', onDocClick, true);
+      document.addEventListener('keydown', onMenuKey, true);
+      window.addEventListener('scroll', closeActionsMenu, true);
+      window.addEventListener('resize', closeActionsMenu);
+    }, 0);
+  }
+
+  // ── ColSpec → columnDef ──────────────────────────────────────────────────────
+  function numberFormatter(spec: ColSpec): ((p: ValueFormatterParams) => string) | null {
+    if (!spec.format && !spec.prefix && !spec.suffix) return null;
+    return (p: ValueFormatterParams): string => {
+      const v = p.value;
+      if (v == null || v === '') return '';
+      let s: string;
+      switch (spec.format) {
+        case 'usd': s = usd(Number(v)); break;
+        case 'usd0': s = usd(Number(v), 0); break;
+        case 'decimal': s = num(Number(v)); break;
+        default: s = String(v);
+      }
+      return `${spec.prefix ?? ''}${s}${spec.suffix ?? ''}`;
+    };
+  }
+
+  function filterFor(spec: ColSpec): string | boolean {
+    if (spec.filter === false) return false;
+    if (spec.filter === 'number') return 'agNumberColumnFilter';
+    // 'text' | 'set' | undefined → text (Community has no Set Filter).
+    return 'agTextColumnFilter';
+  }
+
+  function toColDef(
+    spec: ColSpec,
+    actionsRenderer: (p: ICellRendererParams) => HTMLElement | string,
+  ): ColDef {
+    const def: ColDef = {
+      field: spec.field,
+      headerName: spec.header,
+      sortable: true,
+      resizable: true,
+      filter: filterFor(spec),
+    };
+    if (spec.width != null) def.width = spec.width;
+    if (spec.flex != null) def.flex = spec.flex;
+    if (spec.minWidth != null) def.minWidth = spec.minWidth;
+    if (spec.align === 'right') def.type = 'rightAligned';
+
+    const render = spec.render ?? 'text';
+    if (render === 'partyDot' || render === 'statusBadge') {
+      // Object-valued cells: derive searchable/sortable/exportable text so quick
+      // filter, column filter, sort, and CSV all operate on the human string.
+      const key = render === 'partyDot' ? 'name' : 'label';
+      const text = (val: any): string =>
+        val && typeof val === 'object' ? (val[key] ?? '') : '';
+      def.cellRenderer = render === 'partyDot' ? partyDotRenderer : badgeRenderer;
+      def.valueFormatter = (p: ValueFormatterParams) => text(p.value);
+      def.getQuickFilterText = (p: any) => text(p.value);
+      def.filterValueGetter = (p: any) => text(p.data ? p.data[spec.field] : null);
+      def.comparator = (a: any, b: any) => text(a).localeCompare(text(b));
+    } else if (render === 'actions') {
+      def.cellRenderer = actionsRenderer;
+      def.sortable = false;
+      def.filter = false;
+      def.resizable = false;
+      def.suppressMovable = true;
+      def.valueFormatter = () => '';
+      def.getQuickFilterText = () => '';
+      if (spec.width == null) def.width = 132;
+    } else if (render === 'idHash') {
+      def.valueFormatter = (p: ValueFormatterParams) => (p.value == null ? '' : `#${p.value}`);
+    } else {
+      const nf = numberFormatter(spec);
+      if (nf) def.valueFormatter = nf;
+    }
+    return def;
+  }
+
+  // ── Per-instance init (runs for EVERY grid on the page) ──────────────────────
+  function initGrid(root: HTMLElement): void {
+    const gridId = root.getAttribute('data-grid-id') || '';
+    const downloadFileName = root.getAttribute('data-download') || 'export.csv';
+    const mountEl = root.querySelector<HTMLElement>('.noria-data-grid__mount');
+    const colsEl = root.querySelector('script[data-role="cols"]');
+    const rowsEl = root.querySelector('script[data-role="rows"]');
+    if (!mountEl || !colsEl || !rowsEl) return;
+
+    const colSpecs: ColSpec[] = JSON.parse(colsEl.textContent || '[]');
+    const rowData: any[] = JSON.parse(rowsEl.textContent || '[]');
+
+    // Actions renderer closes over this grid's id; an empty items array renders nothing.
+    const actionsRenderer = (params: ICellRendererParams): HTMLElement | string => {
+      const items: ActionItem[] = Array.isArray(params.value) ? params.value : [];
+      if (items.length === 0) return '';
+      const rowId = params.data?.id;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'noria-grid-actions-trigger';
+      const caret = document.createElement('span');
+      caret.className = 'noria-grid-actions-caret';
+      caret.setAttribute('aria-hidden', 'true');
+      caret.textContent = '▾';
+      btn.append(document.createTextNode('Actions '), caret);
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openActionsMenu(btn, items, gridId, rowId);
+      });
+      return btn;
+    };
+
+    const columnDefs = colSpecs.map((spec) => toColDef(spec, actionsRenderer));
+
+    const totalEl = root.querySelector<HTMLElement>('.noria-data-grid__total');
+    const filteredEl = root.querySelector<HTMLElement & { hidden: boolean }>(
+      '.noria-data-grid__filtered',
+    );
+    function updateCounts(api: GridApi): void {
+      const total = rowData.length;
+      if (totalEl) totalEl.textContent = `Total Records: ${total}`;
+      if (!filteredEl) return;
+      const displayed = api.getDisplayedRowCount();
+      if (displayed !== total) {
+        filteredEl.textContent = `Filtered Records: ${displayed}`;
+        filteredEl.hidden = false;
+      } else {
+        filteredEl.hidden = true;
+      }
+    }
+
+    const gridOptions: GridOptions = {
+      theme: noriaTheme,
+      rowData,
+      columnDefs,
+      defaultColDef: { sortable: true, resizable: true, filter: true },
+      onModelUpdated: (event) => updateCounts(event.api),
+    };
+
+    const api: GridApi = createGrid(mountEl, gridOptions);
+    updateCounts(api);
+
+    // Search → AG Grid quick filter (esa-text-field emits `change` on every input).
+    const searchField = root.querySelector<HTMLElement & { value?: string }>('esa-text-field');
+    searchField?.addEventListener('change', (event) => {
+      const value = (event as CustomEvent<{ value?: string }>).detail?.value ?? searchField.value ?? '';
+      api.setGridOption('quickFilterText', value);
+    });
+    // Clear-all (esa-filter-clear-button bubbles `esa-filter-clear`).
+    root.addEventListener('esa-filter-clear', () => {
+      api.setGridOption('quickFilterText', '');
+      if (searchField) searchField.value = '';
+    });
+
+    // CSV download.
+    root.querySelector('.noria-data-grid__download')?.addEventListener('click', () => {
+      api.exportDataAsCsv({ fileName: downloadFileName });
+    });
+
+    // Fullscreen toggle (class flip; AG Grid re-fits to the resized container).
+    const fsWrap = root.querySelector<HTMLElement>('.noria-data-grid__fullscreen');
+    fsWrap?.addEventListener('click', () => {
+      const fs = root.classList.toggle('is-fullscreen');
+      const label = fsWrap.querySelector('.esa-button__label');
+      if (label) label.textContent = fs ? 'Exit Fullscreen' : 'Fullscreen';
+    });
+
+    // Hand the api back to the host (bubbling event + a __agApi fallback handle).
+    (mountEl as HTMLElement & { __agApi?: GridApi }).__agApi = api;
+    root.dispatchEvent(
+      new CustomEvent('noria-grid-ready', { detail: { api, gridId }, bubbles: true }),
+    );
+  }
+
+  document.querySelectorAll<HTMLElement>('.noria-data-grid').forEach(initGrid);
+</script>
+
+<style>
+  /* Full-height column: toolbar and footer pin at natural height, the grid mount
+     fills the rest. min-height:0 lets AG Grid own (and scroll) its box. */
+  .noria-data-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-300, 12px);
+    width: 100%;
+    min-height: 0;
+  }
+  .noria-data-grid__mount {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+  .noria-data-grid__search {
+    width: min(320px, 100%);
+  }
+  .noria-data-grid__total,
+  .noria-data-grid__filtered {
+    color: var(--color-text-secondary, #525252);
+    align-self: center;
+  }
+
+  /* Fullscreen: lift the whole grid over the page and fill the viewport. */
+  .noria-data-grid.is-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: var(--color-surface, #fff);
+    padding: var(--spacing-400, 16px);
+  }
+
+  /* AG Grid injects renderer nodes into light DOM under the scoped root, so reach
+     them with a descendant :global() (like noria-parcel-grid's link renderer). */
+
+  /* partyDot cell — mirrors noria-party-dot. */
+  .noria-data-grid :global(.noria-grid-party) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-200, 8px);
+    min-width: 0;
+  }
+  .noria-data-grid :global(.noria-grid-party__dot) {
+    flex: none;
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: var(--radius-full, 999px);
+  }
+  .noria-data-grid :global(.noria-grid-party__name) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* statusBadge cell — quiet 4px badge, semantic color by variant. */
+  .noria-data-grid :global(.noria-grid-badge) {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-100, 4px);
+    font-size: var(--type-size-150, 0.875rem);
+    font-weight: var(--font-weight-medium, 500);
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .noria-data-grid :global(.noria-grid-badge--success) {
+    color: var(--color-success-strong, #15803d);
+    border-color: var(--color-success-border, #bbf7d0);
+    background: var(--color-success-subtle, #f0fdf4);
+  }
+  .noria-data-grid :global(.noria-grid-badge--danger) {
+    color: var(--color-danger-strong, #b91c1c);
+    border-color: var(--color-danger-border, #fecaca);
+    background: var(--color-danger-subtle, #fef2f2);
+  }
+  .noria-data-grid :global(.noria-grid-badge--warning) {
+    color: var(--color-warning-strong, #b45309);
+    border-color: var(--color-warning-border, #fde68a);
+    background: var(--color-warning-subtle, #fffbeb);
+  }
+  .noria-data-grid :global(.noria-grid-badge--info) {
+    color: var(--color-info-strong, #1d4ed8);
+    border-color: var(--color-info-border, #bfdbfe);
+    background: var(--color-info-subtle, #eff6ff);
+  }
+  .noria-data-grid :global(.noria-grid-badge--secondary) {
+    color: var(--color-text-secondary, #525252);
+    border-color: var(--color-border-strong, #d4d4d4);
+    background: var(--color-surface-sunken, #efefef);
+  }
+
+  /* actions cell — an outlined "Actions ▾" trigger (esa-button outline look, but at
+     the 14px dense floor rather than xs 11px). Opens the body-appended menu. */
+  .noria-data-grid :global(.noria-grid-actions-trigger) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-100, 4px);
+    padding: 2px 8px;
+    border: 1px solid var(--color-primary, #235069);
+    border-radius: var(--radius-100, 4px);
+    background: transparent;
+    color: var(--color-primary, #235069);
+    font-family: var(--font-sans, 'DM Sans', system-ui, sans-serif);
+    font-size: var(--type-size-150, 0.875rem);
+    font-weight: var(--font-weight-medium, 500);
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .noria-data-grid :global(.noria-grid-actions-trigger:hover) {
+    background: color-mix(in srgb, var(--color-primary, #235069) 8%, transparent);
+  }
+  .noria-data-grid :global(.noria-grid-actions-caret) {
+    font-size: 0.75em;
+  }
+</style>

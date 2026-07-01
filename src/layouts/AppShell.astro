@@ -32,6 +32,8 @@ import { withBase } from '../lib/base';
 const LUCIDE = {
   compass:
     '<path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/><circle cx="12" cy="12" r="10"/>',
+  'chart-no-axes-combined':
+    '<path d="M12 16v5"/><path d="M16 14.639V21"/><path d="M20 10.656V21"/><path d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"/><path d="M4 18.463V21"/><path d="M8 14.656V21"/>',
   megaphone:
     '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
   database:
@@ -70,7 +72,8 @@ const navLinks: NavLink[] = [
     id: 'scenarios',
     label: 'Scenarios',
     href: withBase('/prototypes/scenarios'),
-    icon: 'trending-up', // registered
+    icon: 'chart-no-axes-combined',
+    paths: LUCIDE['chart-no-axes-combined'],
   },
 ];
 

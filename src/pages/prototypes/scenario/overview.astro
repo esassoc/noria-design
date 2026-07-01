@@ -1,0 +1,23 @@
+---
+// Scenario Details — Overview tab. Assembled from the scenario header (breadcrumb
+// + meta + horizontal tabs) and the overview panel (Details + Configure cards).
+import AppShell from '../../../layouts/AppShell.astro';
+import AppPage from '../../../layouts/AppPage.astro';
+import NoriaScenarioHeader from '../../../components/noria/noria-scenario-header.astro';
+import NoriaOverviewPanel from '../../../components/noria/noria-overview-panel.astro';
+import { scenario } from '../../../data/scenario';
+---
+
+<!-- manifest:
+  layout: AppShell
+  sections:
+    - scenario header -> noria-scenario-header
+    - overview panel  -> noria-overview-panel
+-->
+
+<AppShell title="Deschutes Water Bank" activeNavId="scenarios">
+  <AppPage>
+    <NoriaScenarioHeader scenario={scenario} activeTab="overview" />
+    <NoriaOverviewPanel scenario={scenario} />
+  </AppPage>
+</AppShell>

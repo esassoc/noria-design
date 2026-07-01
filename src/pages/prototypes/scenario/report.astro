@@ -1,0 +1,23 @@
+---
+// Scenario Details — Report tab. The scenario header over the report panel
+// (filters + balance-sheet stats + Grid/Hybrid/Map transaction parcels).
+import AppShell from '../../../layouts/AppShell.astro';
+import AppPage from '../../../layouts/AppPage.astro';
+import NoriaScenarioHeader from '../../../components/noria/noria-scenario-header.astro';
+import NoriaReportPanel from '../../../components/noria/noria-report-panel.astro';
+import { scenario } from '../../../data/scenario';
+---
+
+<!-- manifest:
+  layout: AppShell
+  sections:
+    - scenario header -> noria-scenario-header
+    - report panel    -> noria-report-panel
+-->
+
+<AppShell title="Deschutes Water Bank" activeNavId="scenarios">
+  <AppPage>
+    <NoriaScenarioHeader scenario={scenario} activeTab="report" />
+    <NoriaReportPanel scenario={scenario} />
+  </AppPage>
+</AppShell>

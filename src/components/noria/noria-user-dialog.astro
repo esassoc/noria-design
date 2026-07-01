@@ -1,0 +1,141 @@
+---
+// noria-user-dialog — add / edit-role dialog for a scenario's users.
+//
+// Two modes on one esa-dialog (size="md"), driven by an imperative open() API the
+// users panel calls:
+//   - open('add')            → heading "Add User", show the User picker + Role select
+//   - open('edit', userId)   → heading "Edit Role - {name}", show ONLY the Role select
+//                              preset to that user's current role
+//
+// Composed from legos — no hand-rolled dialog/inputs/buttons:
+//   - esa-dialog (.ts WC)  → the modal chrome (scrim, Esc, focus trap, close button)
+//   - esa-select (.ts WC)  → the User picker and the Scenario Role select
+//   - esa-button (.astro)  → Save (primary) + Cancel (outline) in the footer
+//
+// The open() method is exposed on the WRAPPER element (#user-dialog), not on the
+// <esa-dialog> — esa-dialog already owns a reactive boolean `open` property (its
+// visibility); shadowing it with a function would break show()/close(). The wrapper
+// sets the heading, toggles the User field, presets values, then calls dialog.show().
+//
+// bcn-lego-checked: the only scoped CSS is `display:contents` on the wrapper so it
+// adds no box to the panel's flow — layout only, no reinvented primitive. The dialog,
+// fields, and buttons are all esa- legos.
+import EsaButton from '@esa/ecology/esa-button.astro';
+import { scenarioRoleOptions, type Scenario } from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+}
+// `scenario` is part of the contract, but the dialog resolves user names/roles at
+// runtime (from scenarioUsers / scenarioRoleOptions), so it isn't read in frontmatter.
+const { scenario } = Astro.props;
+void scenario;
+
+// Invented candidate users to add to the scenario (mock — not real people).
+const candidateUsers = [
+  { label: 'Sofia Reyes', value: 'Sofia Reyes' },
+  { label: 'Marcus Bell', value: 'Marcus Bell' },
+  { label: 'Hana Okafor', value: 'Hana Okafor' },
+  { label: 'Terrence Wu', value: 'Terrence Wu' },
+];
+---
+
+<div id="user-dialog" class="noria-user-dialog">
+  <esa-dialog id="user-dialog-el" heading="Add User" size="md">
+    <div class="stack" data-gap="md">
+      <div id="user-add-field">
+        <esa-select
+          id="user-add-select"
+          label="User"
+          placeholder="Select a user…"
+          options={JSON.stringify(candidateUsers)}
+          required
+        ></esa-select>
+      </div>
+      <esa-select
+        id="user-role-select"
+        label="Scenario Role"
+        placeholder="Select a role…"
+        options={JSON.stringify(scenarioRoleOptions)}
+        required
+      ></esa-select>
+    </div>
+
+    <div slot="footer" class="cluster" data-justify="end" data-gap="sm">
+      <span id="user-save"><EsaButton color="primary">Save</EsaButton></span>
+      <span id="user-cancel"><EsaButton appearance="outline">Cancel</EsaButton></span>
+    </div>
+  </esa-dialog>
+</div>
+
+<style>
+  /* Layout only — the wrapper adds no box to the panel flow; the esa-dialog paints
+     as a fixed overlay. bcn-lego-checked: no reinvented primitive here. */
+  .noria-user-dialog {
+    display: contents;
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-dialog';
+  import '@esa/ecology/esa-select';
+  import { scenarioUsers } from '../../data/scenario';
+
+  type OpenMode = 'add' | 'edit';
+  interface SelectEl extends HTMLElement {
+    value: string | null;
+    searchable: boolean;
+  }
+  interface DialogEl extends HTMLElement {
+    show(): void;
+    close(): void;
+    heading: string;
+  }
+
+  const host = document.getElementById('user-dialog') as
+    | (HTMLElement & { open?: (mode: OpenMode, userId?: number) => void })
+    | null;
+  const dialog = document.getElementById('user-dialog-el') as DialogEl | null;
+  const addField = document.getElementById('user-add-field');
+  const userSelect = document.getElementById('user-add-select') as SelectEl | null;
+  const roleSelect = document.getElementById('user-role-select') as SelectEl | null;
+
+  // Both are plain pick-ones — turn off the default typeahead once upgraded.
+  customElements.whenDefined('esa-select').then(() => {
+    [userSelect, roleSelect].forEach((el) => {
+      if (el) el.searchable = false;
+    });
+  });
+
+  // Imperative open() lives on the wrapper (see header note on the esa-dialog
+  // `open` collision). The users panel calls document.getElementById('user-dialog').open(...).
+  if (host) {
+    host.open = (mode, userId) => {
+      if (!dialog) return;
+      if (mode === 'edit') {
+        const user = scenarioUsers.find((u) => u.id === userId);
+        dialog.heading = user ? `Edit Role - ${user.fullName}` : 'Edit Role';
+        if (addField) addField.style.display = 'none';
+        if (userSelect) userSelect.value = null;
+        if (roleSelect) roleSelect.value = user ? user.role : null;
+      } else {
+        dialog.heading = 'Add User';
+        if (addField) addField.style.display = '';
+        if (userSelect) userSelect.value = null;
+        if (roleSelect) roleSelect.value = null;
+      }
+      dialog.show();
+    };
+  }
+
+  // Cancel just closes. Save logs the payload and closes — prototype, no persistence.
+  document.getElementById('user-cancel')?.addEventListener('click', () => dialog?.close());
+  document.getElementById('user-save')?.addEventListener('click', () => {
+    console.log('[user-dialog] save', {
+      heading: dialog?.heading,
+      user: userSelect?.value ?? null,
+      role: roleSelect?.value ?? null,
+    });
+    dialog?.close();
+  });
+</script>

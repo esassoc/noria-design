@@ -1,0 +1,1117 @@
+---
+// noria-transaction-wizard — the create/edit/view work surface for a transaction.
+//
+// A full-screen esa-dialog (a stable work surface, not a passing modal) laid out as
+// a left workflow rail + the active step on the right. Four steps:
+//   1 Parties & Terms   linked offers · buyer/seller · water type + confirmed
+//                        price/volume, with a live Total Price / In-Stream Benefit box
+//   2 Sending Info       a Leaflet map of the SELLER's district parcels (click to
+//                        select) beside a panel: mode toggle · APN search · selected
+//                        list · selling Point of Diversion
+//   3 Receiving Info     same, for the BUYER's district parcels + buying POD
+//   4 Summary            a read-only recap beside an overview map of both sides
+//
+// The panel drives it via the wrapper's API (openCreate / openEdit / openView).
+// Those live on the WRAPPER (id="noria-tx-wizard"), never the esa-dialog — the
+// dialog owns a reactive boolean `open`, so a method there would clobber it. All
+// dynamic state (step, per-side selection, POD, prefill from a transaction) lives
+// in the client script, which reads the mock data module directly.
+//
+// bcn-lego-checked: the workflow rail + step orchestration + the interactive
+// parcel-selection / POD maps are a composed work surface, not an esa- lego. It
+// stitches esa-dialog + esa-select + esa-text-field + esa-button-toggle + esa-button
+// + Leaflet together; no single lego models it, so this is its reusable home. The
+// bespoke CSS is chrome only (rail, step layout, computed box, parcel list, POD).
+import EsaButton from '@esa/ecology/esa-button.astro';
+import {
+  offers,
+  participantById,
+  buyerOptions,
+  sellerOptions,
+  waterTypeOptions,
+  num,
+  type Scenario,
+} from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+}
+const { scenario } = Astro.props;
+void scenario; // signature parity with sibling panels; the wizard reads the data module
+
+// Linked-offer options: "N/A" + open offers, labelled  #id - party (price $/ac-ft, vol ac-ft).
+const openOffers = offers.filter((o) => o.status === 'Open');
+const offerOptions = (type: 'Buy' | 'Sell') => [
+  { label: 'N/A', value: '' },
+  ...openOffers
+    .filter((o) => o.type === type)
+    .map((o) => {
+      const party = participantById(o.participantId);
+      return {
+        label: `#${o.id} - ${party?.name ?? '—'} (${num(o.price, 0)} $/ac-ft, ${num(o.volume, 0)} ac-ft)`,
+        value: String(o.id),
+      };
+    }),
+];
+const buyingOfferOptions = offerOptions('Buy');
+const sellingOfferOptions = offerOptions('Sell');
+---
+
+<div id="noria-tx-wizard" class="noria-transaction-wizard">
+  <esa-dialog size="fullscreen" heading="Create Transaction">
+    <div class="wiz sidebar" data-gap="lg" style="--sidebar-width: 15rem;">
+      <!-- LEFT: workflow rail -->
+      <nav class="wiz__rail" aria-label="Transaction workflow">
+        <p class="type-overline wiz__rail-title">Transaction Workflow</p>
+        <ol class="wiz__steps">
+          <li>
+            <button type="button" class="wiz__step" data-goto="1" aria-current="step">
+              <span class="wiz__chip">1</span><span class="wiz__step-label">Parties &amp; Terms</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="wiz__step" data-goto="2">
+              <span class="wiz__chip">2</span><span class="wiz__step-label">Sending Info</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="wiz__step" data-goto="3">
+              <span class="wiz__chip">3</span><span class="wiz__step-label">Receiving Info</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="wiz__step" data-goto="4">
+              <span class="wiz__chip">4</span><span class="wiz__step-label">Summary</span>
+            </button>
+          </li>
+        </ol>
+      </nav>
+
+      <!-- RIGHT: active step -->
+      <div class="wiz__main">
+        <!-- STEP 1 — Parties & Terms -->
+        <section class="wiz__panel" data-step="1">
+          <div class="stack" data-gap="lg">
+            <div class="stack" data-gap="sm">
+              <p class="type-label wiz__group">Linked Offers</p>
+              <p class="type-caption wiz__group-hint">Optionally link the open offers this transaction settles.</p>
+              <div class="grid" style="--grid-min: 16rem;">
+                <esa-select id="wiz-buying-offer" label="Buying Offer" options={JSON.stringify(buyingOfferOptions)}></esa-select>
+                <esa-select id="wiz-selling-offer" label="Selling Offer" options={JSON.stringify(sellingOfferOptions)}></esa-select>
+              </div>
+            </div>
+
+            <div class="stack" data-gap="sm">
+              <p class="type-label wiz__group">Parties</p>
+              <div class="grid" style="--grid-min: 16rem;">
+                <esa-select id="wiz-buyer" label="Buyer" required options={JSON.stringify(buyerOptions)}></esa-select>
+                <esa-select id="wiz-seller" label="Seller" required options={JSON.stringify(sellerOptions)}></esa-select>
+              </div>
+            </div>
+
+            <div class="stack" data-gap="sm">
+              <p class="type-label wiz__group">Terms</p>
+              <div class="grid" style="--grid-min: 14rem;">
+                <esa-select id="wiz-water-type" label="Water Type" options={JSON.stringify(waterTypeOptions)}></esa-select>
+                <esa-text-field id="wiz-price" label="Confirmed Price ($)" type="number" help-text="per ac-ft" placeholder="0"></esa-text-field>
+                <esa-text-field id="wiz-volume" label="Confirmed Volume" type="number" help-text="ac-ft" placeholder="0"></esa-text-field>
+              </div>
+            </div>
+
+            <div class="wiz__computed">
+              <div class="repel">
+                <span class="type-body wiz__computed-label">Total Price</span>
+                <span class="type-body" id="wiz-total">-</span>
+              </div>
+              <div class="repel">
+                <span class="type-body wiz__computed-label">In-Stream Benefit</span>
+                <span class="type-body" id="wiz-instream">-</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 2 — Sending Info -->
+        <section class="wiz__panel" data-step="2" hidden>
+          <div class="sidebar" data-side="end" data-gap="lg" style="--sidebar-width: 22rem;">
+            <div class="wiz__parcel-panel stack" data-gap="md">
+              <esa-button-toggle id="wiz-send-mode" size="sm"></esa-button-toggle>
+              <esa-text-field id="wiz-send-search" placeholder="Search by APN…" size="sm"></esa-text-field>
+              <div class="stack" data-gap="sm">
+                <div class="cluster" data-gap="xs">
+                  <span class="type-label">Selected Parcels</span>
+                  <span class="wiz__count" id="wiz-send-count">0</span>
+                </div>
+                <ul class="wiz__parcel-list" id="wiz-send-list"></ul>
+                <p class="type-caption wiz__empty" id="wiz-send-empty">No parcels selected. Click a parcel on the map to add it.</p>
+              </div>
+              <div class="stack" data-gap="sm">
+                <span class="type-label">Selling Point of Diversion</span>
+                <p class="type-caption" id="wiz-send-pod-hint">Switch to “Place Point of Diversion” and click the map to set a location.</p>
+                <esa-text-field id="wiz-send-pod-label" label="Label (optional)" size="sm" placeholder="e.g. Lateral 14 headgate"></esa-text-field>
+              </div>
+            </div>
+            <div class="wiz__map">
+              <div class="wiz__map-mount" id="wiz-send-map"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 3 — Receiving Info -->
+        <section class="wiz__panel" data-step="3" hidden>
+          <div class="sidebar" data-side="end" data-gap="lg" style="--sidebar-width: 22rem;">
+            <div class="wiz__parcel-panel stack" data-gap="md">
+              <esa-button-toggle id="wiz-recv-mode" size="sm"></esa-button-toggle>
+              <esa-text-field id="wiz-recv-search" placeholder="Search by APN…" size="sm"></esa-text-field>
+              <div class="stack" data-gap="sm">
+                <div class="cluster" data-gap="xs">
+                  <span class="type-label">Selected Parcels</span>
+                  <span class="wiz__count" id="wiz-recv-count">0</span>
+                </div>
+                <ul class="wiz__parcel-list" id="wiz-recv-list"></ul>
+                <p class="type-caption wiz__empty" id="wiz-recv-empty">No parcels selected. Click a parcel on the map to add it.</p>
+              </div>
+              <div class="stack" data-gap="sm">
+                <span class="type-label">Buying Point of Diversion</span>
+                <p class="type-caption" id="wiz-recv-pod-hint">Switch to “Place Point of Diversion” and click the map to set a location.</p>
+                <esa-text-field id="wiz-recv-pod-label" label="Label (optional)" size="sm" placeholder="e.g. North canal turnout"></esa-text-field>
+              </div>
+            </div>
+            <div class="wiz__map">
+              <div class="wiz__map-mount" id="wiz-recv-map"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 4 — Summary -->
+        <section class="wiz__panel" data-step="4" hidden>
+          <div class="sidebar" data-gap="lg" style="--sidebar-width: 26rem;">
+            <div class="wiz__recap stack" data-gap="lg">
+              <div class="stack" data-gap="sm">
+                <p class="type-label wiz__group">Parties &amp; Terms</p>
+                <dl class="wiz__dl" id="wiz-recap-terms"></dl>
+              </div>
+              <div class="stack" data-gap="sm" id="wiz-recap-offers-wrap" hidden>
+                <p class="type-label wiz__group">Linked Offers</p>
+                <dl class="wiz__dl" id="wiz-recap-offers"></dl>
+              </div>
+              <div class="stack" data-gap="sm">
+                <p class="type-label wiz__group">Sending Parcels</p>
+                <ul class="wiz__parcel-list" id="wiz-recap-send"></ul>
+              </div>
+              <div class="stack" data-gap="sm">
+                <p class="type-label wiz__group">Receiving Parcels</p>
+                <ul class="wiz__parcel-list" id="wiz-recap-recv"></ul>
+              </div>
+            </div>
+            <div class="wiz__map">
+              <div class="wiz__map-mount" id="wiz-summary-map"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Footer: Back far-left; Next/Save (primary) left of Cancel, right-aligned.
+         View mode collapses to Close only. -->
+    <div slot="footer" class="repel wiz__footer">
+      <div class="wiz__footer-left">
+        <span id="wiz-back" hidden><EsaButton color="ghost" appearance="outline">Back</EsaButton></span>
+      </div>
+      <div class="cluster" data-justify="end" data-gap="xs">
+        <span id="wiz-next"><EsaButton color="primary">Next</EsaButton></span>
+        <span id="wiz-save" hidden><EsaButton color="primary">Save</EsaButton></span>
+        <span id="wiz-cancel"><EsaButton color="ghost" appearance="outline">Cancel</EsaButton></span>
+        <span id="wiz-close" hidden><EsaButton color="ghost" appearance="outline">Close</EsaButton></span>
+      </div>
+    </div>
+  </esa-dialog>
+</div>
+
+<style>
+  /* Wrapper is a logical handle only (the panel calls the open* API on it); the
+     esa-dialog inside paints as a fixed full-screen overlay. */
+  .noria-transaction-wizard {
+    display: contents;
+  }
+
+  /* Body sidebar fills the tall work surface; the rail is a fixed column, the
+     step content flexes. min-height:0 lets inner maps own their box. */
+  .wiz {
+    min-height: 0;
+  }
+  .wiz__main {
+    min-width: 0;
+  }
+
+  /* ---- Workflow rail ---- */
+  .wiz__rail {
+    border-right: 1px solid var(--color-border, #e5e5e5);
+    padding-right: var(--spacing-400, 16px);
+  }
+  .wiz__rail-title {
+    margin: 0 0 var(--spacing-300, 12px);
+    color: var(--color-text-secondary, #525252);
+  }
+  .wiz__steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-100, 4px);
+  }
+  .wiz__step {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-250, 10px);
+    inline-size: 100%;
+    text-align: left;
+    padding: var(--spacing-200, 8px) var(--spacing-250, 10px);
+    border: 0;
+    border-radius: var(--radius-100, 4px);
+    background: transparent;
+    color: var(--color-text-secondary, #525252);
+    font-family: inherit;
+    font-size: var(--type-size-200, 15px);
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease;
+  }
+  .wiz__step:hover {
+    background: var(--color-surface-sunken, #efefef);
+    color: var(--color-text-primary, #171717);
+  }
+  .wiz__step-label {
+    min-width: 0;
+  }
+  .wiz__chip {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    border-radius: var(--radius-full, 999px);
+    border: 1px solid var(--color-border-strong, #d4d4d4);
+    background: var(--color-surface, #fff);
+    font-size: var(--type-size-150, 13px);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-text-secondary, #525252);
+  }
+  .wiz__step[aria-current='step'] {
+    background: var(--color-primary-subtle, #f3f8fc);
+    color: var(--color-primary, #235069);
+    font-weight: var(--font-weight-semibold, 600);
+  }
+  .wiz__step[aria-current='step'] .wiz__chip,
+  .wiz__step[data-complete] .wiz__chip {
+    background: var(--color-primary, #235069);
+    border-color: var(--color-primary, #235069);
+    color: #fff;
+  }
+  .wiz__step[data-complete] {
+    color: var(--color-text-primary, #171717);
+  }
+
+  /* ---- Group labels ---- */
+  .wiz__group {
+    color: var(--color-text-primary, #171717);
+  }
+  .wiz__group-hint {
+    margin: 0;
+    color: var(--color-text-secondary, #525252);
+  }
+
+  /* ---- Computed box (Total Price / In-Stream Benefit) ---- */
+  .wiz__computed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-200, 8px);
+    background: var(--color-primary-subtle, #f3f8fc);
+    border: 1px solid var(--color-primary-border, #c9e1ee);
+    border-radius: var(--radius-100, 4px);
+    padding: var(--spacing-300, 12px) var(--spacing-400, 16px);
+  }
+  .wiz__computed-label {
+    font-weight: var(--font-weight-semibold, 600);
+  }
+
+  /* ---- Parcel-selection maps ---- */
+  .wiz__map {
+    position: relative;
+    isolation: isolate;
+    inline-size: 100%;
+    min-block-size: 440px;
+    block-size: 60vh;
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: var(--radius-100, 4px);
+    overflow: hidden;
+  }
+  .wiz__map-mount {
+    position: absolute;
+    inset: 0;
+  }
+  .wiz__parcel-panel {
+    min-width: 0;
+  }
+
+  /* ---- Selected-parcel list ---- */
+  .wiz__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1.25rem;
+    block-size: 1.25rem;
+    padding-inline: var(--spacing-150, 6px);
+    border-radius: var(--radius-full, 999px);
+    background: var(--color-primary-subtle, #f3f8fc);
+    color: var(--color-primary, #235069);
+    font-size: var(--type-size-100, 12px);
+    font-weight: var(--font-weight-semibold, 600);
+  }
+  .wiz__parcel-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-100, 4px);
+  }
+  .wiz__parcel-list:empty {
+    display: none;
+  }
+  /* The parcel-list items, dots, and remove buttons are built in the client script,
+     so they don't carry Astro's scope attribute — reach them via the static list
+     ancestor + :global() (same idiom noria-parcel-grid uses for AG-Grid DOM). */
+  .wiz__parcel-list :global(.wiz__parcel-item) {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-250, 10px);
+    padding: var(--spacing-200, 8px) var(--spacing-250, 10px);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: var(--radius-100, 4px);
+    background: var(--color-surface, #fff);
+  }
+  .wiz__parcel-list :global(.wiz__parcel-dot),
+  .wiz__dl :global(.wiz__parcel-dot) {
+    flex: none;
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: var(--radius-full, 999px);
+  }
+  .wiz__parcel-list :global(.wiz__parcel-meta) {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+  .wiz__parcel-list :global(.wiz__parcel-apn) {
+    font-size: var(--type-size-200, 15px);
+    font-weight: var(--font-weight-medium, 500);
+    color: var(--color-text-primary, #171717);
+  }
+  .wiz__parcel-list :global(.wiz__parcel-sub) {
+    font-size: var(--type-size-150, 13px);
+    color: var(--color-text-secondary, #525252);
+  }
+  .wiz__parcel-list :global(.wiz__parcel-remove) {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-100, 4px);
+    background: transparent;
+    color: var(--color-text-secondary, #525252);
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease;
+  }
+  .wiz__parcel-list :global(.wiz__parcel-remove:hover) {
+    background: var(--color-surface-sunken, #efefef);
+    color: var(--color-danger, #ef4444);
+  }
+  .wiz__parcel-list :global(.wiz__parcel-remove svg) {
+    inline-size: 16px;
+    block-size: 16px;
+  }
+  .wiz__empty {
+    margin: 0;
+    color: var(--color-text-secondary, #525252);
+  }
+  .wiz__parcel-list:not(:empty) + .wiz__empty {
+    display: none;
+  }
+
+  /* ---- Summary recap ---- */
+  .wiz__recap {
+    min-width: 0;
+  }
+  .wiz__dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--spacing-150, 6px) var(--spacing-400, 16px);
+  }
+  /* dt/dd pairs are built in the client script — reach them via the static dl + :global(). */
+  .wiz__dl :global(dt) {
+    color: var(--color-text-secondary, #525252);
+    font-size: var(--type-size-150, 13px);
+  }
+  .wiz__dl :global(dd) {
+    margin: 0;
+    color: var(--color-text-primary, #171717);
+    font-size: var(--type-size-200, 15px);
+  }
+  .wiz__dl :global(.wiz__dl-party) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-200, 8px);
+  }
+  .wiz__dl :global(dd.wiz__dl-total) {
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-primary, #235069);
+  }
+
+  .wiz__footer {
+    align-items: center;
+  }
+  .wiz__footer-left {
+    display: inline-flex;
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-dialog';
+  import '@esa/ecology/esa-select';
+  import '@esa/ecology/esa-text-field';
+  import '@esa/ecology/esa-button-toggle';
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+  import '../../styles/noria-map.css';
+  import {
+    transactions,
+    parcels,
+    offers,
+    participantById,
+    waterTypeById,
+    totalPrice,
+    instreamBenefit,
+    usd,
+    num,
+    type Parcel,
+    type PointOfDiversion,
+  } from '../../data/scenario';
+
+  const ESRI_TOPO =
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}';
+
+  type Mode = 'create' | 'edit' | 'view';
+  type ValueEl = HTMLElement & { value: string; disabled: boolean; searchable?: boolean };
+  type ToggleEl = HTMLElement & {
+    value: string;
+    disabled: boolean;
+    options: Array<{ value: string; label?: string; icon?: string }>;
+  };
+  type DialogEl = HTMLElement & { show: () => void; close: () => void; heading: string };
+
+  interface SideState {
+    key: 'send' | 'recv';
+    mountId: string;
+    listId: string;
+    countId: string;
+    podHintId: string;
+    podLabelId: string;
+    /** Which participant's district parcels this side plots (seller for send, buyer for recv). */
+    participantId: () => number | null;
+    map: L.Map | null;
+    markers: Map<number, L.CircleMarker>;
+    ro: ResizeObserver | null;
+    selected: Set<number>;
+    pod: PointOfDiversion | null;
+    podMarker: L.CircleMarker | null;
+    toggleValue: 'parcels' | 'pod';
+  }
+
+  const wrapper = document.getElementById('noria-tx-wizard');
+  const dialog = wrapper?.querySelector('esa-dialog') as DialogEl | null;
+  if (wrapper && dialog) {
+    // ---- element handles ----
+    const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
+      document.getElementById(id) as T | null;
+    const val = (id: string): string => ($(id) as ValueEl | null)?.value ?? '';
+    const setVal = (id: string, value: string): void => {
+      const el = $(id) as ValueEl | null;
+      if (el) el.value = value;
+    };
+
+    const panels = Array.from(
+      wrapper.querySelectorAll<HTMLElement>('.wiz__panel'),
+    );
+    const stepButtons = Array.from(
+      wrapper.querySelectorAll<HTMLButtonElement>('.wiz__step'),
+    );
+
+    const numOrNull = (s: string): number | null => {
+      const n = Number(s);
+      return s !== '' && Number.isFinite(n) ? n : null;
+    };
+    const buyerId = () => numOrNull(val('wiz-buyer'));
+    const sellerId = () => numOrNull(val('wiz-seller'));
+
+    const SIDES: Record<'send' | 'recv', SideState> = {
+      send: {
+        key: 'send',
+        mountId: 'wiz-send-map',
+        listId: 'wiz-send-list',
+        countId: 'wiz-send-count',
+        podHintId: 'wiz-send-pod-hint',
+        podLabelId: 'wiz-send-pod-label',
+        participantId: sellerId,
+        map: null,
+        markers: new Map(),
+        ro: null,
+        selected: new Set(),
+        pod: null,
+        podMarker: null,
+        toggleValue: 'parcels',
+      },
+      recv: {
+        key: 'recv',
+        mountId: 'wiz-recv-map',
+        listId: 'wiz-recv-list',
+        countId: 'wiz-recv-count',
+        podHintId: 'wiz-recv-pod-hint',
+        podLabelId: 'wiz-recv-pod-label',
+        participantId: buyerId,
+        map: null,
+        markers: new Map(),
+        ro: null,
+        selected: new Set(),
+        pod: null,
+        podMarker: null,
+        toggleValue: 'parcels',
+      },
+    };
+
+    let mode: Mode = 'create';
+    let step = 1;
+    let summaryMap: L.Map | null = null;
+    let summaryRo: ResizeObserver | null = null;
+
+    // ---- shared bits ----
+    const partyDot = (colorHex: string): HTMLElement => {
+      const span = document.createElement('span');
+      span.className = 'wiz__parcel-dot';
+      span.style.background = colorHex;
+      return span;
+    };
+    const districtParcels = (participantId: number | null): Parcel[] => {
+      const p = participantById(participantId ?? -1);
+      if (!p) return [];
+      return parcels.filter((parcel) => parcel.districtName === p.name);
+    };
+    const markerStyle = (selected: boolean, colorHex: string): L.CircleMarkerOptions =>
+      selected
+        ? { radius: 7, color: colorHex, weight: 2, fillColor: colorHex, fillOpacity: 0.75 }
+        : { radius: 6, color: colorHex, weight: 2, fillColor: '#ffffff', fillOpacity: 0.9 };
+
+    const makeMap = (mount: HTMLElement, interactive: boolean): L.Map => {
+      const map = L.map(mount, {
+        scrollWheelZoom: interactive,
+        dragging: interactive,
+        zoomControl: interactive,
+        doubleClickZoom: interactive,
+        boxZoom: interactive,
+        keyboard: interactive,
+      });
+      L.tileLayer(ESRI_TOPO, { attribution: 'Tiles © Esri', maxZoom: 19 }).addTo(map);
+      return map;
+    };
+
+    // ---- live compute (step 1) ----
+    const computeTotals = (): void => {
+      const price = Number(val('wiz-price')) || 0;
+      const volume = Number(val('wiz-volume')) || 0;
+      const wt = waterTypeById(numOrNull(val('wiz-water-type')));
+      const total = $('wiz-total');
+      const instream = $('wiz-instream');
+      if (total) total.textContent = totalPrice(price, volume);
+      if (instream) {
+        instream.textContent =
+          wt && wt.instreamFlowSetAside > 0
+            ? instreamBenefit(volume, wt.instreamFlowSetAside)
+            : '-';
+      }
+    };
+
+    ['wiz-price', 'wiz-volume', 'wiz-water-type'].forEach((id) => {
+      $(id)?.addEventListener('change', computeTotals);
+      $(id)?.addEventListener('input', computeTotals);
+    });
+
+    // ---- per-side parcel maps ----
+    const renderSideList = (side: SideState): void => {
+      const list = $(side.listId);
+      const count = $(side.countId);
+      if (count) count.textContent = String(side.selected.size);
+      if (!list) return;
+      list.replaceChildren();
+      for (const id of side.selected) {
+        const parcel = parcelById(id);
+        const participant = participantById(side.participantId() ?? -1);
+        if (!parcel) continue;
+        const li = document.createElement('li');
+        li.className = 'wiz__parcel-item';
+        li.appendChild(partyDot(participant?.colorHex ?? '#235069'));
+        const meta = document.createElement('div');
+        meta.className = 'wiz__parcel-meta';
+        const apn = document.createElement('span');
+        apn.className = 'wiz__parcel-apn';
+        apn.textContent = parcel.apn;
+        const sub = document.createElement('span');
+        sub.className = 'wiz__parcel-sub';
+        sub.textContent = `${parcel.districtName} · ${parcel.countyName}`;
+        meta.append(apn, sub);
+        li.appendChild(meta);
+        if (mode !== 'view') {
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'wiz__parcel-remove';
+          remove.setAttribute('aria-label', `Remove parcel ${parcel.apn}`);
+          remove.innerHTML =
+            "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M18 6 6 18'/><path d='m6 6 12 12'/></svg>";
+          remove.addEventListener('click', () => toggleParcel(side, parcel, false));
+          li.appendChild(remove);
+        }
+        list.appendChild(li);
+      }
+    };
+
+    const parcelById = (id: number): Parcel | undefined => parcels.find((p) => p.id === id);
+
+    const toggleParcel = (side: SideState, parcel: Parcel, select?: boolean): void => {
+      if (mode === 'view') return;
+      const next = select ?? !side.selected.has(parcel.id);
+      if (next) side.selected.add(parcel.id);
+      else side.selected.delete(parcel.id);
+      const participant = participantById(side.participantId() ?? -1);
+      const marker = side.markers.get(parcel.id);
+      marker?.setStyle(markerStyle(next, participant?.colorHex ?? '#235069'));
+      renderSideList(side);
+    };
+
+    const placePod = (side: SideState, lat: number, lng: number): void => {
+      side.pod = { lat, lng, label: val(side.podLabelId) };
+      if (side.podMarker) side.podMarker.remove();
+      if (side.map) {
+        // A distinct ringed marker (brand blue), set apart from the party-colored
+        // parcel dots. Leaflet's canvas paint takes literal colors, not tokens.
+        side.podMarker = L.circleMarker([lat, lng], {
+          radius: 8,
+          color: '#235069',
+          weight: 3,
+          fillColor: '#ffffff',
+          fillOpacity: 1,
+        })
+          .bindTooltip('Point of Diversion')
+          .addTo(side.map);
+      }
+      const hint = $(side.podHintId);
+      if (hint) hint.textContent = `Lat ${lat.toFixed(5)}, Lng ${lng.toFixed(5)}`;
+    };
+
+    const buildSideMap = (side: SideState): void => {
+      const mount = $(side.mountId);
+      if (!mount) return;
+      side.ro?.disconnect();
+      if (side.map) {
+        side.map.remove();
+        side.map = null;
+      }
+      side.markers.clear();
+      side.podMarker = null;
+
+      const participant = participantById(side.participantId() ?? -1);
+      const color = participant?.colorHex ?? '#235069';
+      const list = districtParcels(side.participantId());
+      const map = makeMap(mount, mode !== 'view');
+      side.map = map;
+
+      const bounds = L.latLngBounds([]);
+      for (const parcel of list) {
+        const marker = L.circleMarker(
+          [parcel.lat, parcel.lng],
+          markerStyle(side.selected.has(parcel.id), color),
+        )
+          .bindTooltip(`APN ${parcel.apn}`)
+          .addTo(map);
+        marker.on('click', () => {
+          if (mode === 'view' || side.toggleValue !== 'parcels') return;
+          toggleParcel(side, parcel);
+        });
+        side.markers.set(parcel.id, marker);
+        bounds.extend([parcel.lat, parcel.lng]);
+      }
+
+      map.on('click', (e: L.LeafletMouseEvent) => {
+        if (mode === 'view' || side.toggleValue !== 'pod') return;
+        placePod(side, e.latlng.lat, e.latlng.lng);
+      });
+
+      if (side.pod) placePod(side, side.pod.lat, side.pod.lng);
+
+      const applyView = (): void => {
+        if (bounds.isValid()) map.fitBounds(bounds.pad(0.25), { maxZoom: 13 });
+        else map.setView(participant?.anchor ?? [44.3, -121.1], 11);
+      };
+      applyView();
+      // If the build ran before the just-revealed panel was laid out, the view
+      // above was computed against a 0-size box (→ gray, no tiles). Re-measure and
+      // re-fit on the next frame so the map always settles on the right terrain.
+      requestAnimationFrame(() => {
+        map.invalidateSize();
+        applyView();
+      });
+      side.ro = new ResizeObserver(() => map.invalidateSize());
+      side.ro.observe(mount);
+      renderSideList(side);
+    };
+
+    // side mode toggle + POD label wiring
+    const wireSide = (side: SideState, toggleId: string): void => {
+      customElements.whenDefined('esa-button-toggle').then(() => {
+        const toggle = $(toggleId) as ToggleEl | null;
+        if (!toggle) return;
+        toggle.options = [
+          {
+            value: 'parcels',
+            label: 'Select Parcels',
+            icon: "<rect width='7' height='7' x='3' y='3' rx='1'/><rect width='7' height='7' x='14' y='3' rx='1'/><rect width='7' height='7' x='14' y='14' rx='1'/><rect width='7' height='7' x='3' y='14' rx='1'/>",
+          },
+          {
+            value: 'pod',
+            label: 'Place Point of Diversion',
+            icon: "<path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/>",
+          },
+        ];
+        toggle.value = 'parcels';
+        toggle.addEventListener('change', (e) => {
+          side.toggleValue = (e as CustomEvent<{ value: 'parcels' | 'pod' }>).detail.value;
+        });
+      });
+      $(side.podLabelId)?.addEventListener('change', () => {
+        if (side.pod) side.pod.label = val(side.podLabelId);
+      });
+    };
+    wireSide(SIDES.send, 'wiz-send-mode');
+    wireSide(SIDES.recv, 'wiz-recv-mode');
+
+    // ---- summary (step 4) ----
+    const dlRow = (dl: HTMLElement, label: string, value: Node | string): HTMLElement => {
+      const dt = document.createElement('dt');
+      dt.textContent = label;
+      const dd = document.createElement('dd');
+      if (typeof value === 'string') dd.textContent = value;
+      else dd.appendChild(value);
+      dl.append(dt, dd);
+      return dd;
+    };
+    const partyValue = (participantId: number | null): HTMLElement => {
+      const p = participantById(participantId ?? -1);
+      const wrap = document.createElement('span');
+      wrap.className = 'wiz__dl-party';
+      if (p) {
+        wrap.appendChild(partyDot(p.colorHex));
+        const name = document.createElement('span');
+        name.textContent = p.name;
+        wrap.appendChild(name);
+      } else {
+        wrap.textContent = '—';
+      }
+      return wrap;
+    };
+
+    const renderSummary = (): void => {
+      const terms = $('wiz-recap-terms');
+      if (terms) {
+        terms.replaceChildren();
+        dlRow(terms, 'Buyer', partyValue(buyerId()));
+        dlRow(terms, 'Seller', partyValue(sellerId()));
+        const wt = waterTypeById(numOrNull(val('wiz-water-type')));
+        dlRow(terms, 'Water Type', wt?.name ?? '—');
+        const price = Number(val('wiz-price')) || 0;
+        const volume = Number(val('wiz-volume')) || 0;
+        dlRow(terms, 'Confirmed Price', price ? `${usd(price)} / ac-ft` : '—');
+        dlRow(terms, 'Confirmed Volume', volume ? `${num(volume)} ac-ft` : '—');
+        // Total Price — the highlighted line of the recap.
+        const totalDd = dlRow(terms, 'Total Price', totalPrice(price, volume));
+        totalDd.classList.add('wiz__dl-total');
+      }
+
+      // Linked offers
+      const offersWrap = $('wiz-recap-offers-wrap');
+      const offersDl = $('wiz-recap-offers');
+      const buyOfferId = numOrNull(val('wiz-buying-offer'));
+      const sellOfferId = numOrNull(val('wiz-selling-offer'));
+      if (offersWrap && offersDl) {
+        offersDl.replaceChildren();
+        const label = (id: number | null): string | null => {
+          const o = offers.find((x) => x.id === id);
+          if (!o) return null;
+          const party = participantById(o.participantId);
+          return `#${o.id} - ${party?.name ?? '—'} (${num(o.price, 0)} $/ac-ft, ${num(o.volume, 0)} ac-ft)`;
+        };
+        const buyLabel = label(buyOfferId);
+        const sellLabel = label(sellOfferId);
+        if (buyLabel) dlRow(offersDl, 'Buying Offer', buyLabel);
+        if (sellLabel) dlRow(offersDl, 'Selling Offer', sellLabel);
+        offersWrap.hidden = !buyLabel && !sellLabel;
+      }
+
+      // parcel recaps
+      const fillRecap = (ulId: string, ids: Set<number>, participantId: number | null): void => {
+        const ul = $(ulId);
+        if (!ul) return;
+        ul.replaceChildren();
+        const p = participantById(participantId ?? -1);
+        for (const id of ids) {
+          const parcel = parcelById(id);
+          if (!parcel) continue;
+          const li = document.createElement('li');
+          li.className = 'wiz__parcel-item';
+          li.appendChild(partyDot(p?.colorHex ?? '#235069'));
+          const meta = document.createElement('div');
+          meta.className = 'wiz__parcel-meta';
+          const apn = document.createElement('span');
+          apn.className = 'wiz__parcel-apn';
+          apn.textContent = parcel.apn;
+          const sub = document.createElement('span');
+          sub.className = 'wiz__parcel-sub';
+          sub.textContent = `${parcel.districtName} · ${parcel.countyName}`;
+          meta.append(apn, sub);
+          li.appendChild(meta);
+          ul.appendChild(li);
+        }
+      };
+      fillRecap('wiz-recap-send', SIDES.send.selected, sellerId());
+      fillRecap('wiz-recap-recv', SIDES.recv.selected, buyerId());
+    };
+
+    const buildSummaryMap = (): void => {
+      const mount = $('wiz-summary-map');
+      if (!mount) return;
+      summaryRo?.disconnect();
+      if (summaryMap) {
+        summaryMap.remove();
+        summaryMap = null;
+      }
+      const map = makeMap(mount, false);
+      summaryMap = map;
+      const bounds = L.latLngBounds([]);
+      const plot = (ids: Set<number>, participantId: number | null): void => {
+        const p = participantById(participantId ?? -1);
+        const color = p?.colorHex ?? '#235069';
+        for (const id of ids) {
+          const parcel = parcelById(id);
+          if (!parcel) continue;
+          L.circleMarker([parcel.lat, parcel.lng], markerStyle(true, color))
+            .bindTooltip(`APN ${parcel.apn}`)
+            .addTo(map);
+          bounds.extend([parcel.lat, parcel.lng]);
+        }
+      };
+      plot(SIDES.send.selected, sellerId());
+      plot(SIDES.recv.selected, buyerId());
+      const applyView = (): void => {
+        if (bounds.isValid()) map.fitBounds(bounds.pad(0.3), { maxZoom: 12 });
+        else map.setView([44.3, -121.1], 9);
+      };
+      applyView();
+      // Re-measure + re-fit next frame in case this ran before the panel laid out.
+      requestAnimationFrame(() => {
+        map.invalidateSize();
+        applyView();
+      });
+      summaryRo = new ResizeObserver(() => map.invalidateSize());
+      summaryRo.observe(mount);
+    };
+
+    // ---- footer / step orchestration ----
+    const show = (id: string, on: boolean): void => {
+      const el = $(id);
+      if (el) el.hidden = !on;
+    };
+    const updateFooter = (): void => {
+      const isView = mode === 'view';
+      show('wiz-back', !isView && step > 1);
+      show('wiz-next', !isView && step < 4);
+      show('wiz-save', !isView && step === 4);
+      show('wiz-cancel', !isView);
+      show('wiz-close', isView);
+    };
+
+    const showStep = (n: number): void => {
+      step = n;
+      panels.forEach((p) => {
+        p.hidden = Number(p.dataset.step) !== n;
+      });
+      stepButtons.forEach((btn) => {
+        const s = Number(btn.dataset.goto);
+        btn.removeAttribute('aria-current');
+        btn.removeAttribute('data-complete');
+        if (s === n) btn.setAttribute('aria-current', 'step');
+        else if (s < n) btn.setAttribute('data-complete', '');
+      });
+      updateFooter();
+      // Defer map construction one frame so the dialog's slot has projected and the
+      // mount has a real pixel box (Lit renders on a microtask, before this rAF).
+      if (n === 2) requestAnimationFrame(() => buildSideMap(SIDES.send));
+      else if (n === 3) requestAnimationFrame(() => buildSideMap(SIDES.recv));
+      else if (n === 4) {
+        renderSummary();
+        requestAnimationFrame(() => buildSummaryMap());
+      }
+    };
+
+    // ---- form enable/disable (view = read-only) ----
+    const formIds = [
+      'wiz-buying-offer',
+      'wiz-selling-offer',
+      'wiz-buyer',
+      'wiz-seller',
+      'wiz-water-type',
+      'wiz-price',
+      'wiz-volume',
+      'wiz-send-mode',
+      'wiz-send-search',
+      'wiz-send-pod-label',
+      'wiz-recv-mode',
+      'wiz-recv-search',
+      'wiz-recv-pod-label',
+    ];
+    const setFormDisabled = (disabled: boolean): void => {
+      formIds.forEach((id) => {
+        const el = $(id) as ValueEl | null;
+        if (el) el.disabled = disabled;
+      });
+    };
+
+    // ---- prefill / reset ----
+    const resetPod = (side: SideState): void => {
+      side.pod = null;
+      side.podMarker = null;
+      setVal(side.podLabelId, '');
+      const hint = $(side.podHintId);
+      if (hint) {
+        hint.textContent =
+          'Switch to “Place Point of Diversion” and click the map to set a location.';
+      }
+    };
+
+    const resetWizard = (): void => {
+      [
+        'wiz-buying-offer',
+        'wiz-selling-offer',
+        'wiz-buyer',
+        'wiz-seller',
+        'wiz-water-type',
+        'wiz-price',
+        'wiz-volume',
+      ].forEach((id) => setVal(id, ''));
+      (['send', 'recv'] as const).forEach((k) => {
+        SIDES[k].selected = new Set();
+        resetPod(SIDES[k]);
+      });
+      computeTotals();
+    };
+
+    const loadTransaction = (txId: number): void => {
+      const t = transactions.find((x) => x.id === txId);
+      if (!t) return;
+      setVal('wiz-buyer', String(t.buyerId));
+      setVal('wiz-seller', String(t.sellerId));
+      setVal('wiz-water-type', String(t.waterTypeId));
+      setVal('wiz-buying-offer', t.buyingOfferId ? String(t.buyingOfferId) : '');
+      setVal('wiz-selling-offer', t.sellingOfferId ? String(t.sellingOfferId) : '');
+      setVal('wiz-price', String(t.price));
+      setVal('wiz-volume', String(t.volume));
+      SIDES.send.selected = new Set(t.sendingParcelIds);
+      SIDES.recv.selected = new Set(t.receivingParcelIds);
+      SIDES.send.pod = t.sellingPOD ? { ...t.sellingPOD } : null;
+      SIDES.recv.pod = t.buyingPOD ? { ...t.buyingPOD } : null;
+      (['send', 'recv'] as const).forEach((k) => {
+        const side = SIDES[k];
+        setVal(side.podLabelId, side.pod?.label ?? '');
+        const hint = $(side.podHintId);
+        if (hint && side.pod) {
+          hint.textContent = `Lat ${side.pod.lat.toFixed(5)}, Lng ${side.pod.lng.toFixed(5)}`;
+        }
+      });
+      computeTotals();
+    };
+
+    // ---- public API on the wrapper ----
+    interface WizardApi extends HTMLElement {
+      openCreate: () => void;
+      openEdit: (txId: number) => void;
+      openView: (txId: number) => void;
+    }
+    const api = wrapper as WizardApi;
+
+    api.openCreate = (): void => {
+      mode = 'create';
+      dialog.heading = 'Create Transaction';
+      resetWizard();
+      setFormDisabled(false);
+      showStep(1);
+      dialog.show();
+    };
+    api.openEdit = (txId: number): void => {
+      mode = 'edit';
+      dialog.heading = 'Edit Transaction';
+      resetWizard();
+      loadTransaction(txId);
+      setFormDisabled(false);
+      showStep(1);
+      dialog.show();
+    };
+    api.openView = (txId: number): void => {
+      mode = 'view';
+      dialog.heading = 'View Transaction';
+      resetWizard();
+      loadTransaction(txId);
+      setFormDisabled(true);
+      dialog.show();
+      showStep(4);
+    };
+
+    // ---- footer + rail actions ----
+    $('wiz-back')?.addEventListener('click', () => showStep(Math.max(1, step - 1)));
+    $('wiz-next')?.addEventListener('click', () => showStep(Math.min(4, step + 1)));
+    $('wiz-cancel')?.addEventListener('click', () => dialog.close());
+    $('wiz-close')?.addEventListener('click', () => dialog.close());
+    $('wiz-save')?.addEventListener('click', () => {
+      console.log('[transaction-wizard] save', {
+        mode,
+        buyerId: buyerId(),
+        sellerId: sellerId(),
+        waterTypeId: numOrNull(val('wiz-water-type')),
+        price: Number(val('wiz-price')) || 0,
+        volume: Number(val('wiz-volume')) || 0,
+        buyingOfferId: numOrNull(val('wiz-buying-offer')),
+        sellingOfferId: numOrNull(val('wiz-selling-offer')),
+        sendingParcelIds: [...SIDES.send.selected],
+        receivingParcelIds: [...SIDES.recv.selected],
+        sellingPOD: SIDES.send.pod,
+        buyingPOD: SIDES.recv.pod,
+      });
+      dialog.close();
+    });
+    stepButtons.forEach((btn) => {
+      btn.addEventListener('click', () => showStep(Number(btn.dataset.goto)));
+    });
+  }
+</script>

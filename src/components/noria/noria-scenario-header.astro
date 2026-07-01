@@ -1,0 +1,350 @@
+---
+// noria-scenario-header — the page header for every Scenario Details tab.
+//
+// Stacked page header: breadcrumbs → a tight identity UNIT (blue glyph + name
+// lockup + searchable switcher, with the custom meta row directly beneath it) →
+// horizontal tab nav. The identity + meta read as one block; breadcrumbs above
+// and tabs below sit at a larger gap so they don't crowd it.
+//
+// The identity lockup matches the Parcel Discovery Tool page header
+// (noria-page-title): a blue glyph beside a Google Sans Flex 500 title, both in
+// the same primary blue so icon + title read as one unit.
+//
+// bcn-lego-checked: two scoped bespoke bits, both after an Ecology→Beacon walk:
+//   1. TAB STRIP — a route-linked underline bar. esa-tab-layout switches CLIENT
+//      panels in place (activeIndex model), but these tabs are cross-page routes
+//      (`<a href>`). No esa- lego renders a route-linked underline bar, so it's a
+//      small scoped strip mirroring esa-tab-layout's `underline` appearance.
+//   2. CUSTOM FACET META ROW — Type / Reporting Period / Participants / Price
+//      Band each rendered as bespoke inline UI that expresses the SHAPE of its
+//      datum: a transfer flow (A → B), a calendar-glyph + text, an overlapping
+//      party-color facepile (keyed on per-participant colorHex, like
+//      noria-party-dot), and a floor–track–ceiling band. No esa- lego renders
+//      these data-specific micro-visualizations (esa-stat/badge/pill are
+//      generic); Beacon has none. All four share ONE type contract (14px / 500 /
+//      primary ink, one muted glyph tone) so nothing reads heavier than its
+//      neighbor. This is the reusable home for it.
+// Everything else composes legos: esa-breadcrumbs (trail), esa-combobox
+// (searchable switcher), esa-icon (glyph + tab glyphs).
+import EsaBreadcrumbs from '@esa/ecology/esa-breadcrumbs.astro';
+import EsaIcon from '@esa/ecology/esa-icon.astro';
+import { withBase } from '../../lib/base';
+import { usd, otherScenarios, type Scenario } from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+  activeTab: 'overview' | 'offers' | 'transactions' | 'report' | 'users';
+}
+const { scenario, activeTab } = Astro.props;
+
+// Scenario glyph — Lucide "chart-no-axes-combined", matching the Scenarios entry
+// in the app sidenav. Not in esa-icon's built-in registry, so pass the inner SVG
+// explicitly (paths prop).
+const CHART =
+  '<path d="M12 16v5"/><path d="M16 14.639V21"/><path d="M20 10.656V21"/><path d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"/><path d="M4 18.463V21"/><path d="M8 14.656V21"/>';
+
+// Lucide "house" for the Home crumb — esa-breadcrumbs' `icon` takes a full <svg>
+// string (set:html), inheriting the crumb's link color via stroke=currentColor.
+const HOME_ICON =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+
+// Meta-facet glyphs (Lucide, inner-SVG strings; colored/sized by scoped CSS).
+const SVG_ATTRS =
+  'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+const ICON_SWAP = `<svg class="sh-ico" ${SVG_ATTRS}><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>`;
+const ICON_ARROW = `<svg class="sh-ico" ${SVG_ATTRS}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+const ICON_CAL = `<svg class="sh-ico" ${SVG_ATTRS}><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>`;
+
+const crumbs = [
+  { label: 'Home', href: withBase('/'), icon: HOME_ICON },
+  { label: 'Scenarios', href: withBase('/prototypes/scenarios') },
+  { label: scenario.name },
+];
+
+// Meta facet data.
+// Type "X to Y" → the two flow nodes (falls back to the whole string).
+const typeNodes = scenario.type.split(' to ');
+const floor = scenario.priceFloor != null ? usd(scenario.priceFloor, 0) : '—';
+const ceiling = scenario.priceCeiling != null ? usd(scenario.priceCeiling, 0) : '—';
+const participantCount = scenario.participants.length;
+
+// Cross-page routes (NOT esa-tab-layout panels) — the tab whose slug === activeTab is current.
+const tabs = [
+  { slug: 'overview', label: 'Overview', href: withBase('/prototypes/scenario/overview'), icon: 'layout-dashboard' },
+  { slug: 'offers', label: 'Offers', href: withBase('/prototypes/scenario/offers'), icon: 'file-text' },
+  { slug: 'transactions', label: 'Transactions', href: withBase('/prototypes/scenario/transactions'), icon: 'credit-card' },
+  { slug: 'report', label: 'Report', href: withBase('/prototypes/scenario/report'), icon: 'trending-up' },
+  { slug: 'users', label: 'User Management', href: withBase('/prototypes/scenario/users'), icon: 'users' },
+];
+
+// Switcher options — the OTHER scenarios (exclude the one we're on). esa-combobox
+// takes {value,label}; items are placeholders, wired via a data-island.
+const switcherOptions = otherScenarios
+  .filter((s) => s.id !== scenario.id)
+  .map((s) => ({ value: String(s.id), label: s.name }));
+---
+
+<header class="scenario-header stack" data-gap="2xl">
+  <EsaBreadcrumbs items={crumbs} size="sm" />
+
+  <!-- Identity + meta read as ONE unit (tight inner gap). -->
+  <div class="scenario-header__lede stack" data-gap="sm">
+    <div class="cluster scenario-header__identity" data-gap="md" data-align="center">
+      <div class="cluster" data-gap="sm" data-align="center">
+        <span class="scenario-header__glyph"><EsaIcon name="chart-no-axes-combined" paths={CHART} /></span>
+        <h1 class="scenario-header__h1">{scenario.name}</h1>
+      </div>
+      <esa-combobox
+        class="scenario-header__switcher"
+        data-scenario-switcher
+        mode="select"
+        trigger-style="text"
+        size="sm"
+        placeholder="Switch scenario"
+        results-count={switcherOptions.length}
+      ></esa-combobox>
+    </div>
+
+    <div class="scenario-header__meta">
+      <!-- Type — a transfer: A → B -->
+      <div class="scenario-header__facet sh-flow">
+        <span class="sh-facet-icon" set:html={ICON_SWAP} />
+        {typeNodes.map((node, i) => (
+          <>
+            {i > 0 && <span class="sh-facet-icon" set:html={ICON_ARROW} />}
+            <span class="sh-facet-txt">{node}</span>
+          </>
+        ))}
+      </div>
+
+      <span class="sh-divider" aria-hidden="true"></span>
+
+      <!-- Reporting Period — calendar glyph + text -->
+      <div class="scenario-header__facet sh-caldate">
+        <span class="sh-facet-icon" set:html={ICON_CAL} />
+        <span class="sh-facet-txt">{scenario.reportingPeriod}</span>
+      </div>
+
+      <span class="sh-divider" aria-hidden="true"></span>
+
+      <!-- Participants — overlapping party-color facepile + count -->
+      <div class="scenario-header__facet sh-facepile">
+        <span class="sh-facepile__dots">
+          {scenario.participants.map((p) => (
+            <span class="sh-facepile__dot" style={`background:${p.colorHex};`} title={p.name}></span>
+          ))}
+        </span>
+        <span class="sh-facet-txt">{participantCount} participants</span>
+      </div>
+
+      <span class="sh-divider" aria-hidden="true"></span>
+
+      <!-- Price Band — label + floor–track–ceiling -->
+      <div class="scenario-header__facet sh-priceband">
+        <span class="sh-priceband__label">Price Band</span>
+        <span class="sh-priceband__track">
+          <span class="sh-pb-val">{floor}</span>
+          <span class="sh-pb-bar"></span>
+          <span class="sh-pb-val">{ceiling}</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="scenario-header__tabs" aria-label="Scenario sections">
+    {tabs.map((t) => (
+      <a
+        href={t.href}
+        class:list={['scenario-header__tab', { 'is-active': t.slug === activeTab }]}
+        aria-current={t.slug === activeTab ? 'page' : undefined}
+      >
+        <EsaIcon name={t.icon} size="sm" />
+        {t.label}
+      </a>
+    ))}
+  </nav>
+
+  <script type="application/json" data-scenario-switcher-items set:html={JSON.stringify(switcherOptions)} />
+</header>
+
+<script>
+  import '@esa/ecology/esa-combobox';
+
+  const dataEl = document.querySelector('[data-scenario-switcher-items]');
+  const combo = document.querySelector('esa-combobox[data-scenario-switcher]') as any;
+  if (dataEl && combo) {
+    combo.options = JSON.parse(dataEl.textContent || '[]');
+    // Prototype: selecting a scenario is a no-op stub (routes not wired yet).
+    // Reset the value after selection so the trigger keeps its "Switch scenario"
+    // placeholder rather than latching onto the picked name.
+    combo.addEventListener('change', (e: Event) => {
+      console.log('[noria] switch scenario →', (e as CustomEvent).detail?.value);
+      queueMicrotask(() => { combo.value = null; });
+    });
+  }
+</script>
+
+<style>
+  /* ── Identity lockup: blue glyph + Google Sans Flex title (matches
+     noria-page-title / Parcel Discovery Tool). ───────────────────────────── */
+  .scenario-header__glyph {
+    display: inline-flex;
+    color: var(--color-primary, #235069);
+  }
+  .scenario-header__glyph :global(svg) {
+    width: 26px;
+    height: 26px;
+  }
+  .scenario-header__h1 {
+    margin: 0;
+    font-family: 'Google Sans Flex', sans-serif;
+    font-size: var(--type-size-600, 1.875rem);
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--color-primary, #235069);
+  }
+
+  /* ── Searchable switcher: widen the host so the (shadow-DOM) dropdown, which
+     spans the host width, reads as a comfortable panel. The text trigger stays
+     left-aligned; the extra width is benign trailing header space. ─────────── */
+  .scenario-header__switcher {
+    min-width: 20rem;
+  }
+
+  /* ── Custom facet meta row (bcn-lego-checked above). One shared type contract:
+     every value is 14px / medium / primary ink; every glyph is one muted tone. */
+  .scenario-header__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-200, 8px) var(--spacing-400, 16px);
+  }
+  .scenario-header__facet {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-200, 8px);
+  }
+  .sh-facet-txt {
+    font-size: 0.875rem; /* 14px — the shared meta size */
+    font-weight: var(--font-weight-medium, 500);
+    color: var(--color-text-primary, #171717);
+  }
+  .sh-facet-icon {
+    display: inline-flex;
+    color: var(--color-text-muted, #737373);
+  }
+  .sh-facet-icon :global(.sh-ico) {
+    width: 16px;
+    height: 16px;
+  }
+  .sh-divider {
+    width: 1px;
+    align-self: stretch;
+    min-height: 20px;
+    background: var(--color-border, #e5e5e5);
+    flex: none;
+  }
+
+  /* Participants — overlapping party-color facepile */
+  .sh-facepile {
+    gap: var(--spacing-300, 10px);
+  }
+  .sh-facepile__dots {
+    display: inline-flex;
+  }
+  .sh-facepile__dot {
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full, 999px);
+    border: 2px solid var(--color-surface, #fff);
+  }
+  .sh-facepile__dot + .sh-facepile__dot {
+    margin-left: -6px;
+  }
+
+  /* Price Band — label + floor–track–ceiling lockup */
+  .sh-priceband {
+    gap: var(--spacing-300, 10px);
+  }
+  .sh-priceband__label {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium, 500);
+    color: var(--color-text-secondary, #525252);
+  }
+  .sh-priceband__track {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-200, 8px);
+  }
+  .sh-pb-val {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium, 500);
+    color: var(--color-text-primary, #171717);
+    font-variant-numeric: tabular-nums;
+  }
+  .sh-pb-bar {
+    position: relative;
+    width: 84px;
+    height: 5px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--noria-blue-300, #99c8e0), var(--color-primary, #235069));
+  }
+  .sh-pb-bar::before,
+  .sh-pb-bar::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--color-primary, #235069);
+    transform: translateY(-50%);
+  }
+  .sh-pb-bar::before { left: -1px; }
+  .sh-pb-bar::after { right: -1px; }
+
+  /* ── Route-linked underline tab strip (bcn-lego-checked above). ─────────── */
+  .scenario-header__tabs {
+    display: flex;
+    gap: var(--spacing-100, 4px);
+    border-bottom: 1px solid var(--color-border, #e5e5e5);
+    overflow-x: auto;
+  }
+  .scenario-header__tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-200, 8px);
+    height: 44px;
+    padding-inline: var(--spacing-400, 16px);
+    font-size: var(--type-size-200, 1rem);
+    color: var(--color-text-secondary, #525252);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 150ms ease;
+  }
+  .scenario-header__tab:hover {
+    color: var(--color-text-primary, #171717);
+  }
+  .scenario-header__tab.is-active {
+    color: var(--color-primary, #235069);
+    font-weight: var(--font-weight-medium, 500);
+  }
+  /* 2px indicator, overlaps the container hairline — no layout shift vs inactive. */
+  .scenario-header__tab.is-active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-primary, #235069);
+    border-radius: 2px;
+  }
+  .scenario-header__tab:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--color-primary, #235069);
+    outline-offset: -2px;
+    border-radius: var(--radius-100, 4px);
+  }
+</style>

@@ -1,0 +1,93 @@
+---
+// noria-change-status-dialog — the small "Change Transaction Status" modal used
+// by the transactions panel. A single Status select over a Save/Cancel footer.
+//
+// The panel drives it: on a grid "Change Status" action it calls
+// `changeStatusEl.open(txId, currentStatus)`, which presets the select and shows
+// the dialog. `open` is exposed on the WRAPPER (id="noria-change-status"), NOT on
+// the esa-dialog — esa-dialog already owns a reactive boolean `open` property, so
+// attaching a method there would clobber its visibility state.
+//
+// Composed purely from legos: esa-dialog (chrome, Esc/scrim/focus-trap) + esa-select
+// (Status) + esa-button (footer). Footer follows the house Windows order — primary
+// Save sits LEFT of Cancel, both right-aligned.
+import EsaButton from '@esa/ecology/esa-button.astro';
+import { transactionStatusOptions, type Scenario } from '../../data/scenario';
+
+interface Props {
+  scenario: Scenario;
+}
+const { scenario } = Astro.props;
+void scenario; // signature parity with the sibling panels; content is scenario-agnostic
+---
+
+<div id="noria-change-status" class="noria-change-status">
+  <esa-dialog size="sm" heading="Change Transaction Status">
+    <div class="stack" data-gap="md">
+      <esa-select
+        id="noria-change-status-select"
+        label="Status"
+        required
+        options={JSON.stringify(transactionStatusOptions)}
+      ></esa-select>
+    </div>
+
+    <div slot="footer" class="cluster" data-justify="end" data-gap="xs">
+      <span id="noria-change-status-save">
+        <EsaButton color="primary">Save</EsaButton>
+      </span>
+      <span id="noria-change-status-cancel">
+        <EsaButton color="ghost" appearance="outline">Cancel</EsaButton>
+      </span>
+    </div>
+  </esa-dialog>
+</div>
+
+<style>
+  /* The wrapper is a logical handle only (the panel calls `.open` on it); it must
+     never contribute a layout box — the esa-dialog inside paints as a fixed overlay. */
+  .noria-change-status {
+    display: contents;
+  }
+</style>
+
+<script>
+  import '@esa/ecology/esa-dialog';
+  import '@esa/ecology/esa-select';
+
+  type SelectEl = HTMLElement & { value: string; searchable: boolean };
+  type DialogEl = HTMLElement & { show: () => void; close: () => void };
+  type ChangeStatusApi = HTMLElement & { open: (txId: number, currentStatus: string) => void };
+
+  const wrapper = document.getElementById('noria-change-status') as ChangeStatusApi | null;
+  if (wrapper) {
+    const dialog = wrapper.querySelector('esa-dialog') as DialogEl | null;
+    const select = document.getElementById('noria-change-status-select') as SelectEl | null;
+
+    // Simple pick-one status — a plain (non-typeahead) select once the lego upgrades.
+    customElements.whenDefined('esa-select').then(() => {
+      if (select) select.searchable = false;
+    });
+
+    // The panel's contract: open(txId, currentStatus) presets the select + shows.
+    wrapper.open = (txId: number, currentStatus: string): void => {
+      wrapper.dataset.txId = String(txId);
+      if (select) select.value = currentStatus;
+      dialog?.show();
+    };
+
+    document
+      .getElementById('noria-change-status-save')
+      ?.addEventListener('click', () => {
+        // Prototype: the demo doesn't persist — log the intent and close.
+        console.log('[change-status] save', {
+          txId: wrapper.dataset.txId,
+          status: select?.value,
+        });
+        dialog?.close();
+      });
+    document
+      .getElementById('noria-change-status-cancel')
+      ?.addEventListener('click', () => dialog?.close());
+  }
+</script>

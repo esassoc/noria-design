@@ -1,0 +1,23 @@
+---
+// Scenario Details — Transactions tab. The scenario header over the transactions
+// panel (transactions grid + 4-step wizard + change-status dialog).
+import AppShell from '../../../layouts/AppShell.astro';
+import AppPage from '../../../layouts/AppPage.astro';
+import NoriaScenarioHeader from '../../../components/noria/noria-scenario-header.astro';
+import NoriaTransactionsPanel from '../../../components/noria/noria-transactions-panel.astro';
+import { scenario, transactions } from '../../../data/scenario';
+---
+
+<!-- manifest:
+  layout: AppShell
+  sections:
+    - scenario header    -> noria-scenario-header
+    - transactions panel -> noria-transactions-panel
+-->
+
+<AppShell title="Deschutes Water Bank" activeNavId="scenarios">
+  <AppPage>
+    <NoriaScenarioHeader scenario={scenario} activeTab="transactions" />
+    <NoriaTransactionsPanel scenario={scenario} transactions={transactions} />
+  </AppPage>
+</AppShell>
